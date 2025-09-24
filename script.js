@@ -3,7 +3,7 @@
 // Configuration
 const CONFIG = {
     CLAUDE_API_URL: 'https://api.anthropic.com/v1/messages',
-    CLAUDE_MODEL: 'claude-3-5-sonnet-20240620',  // Latest and smartest model
+    CLAUDE_MODEL: 'claude-3-haiku-20240307',
     MAX_TOKENS: 4000,
     API_VERSION: '2023-06-01'
 };
@@ -489,6 +489,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
