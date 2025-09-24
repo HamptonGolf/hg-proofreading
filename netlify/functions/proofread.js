@@ -1,13 +1,10 @@
 exports.handler = async (event, context) => {
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
     const { text, apiKey } = JSON.parse(event.body);
-    
-    console.log('Received request, making call to Claude API...');
     
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -17,7 +14,7 @@ exports.handler = async (event, context) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-opus-20240229',
+        model: 'claude-3-haiku-20240307',  // Changed to Haiku (fastest/cheapest)
         max_tokens: 4000,
         messages: [{
           role: 'user',
@@ -28,15 +25,11 @@ exports.handler = async (event, context) => {
 
     const data = await response.json();
     
-    // Log the response for debugging
-    console.log('Claude API response status:', response.status);
-    
     if (!response.ok) {
-      console.error('Claude API error:', data);
       return {
         statusCode: response.status,
         body: JSON.stringify({ 
-          error: data.error?.message || 'Claude API error',
+          error: data.error?.message || data.error?.type || 'Claude API error',
           details: data 
         })
       };
@@ -47,7 +40,6 @@ exports.handler = async (event, context) => {
       body: JSON.stringify(data)
     };
   } catch (error) {
-    console.error('Function error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ 
