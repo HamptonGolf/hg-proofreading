@@ -306,21 +306,21 @@ async function proofreadWithClaude(text) {
             })
         });
         
+        const data = await response.json();
+        
         if (!response.ok) {
-            let errorMessage = 'API request failed';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.error || errorMessage;
-            } catch (e) {
-                errorMessage = `API error: ${response.statusText}`;
+            console.error('Response not OK:', data);
+            let errorMessage = data.error || 'API request failed';
+            if (data.details) {
+                console.error('Error details:', data.details);
             }
             throw new Error(errorMessage);
         }
         
-        const data = await response.json();
-        
+        // Check if we have the expected response structure
         if (!data.content || !data.content[0] || !data.content[0].text) {
-            throw new Error('Invalid response format from API');
+            console.error('Unexpected response structure:', data);
+            throw new Error('Invalid response format from API. Check console for details.');
         }
         
         const proofreadingResults = data.content[0].text;
@@ -487,4 +487,5 @@ window.saveApiKey = saveApiKey;
 
 // Add console log for debugging
 console.log('Hampton Golf Proofreader loaded successfully');
+
 console.log('Current date for reference:', getCurrentDate());
