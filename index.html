@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hampton Golf - AI Proofreader</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">HG</div>
+                <div>
+                    <div class="logo-text">Hampton<span>Golf</span></div>
+                    <div class="tagline">Professionally Managed By</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1 class="main-title">AI Document Proofreader</h1>
+        <p class="subtitle">Professional proofreading with Hampton Golf's style guidelines</p>
+
+        <!-- API Key Section -->
+        <div class="api-key-section">
+            <div class="api-key-container">
+                <label for="api-key">Claude API Key:</label>
+                <input type="password" id="api-key" class="api-key-input" placeholder="Enter your Claude API key">
+                <button class="api-key-save" onclick="saveApiKey()">Save</button>
+            </div>
+            <p class="api-key-note">Your API key is stored locally and never sent to any server except Claude's API</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('text')">Text Input</button>
+                <button class="tab-btn" onclick="switchTab('file')">Upload PDF</button>
+            </div>
+
+            <!-- Text Input Tab -->
+            <div id="text-tab" class="tab-content active">
+                <textarea id="text-input" class="text-input" placeholder="Paste your text here for proofreading..."></textarea>
+            </div>
+
+            <!-- File Upload Tab -->
+            <div id="file-tab" class="tab-content">
+                <div class="file-upload-area" id="upload-area">
+                    <div class="upload-icon">📄</div>
+                    <h3 style="color: var(--hg-dark-green); margin-bottom: 10px;">Drop PDF file here or click to browse</h3>
+                    <p style="color: var(--hg-gray-dark);">Maximum file size: 10MB</p>
+                    <input type="file" id="file-input" class="file-input" accept=".pdf">
+                </div>
+                <div id="file-info" class="file-info">
+                    <strong>Selected file:</strong> <span id="file-name"></span>
+                </div>
+            </div>
+
+            <button id="proofread-btn" class="proofread-btn">Start Proofreading</button>
+
+            <!-- Guidelines Info -->
+            <div class="guidelines-info">
+                <h3 class="guidelines-title">Hampton Golf Style Guidelines Applied:</h3>
+                <ul class="guidelines-list">
+                    <li>Capitalization rules for Member, Guest, Neighbor, Homeowner, and Team Member</li>
+                    <li>Proper noun verification for Club, Course, and facility names</li>
+                    <li>AP Style grammar and punctuation checks</li>
+                    <li>Date accuracy verification</li>
+                    <li>Spacing consistency and hyphenation rules</li>
+                    <li>Department and title capitalization standards</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p class="loading-text">Analyzing document with Claude AI...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="results-section">
+            <div class="results-header">
+                <h2 class="results-title">Proofreading Results</h2>
+                <span class="error-count" id="error-count">0 issues found</span>
+            </div>
+            <ul id="error-list" class="error-list">
+                <!-- Errors will be populated here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load PDF.js for PDF processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Set worker source for PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
