@@ -13,7 +13,11 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. Review the following text and identify ALL errors according to these specific guidelines:
+const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. 
+
+CRITICAL INSTRUCTION: Only proofread the text provided below. Do not reference any other documents, previous conversations, or external content. If you cannot see specific text to proofread below, respond with "No text provided to proofread."
+
+Review ONLY the following text and identify ALL errors according to these specific guidelines:
 
 CAPITALIZATION RULES:
 1. ALWAYS capitalize: "Member", "Membership" (except in email addresses), "Guest", "Neighbor", "Homeowner", "Team", "Team Member"
@@ -27,7 +31,7 @@ CAPITALIZATION RULES:
 9. DO NOT capitalize unless proper noun: golf course, golf shop, clubhouse, tournament formats, caddie, pool, courts, driving range, practice facility, community, passholder, swim center
 
 STYLE RULES:
-1. Check all dates for accuracy (e.g., if text says "Wednesday, March 5", verify March 5 is actually a Wednesday in the current year)
+1. Check all dates for accuracy (e.g., if text says "Wednesday, March 5", verify March 5 is actually a Wednesday in 2024)
 2. Apply AP Style for grammar and punctuation
 3. Check spacing consistency (e.g., if "7AM" is used, flag if "8 AM" appears elsewhere - should be consistent)
 4. Verify hyphenation based on context (compound adjectives)
@@ -38,19 +42,14 @@ STYLE RULES:
 IMPORTANT INSTRUCTIONS:
 - Check EVERY instance of the words listed in the capitalization rules
 - Do not flag headers/section headers unless there's a spelling/punctuation error
-- Ignore OCR errors that are obvious
-- Only output actual errors, not confirmations or explanations
+- Only output actual errors found in the text below, not from memory
+- If no text is provided below or if you can't identify the document content, say "No document text found to proofread"
 
 OUTPUT FORMAT:
 For each error found, provide in this EXACT format:
 - [Location in text] > [Specific correction needed]
 
-Example:
-- Paragraph 2, Line 3 > Capitalize "member" → "Member"
-- Section "Golf Information" > Lowercase "Golf Course" → "golf course" (not used as proper noun)
-- Page 3, Hours Section > Spacing inconsistency: "7AM" should be "7 AM" to match document style
-
-TEXT TO PROOFREAD:
+=== DOCUMENT TO PROOFREAD BEGINS HERE ===
 `;
 
 // Initialize on page load
@@ -489,6 +488,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
