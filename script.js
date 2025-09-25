@@ -525,6 +525,9 @@ console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
 
+// Initialize app
+initializeApp();
+
 
 
 
