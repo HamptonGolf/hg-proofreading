@@ -302,20 +302,26 @@ async function proofreadWithClaude(text) {
     showLoading(true);
     hideError();
     
-    // Add timestamp to make each request unique
-    const timestamp = new Date().toISOString();
-    const fullPrompt = PROOFREADING_PROMPT + text + `\n\n=== END OF DOCUMENT (Timestamp: ${timestamp}) ===`;
+    const fullPrompt = PROOFREADING_PROMPT + text;
     
-    console.log('=== SENDING TO CLAUDE ===');
-    console.log('Timestamp:', timestamp);
-    console.log('Document text preview:', text.substring(0, 500));
+    // TEMPORARY: Let's see exactly what text Claude receives
+    console.log('=== EXACT TEXT BEING SENT TO CLAUDE ===');
+    console.log(fullPrompt);
+    console.log('=== END OF EXACT TEXT ===');
+    
+    // Also create a simple test
+    const testText = "This document mentions a member and a guest at the club.";
+    console.log('TEST: If Claude was checking correctly, in this text:');
+    console.log(testText);
+    console.log('It should find: "member" should be "Member", "guest" should be "Guest"');
     
     try {
+        // Call Netlify function instead of Claude API directly
         const response = await fetch('/.netlify/functions/proofread', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'no-cache',  // Prevent caching
+                'Cache-Control': 'no-cache',
             },
             body: JSON.stringify({
                 text: fullPrompt,
@@ -323,8 +329,11 @@ async function proofreadWithClaude(text) {
             })
         });
         
-        // Rest of the function remains the same...
         const data = await response.json();
+        
+        console.log('=== RESPONSE FROM NETLIFY FUNCTION ===');
+        console.log('Response status:', response.status);
+        console.log('Response data:', data);
         
         if (!response.ok) {
             console.error('Response not OK:', data);
@@ -335,12 +344,20 @@ async function proofreadWithClaude(text) {
             throw new Error(errorMessage);
         }
         
+        // Check if we have the expected response structure
         if (!data.content || !data.content[0] || !data.content[0].text) {
             console.error('Unexpected response structure:', data);
-            throw new Error('Invalid response format from API.');
+            console.log('data.content exists?', !!data.content);
+            console.log('data.content[0] exists?', !!(data.content && data.content[0]));
+            console.log('data.content[0].text exists?', !!(data.content && data.content[0] && data.content[0].text));
+            throw new Error('Invalid response format from API. Check console for details.');
         }
         
         const proofreadingResults = data.content[0].text;
+        console.log('=== CLAUDE RESULTS ===');
+        console.log('Results text length:', proofreadingResults.length);
+        console.log('Full results:', proofreadingResults);
+        
         displayResults(proofreadingResults);
         
     } catch (error) {
@@ -506,6 +523,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
