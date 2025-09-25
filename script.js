@@ -13,54 +13,60 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. Review the text below and identify ALL errors according to these guidelines:
+const PROOFREADING_PROMPT = `You are a proofreader for Hampton Golf. You MUST find and report ALL errors in the text below.
 
-CAPITALIZATION RULES - CHECK EVERY INSTANCE:
-1. ALWAYS capitalize: "Member", "Membership" (except in email addresses), "Guest", "Neighbor", "Homeowner", "Team", "Team Member"
-2. Replace ALL instances of "staff" with "Team Member(s)"
-3. "Club" - capitalize ONLY when part of actual club name (e.g., "Northland Country Club" = capitalize, "the club" = lowercase)
-4. Job titles - capitalize ONLY for specific named person (e.g., "Joe Williams, Superintendent" = capitalize, "all superintendents" = lowercase)
-5. "Golf Course" - capitalize ONLY with specific course name
-6. Room names - capitalize ONLY when specific/unique (e.g., "Fireside Dining Room" = capitalize, "dining room" = lowercase)
-7. "Company" - capitalize ONLY when part of specific company name
-8. Department names - capitalize ONLY when before program name
-9. NEVER capitalize these unless proper nouns: golf course, golf shop, clubhouse, tournament formats (scramble, best ball), caddie, pool, courts, driving range, practice facility, community, passholder, swim center
+STEP 1 - CHECK THESE WORDS WHEREVER THEY APPEAR:
+Find EVERY instance of these words and verify capitalization:
+- "member" → MUST be "Member" (capital M)
+- "membership" → MUST be "Membership" (except in email addresses)
+- "guest" → MUST be "Guest" (capital G)
+- "neighbor" → MUST be "Neighbor" (capital N)
+- "homeowner" → MUST be "Homeowner" (capital H)
+- "team" → MUST be "Team" (capital T)
+- "team member" → MUST be "Team Member" (both capitals)
+- "staff" → MUST be replaced with "Team Member(s)"
+- "club" → Only capitalize if part of club name (e.g., "Palencia Club" = yes, "the club" = no)
 
-COMPREHENSIVE STYLE RULES:
-1. Verify ALL dates (if text says "Wednesday, March 5", confirm March 5 is actually Wednesday using 2024/2025 calendar)
-2. Check spacing consistency throughout document (if "7AM" appears, ALL times should be "7AM" not "8 AM")
-3. Hyphenation: compound adjectives before nouns need hyphens (e.g., "18-hole course" but "course is 18 holes")
-4. Remove hyphens from: "18-holes" or "9-holes" when used as standalone nouns
-5. Check ALL accent marks on foreign words (café, résumé, née, fiancé, résumé, Rémoulade, rosé, etc.)
-6. Verify spelling of ALL words - watch for common errors and typos
-7. Apply AP Style for punctuation and grammar
-8. Check brand names for exact spelling and punctuation
-9. Verify state names and abbreviations are consistent
-10. Check that compound words vs separate words are correct (e.g., "email" not "e-mail", specific to context)
+STEP 2 - CHECK SPELLING OF EVERY WORD:
+Look for ANY misspelled words including but not limited to:
+- State names (California not Califonia)
+- Wine terms (Cabernet not Carbet)
+- Common typos
 
-THOROUGH CHECKING INSTRUCTIONS:
-- Examine EVERY occurrence of the capitalization trigger words listed above
-- Do NOT assume any word is correct - verify each one
-- Check headers but only flag spelling/punctuation errors in headers
-- Look for inconsistent formatting patterns
-- Verify proper nouns are capitalized correctly
-- Check for missing or incorrect punctuation
-- Identify grammatical errors
-- Flag any word that appears misspelled
-- Ensure consistency in style choices throughout
+STEP 3 - CHECK FOREIGN WORDS:
+ANY French, Spanish, or Italian words MUST have proper accents:
+- Rose → Rosé
+- Aime → Aimé  
+- Remoulade → Rémoulade
+- Cafe → Café
+- Resume → Résumé
 
-CRITICAL: You must check the ENTIRE document word by word. Do not skip any sections. Every instance of the words in the capitalization rules MUST be checked.
+STEP 4 - CHECK COMPOUND WORDS:
+- "blackcurrant" = one word (the fruit)
+- "black currant" = WRONG if referring to the fruit flavor
+- Compound adjectives need hyphens: "pear-drop aromas" not "pear drop aromas"
 
-OUTPUT FORMAT - Use ONLY this format:
-- [Location] > [Specific correction]
+STEP 5 - CHECK CONSISTENCY:
+- If "7AM" appears anywhere, ALL times must be "7AM" (no space)
+- If "7 AM" appears anywhere, ALL times must be "7 AM" (with space)
+- State abbreviations must be consistent
 
-Examples:
-- Page 2, Paragraph 3 > Capitalize "member" → "Member"  
-- Hours Section > Remove hyphen from "18-holes" → "18 holes"
-- Wine List > Add accent: "Rose" → "Rosé"
-- Third paragraph > Spelling: "Carbet" → "Cabernet"
+INSTRUCTIONS:
+1. Read EVERY SINGLE WORD in the document
+2. You MUST report errors even if document seems professional
+3. Check the ENTIRE document - do not stop early
+4. Even well-formatted documents have errors - find them
 
-TEXT TO PROOFREAD:
+Report EACH error like this:
+- [Location] > [Error description with correction]
+
+Example outputs:
+- Line 3 > "member" should be "Member"
+- Wine list, Red wines section > "Califonia" should be "California"
+- Page 2 > "Rose" should be "Rosé" (add accent)
+- Paragraph 4 > "staff" should be replaced with "Team Members"
+
+START CHECKING HERE:
 `;
 
 function initializeApp() {
@@ -500,6 +506,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
