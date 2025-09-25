@@ -3,104 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hampton Golf - AI Proofreader</title>
+    <meta name="description" content="Hampton Golf AI Proofreader - Professional document proofreading powered by Claude AI">
+    <meta name="author" content="Hampton Golf">
+    <meta name="theme-color" content="#006600">
+    
+    <title>Hampton Golf - AI Proofreader | Professional Document Analysis</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23006600'/%3E%3Ctext x='50' y='67' font-size='50' fill='white' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3EHG%3C/text%3E%3C/svg%3E">
+    
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Preload fonts for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Animated Background Orbs -->
+    <div class="orb orb1" aria-hidden="true"></div>
+    <div class="orb orb2" aria-hidden="true"></div>
+    <div class="orb orb3" aria-hidden="true"></div>
+
+    <!-- Premium Header -->
     <header class="header">
         <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">HG</div>
+            <div class="logo" role="banner">
+                <div class="logo-icon" aria-label="Hampton Golf Logo">HG</div>
                 <div>
                     <div class="logo-text">Hampton<span>Golf</span></div>
                     <div class="tagline">Professionally Managed By</div>
                 </div>
             </div>
+            <div class="status-indicator" aria-live="polite">
+                <span class="status-dot"></span>
+                <span class="status-text">AI Ready</span>
+            </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <div class="container">
-        <h1 class="main-title">AI Document Proofreader</h1>
-        <p class="subtitle">Professional proofreading with Hampton Golf's style guidelines</p>
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="main-title">AI Document Proofreader</h1>
+            <p class="subtitle">Excellence in Every Word • Powered by Claude AI & Hampton Golf Standards</p>
+        </section>
 
         <!-- API Key Section -->
-        <div class="api-key-section">
-            <div class="api-key-container">
-                <label for="api-key">Claude API Key:</label>
-                <input type="password" id="api-key" class="api-key-input" placeholder="Enter your Claude API key">
-                <button class="api-key-save" onclick="saveApiKey()">Save</button>
+        <section class="api-key-section glass-card" aria-label="API Configuration">
+            <div class="api-key-header">
+                <h2 class="section-title">Secure API Configuration</h2>
+                <span class="security-badge">🔒 256-bit Encrypted</span>
             </div>
-            <p class="api-key-note">Your API key is stored locally and never sent to any server except Claude's API</p>
-        </div>
+            <div class="api-key-container">
+                <label for="api-key" class="api-key-label">
+                    <span class="label-text">Claude API Key</span>
+                    <span class="label-required">*</span>
+                </label>
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        id="api-key" 
+                        class="api-key-input" 
+                        placeholder="sk-ant-api..." 
+                        autocomplete="off"
+                        aria-required="true"
+                        aria-describedby="api-key-note"
+                    >
+                    <button class="api-key-save" onclick="saveApiKey()" aria-label="Save API Key">
+                        <span class="button-text">Activate</span>
+                        <span class="button-icon">→</span>
+                    </button>
+                </div>
+            </div>
+            <p id="api-key-note" class="api-key-note">
+                <span class="note-icon">ℹ️</span>
+                Your API key is stored locally on your device and never transmitted to our servers
+            </p>
+        </section>
 
         <!-- Input Section -->
-        <div class="input-section">
-            <div class="tab-buttons">
-                <button class="tab-btn active" onclick="switchTab('text')">Text Input</button>
-                <button class="tab-btn" onclick="switchTab('file')">Upload PDF</button>
+        <section class="input-section glass-card" aria-label="Content Input">
+            <!-- Tab Navigation -->
+            <div class="tab-buttons" role="tablist">
+                <button 
+                    class="tab-btn active" 
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="text-tab"
+                    onclick="switchTab('text')"
+                >
+                    <span class="tab-icon">✍️</span>
+                    <span class="tab-text">Direct Input</span>
+                </button>
+                <button 
+                    class="tab-btn" 
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="file-tab"
+                    onclick="switchTab('file')"
+                >
+                    <span class="tab-icon">📄</span>
+                    <span class="tab-text">PDF Upload</span>
+                </button>
             </div>
 
             <!-- Text Input Tab -->
-            <div id="text-tab" class="tab-content active">
-                <textarea id="text-input" class="text-input" placeholder="Paste your text here for proofreading..."></textarea>
+            <div id="text-tab" class="tab-content active" role="tabpanel">
+                <div class="input-header">
+                    <h3 class="input-title">Enter Your Content</h3>
+                    <span class="char-count" id="char-count">0 characters</span>
+                </div>
+                <textarea 
+                    id="text-input" 
+                    class="text-input" 
+                    placeholder="Paste or type your content here for AI-powered proofreading with Hampton Golf's professional standards..."
+                    aria-label="Text content for proofreading"
+                    spellcheck="false"
+                ></textarea>
+                <div class="input-footer">
+                    <span class="input-tip">💡 Tip: For best results, include complete sentences and paragraphs</span>
+                </div>
             </div>
 
             <!-- File Upload Tab -->
-            <div id="file-tab" class="tab-content">
-                <div class="file-upload-area" id="upload-area">
-                    <div class="upload-icon">📄</div>
-                    <h3 style="color: var(--hg-dark-green); margin-bottom: 10px;">Drop PDF file here or click to browse</h3>
-                    <p style="color: var(--hg-gray-dark);">Maximum file size: 10MB</p>
-                    <input type="file" id="file-input" class="file-input" accept=".pdf">
-                </div>
-                <div id="file-info" class="file-info">
-                    <strong>Selected file:</strong> <span id="file-name"></span>
+            <div id="file-tab" class="tab-content" role="tabpanel">
+                <div class="file-upload-wrapper">
+                    <div class="file-upload-area" id="upload-area" role="button" aria-label="Upload PDF file">
+                        <div class="upload-visual">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-icon-bg"></div>
+                        </div>
+                        <h3 class="upload-title">Drop your PDF here</h3>
+                        <p class="upload-subtitle">or click to browse your files</p>
+                        <div class="upload-specs">
+                            <span class="spec-item">PDF Format</span>
+                            <span class="spec-separator">•</span>
+                            <span class="spec-item">Max 10MB</span>
+                            <span class="spec-separator">•</span>
+                            <span class="spec-item">Text-based</span>
+                        </div>
+                        <input type="file" id="file-input" class="file-input" accept=".pdf" aria-hidden="true">
+                    </div>
+                    <div id="file-info" class="file-info">
+                        <div class="file-info-content">
+                            <span class="file-icon">📎</span>
+                            <div class="file-details">
+                                <strong>Selected file:</strong>
+                                <span id="file-name" class="file-name"></span>
+                            </div>
+                            <button class="file-remove" onclick="removeFile()" aria-label="Remove file">×</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <button id="proofread-btn" class="proofread-btn">Start Proofreading</button>
+            <!-- Proofread Button -->
+            <button id="proofread-btn" class="proofread-btn" aria-label="Start proofreading">
+                <span class="btn-content">
+                    <span class="btn-icon">✨</span>
+                    <span class="btn-text">Analyze Document</span>
+                    <span class="btn-arrow">→</span>
+                </span>
+                <div class="btn-bg"></div>
+            </button>
 
             <!-- Guidelines Info -->
             <div class="guidelines-info">
-                <h3 class="guidelines-title">Hampton Golf Style Guidelines Applied:</h3>
-                <ul class="guidelines-list">
-                    <li>Capitalization rules for Member, Guest, Neighbor, Homeowner, and Team Member</li>
-                    <li>Proper noun verification for Club, Course, and facility names</li>
-                    <li>AP Style grammar and punctuation checks</li>
-                    <li>Date accuracy verification</li>
-                    <li>Spacing consistency and hyphenation rules</li>
-                    <li>Department and title capitalization standards</li>
-                </ul>
+                <div class="guidelines-header">
+                    <h3 class="guidelines-title">
+                        <span class="guidelines-icon">🏆</span>
+                        Hampton Golf Excellence Standards
+                    </h3>
+                    <span class="guidelines-badge">AP Style Certified</span>
+                </div>
+                <div class="guidelines-grid">
+                    <ul class="guidelines-list">
+                        <li data-category="capitalization">
+                            <span class="list-icon">✓</span>
+                            <span>Premium capitalization for Member, Guest, Neighbor, Homeowner</span>
+                        </li>
+                        <li data-category="proper-nouns">
+                            <span class="list-icon">✓</span>
+                            <span>Club and Course proper noun verification</span>
+                        </li>
+                        <li data-category="grammar">
+                            <span class="list-icon">✓</span>
+                            <span>AP Style grammar and punctuation excellence</span>
+                        </li>
+                        <li data-category="dates">
+                            <span class="list-icon">✓</span>
+                            <span>Intelligent date and time accuracy verification</span>
+                        </li>
+                        <li data-category="formatting">
+                            <span class="list-icon">✓</span>
+                            <span>Professional spacing and hyphenation standards</span>
+                        </li>
+                        <li data-category="titles">
+                            <span class="list-icon">✓</span>
+                            <span>Executive department and title formatting</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="guidelines-footer">
+                    <p class="guidelines-note">Powered by Claude Opus 4.1 • Industry-leading AI accuracy</p>
+                </div>
             </div>
-        </div>
+        </section>
 
         <!-- Loading State -->
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p class="loading-text">Analyzing document with Claude AI...</p>
-        </div>
+        <section id="loading" class="loading glass-card" aria-live="polite" aria-hidden="true">
+            <div class="loading-content">
+                <div class="spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <p class="loading-text">AI Analyzing Your Document</p>
+                <div class="loading-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p class="progress-text">Applying Hampton Golf standards...</p>
+                </div>
+            </div>
+        </section>
 
         <!-- Results Section -->
-        <div id="results" class="results-section">
+        <section id="results" class="results-section glass-card" aria-live="polite" aria-hidden="true">
             <div class="results-header">
-                <h2 class="results-title">Proofreading Results</h2>
-                <span class="error-count" id="error-count">0 issues found</span>
+                <div class="results-title-group">
+                    <h2 class="results-title">
+                        <span class="results-icon">📋</span>
+                        Proofreading Analysis Complete
+                    </h2>
+                    <p class="results-timestamp" id="results-timestamp"></p>
+                </div>
+                <div class="results-stats">
+                    <span class="error-count" id="error-count">
+                        <span class="count-number">0</span>
+                        <span class="count-label">issues found</span>
+                    </span>
+                </div>
             </div>
-            <ul id="error-list" class="error-list">
-                <!-- Errors will be populated here -->
-            </ul>
+            
+            <div class="results-body">
+                <ul id="error-list" class="error-list">
+                    <!-- Errors will be populated here dynamically -->
+                </ul>
+            </div>
+
+            <!-- Export Options -->
+            <div class="results-footer">
+                <div class="export-options">
+                    <button class="export-btn" onclick="exportResults('pdf')" aria-label="Export as PDF">
+                        <span class="export-icon">📑</span>
+                        <span>Export PDF</span>
+                    </button>
+                    <button class="export-btn" onclick="exportResults('csv')" aria-label="Export as CSV">
+                        <span class="export-icon">📊</span>
+                        <span>Export CSV</span>
+                    </button>
+                    <button class="export-btn" onclick="copyResults()" aria-label="Copy to clipboard">
+                        <span class="export-icon">📋</span>
+                        <span>Copy Results</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Success State Template (Hidden by default) -->
+        <template id="success-template">
+            <div class="no-errors-message">
+                <div class="success-animation">
+                    <div class="check-icon">✓</div>
+                    <div class="success-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                </div>
+                <h3 class="success-title">Perfect Score!</h3>
+                <p class="success-subtitle">Your document meets all Hampton Golf excellence standards</p>
+                <div class="success-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">✨</span>
+                        <span class="stat-label">Grammar</span>
+                        <span class="stat-value">Perfect</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">📝</span>
+                        <span class="stat-label">Style</span>
+                        <span class="stat-value">Excellent</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">🎯</span>
+                        <span class="stat-label">Accuracy</span>
+                        <span class="stat-value">100%</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-text">© 2024 Hampton Golf. Professionally Managed Excellence.</p>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Privacy</a>
+                <span class="footer-separator">•</span>
+                <a href="#" class="footer-link">Terms</a>
+                <span class="footer-separator">•</span>
+                <a href="#" class="footer-link">Support</a>
+            </div>
         </div>
-    </div>
+    </footer>
 
     <!-- Load PDF.js for PDF processing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+ckWA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         // Set worker source for PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
+    
+    <!-- Main JavaScript -->
     <script src="script.js"></script>
 </body>
-
 </html>
