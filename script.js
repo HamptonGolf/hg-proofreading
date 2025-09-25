@@ -21,6 +21,7 @@ HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear):
 - "neighbor" → "Neighbor"
 - "homeowner" → "Homeowner"
 - "team member" → "Team Member"
+- "team" → "Team"
 - "staff" → replace with "Team Member(s)"
 
 LOOK FOR:
@@ -28,6 +29,8 @@ LOOK FOR:
 - Grammar errors
 - Inconsistent formatting (spacing, punctuation patterns)
 - Missing accents on foreign words
+
+DO NOT report when something is correctly used, only errors
 
 DO NOT suggest changes to:
 - Design choices (dollar signs, layout, styling)
@@ -500,6 +503,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
