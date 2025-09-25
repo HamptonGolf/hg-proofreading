@@ -290,14 +290,20 @@ async function proofreadWithClaude(text) {
     showLoading(true);
     hideError();
     
-    const fullPrompt = PROOFREADING_PROMPT + text;
+    // Add timestamp to make each request unique
+    const timestamp = new Date().toISOString();
+    const fullPrompt = PROOFREADING_PROMPT + text + `\n\n=== END OF DOCUMENT (Timestamp: ${timestamp}) ===`;
+    
+    console.log('=== SENDING TO CLAUDE ===');
+    console.log('Timestamp:', timestamp);
+    console.log('Document text preview:', text.substring(0, 500));
     
     try {
-        // Call Netlify function instead of Claude API directly
         const response = await fetch('/.netlify/functions/proofread', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache',  // Prevent caching
             },
             body: JSON.stringify({
                 text: fullPrompt,
@@ -305,6 +311,7 @@ async function proofreadWithClaude(text) {
             })
         });
         
+        // Rest of the function remains the same...
         const data = await response.json();
         
         if (!response.ok) {
@@ -316,10 +323,9 @@ async function proofreadWithClaude(text) {
             throw new Error(errorMessage);
         }
         
-        // Check if we have the expected response structure
         if (!data.content || !data.content[0] || !data.content[0].text) {
             console.error('Unexpected response structure:', data);
-            throw new Error('Invalid response format from API. Check console for details.');
+            throw new Error('Invalid response format from API.');
         }
         
         const proofreadingResults = data.content[0].text;
@@ -488,6 +494,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
