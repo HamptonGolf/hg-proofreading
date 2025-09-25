@@ -13,49 +13,55 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. 
+const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. Review the text below and identify ALL errors according to these guidelines:
 
-CRITICAL INSTRUCTION: Only proofread the text provided below. Do not reference any other documents, previous conversations, or external content. If you cannot see specific text to proofread below, respond with "No text provided to proofread."
-
-Review ONLY the following text and identify ALL errors according to these specific guidelines:
-
-CAPITALIZATION RULES:
+CAPITALIZATION RULES - CHECK EVERY INSTANCE:
 1. ALWAYS capitalize: "Member", "Membership" (except in email addresses), "Guest", "Neighbor", "Homeowner", "Team", "Team Member"
-2. Replace "staff" with "Team Member(s)" in all instances
-3. Capitalize "Club" ONLY when used with the actual club name (e.g., "Northland Country Club" - capitalize, but "the club will be closed" - lowercase)
-4. Capitalize job titles ONLY when referring to a specific named person (e.g., "Joe Williams, Superintendent" - capitalize, but "all superintendents" - lowercase)
-5. Capitalize "Golf Course" ONLY when using specific course name (e.g., "The Oaks Course" - capitalize, but "the golf course" - lowercase)
-6. Capitalize room names ONLY when specific/unique names are used (e.g., "Fireside Dining Room" - capitalize, but "dining room" - lowercase)
-7. Capitalize "Company" ONLY when part of a specific title
-8. Capitalize department names ONLY when they come before the program name
-9. DO NOT capitalize unless proper noun: golf course, golf shop, clubhouse, tournament formats, caddie, pool, courts, driving range, practice facility, community, passholder, swim center
+2. Replace ALL instances of "staff" with "Team Member(s)"
+3. "Club" - capitalize ONLY when part of actual club name (e.g., "Northland Country Club" = capitalize, "the club" = lowercase)
+4. Job titles - capitalize ONLY for specific named person (e.g., "Joe Williams, Superintendent" = capitalize, "all superintendents" = lowercase)
+5. "Golf Course" - capitalize ONLY with specific course name
+6. Room names - capitalize ONLY when specific/unique (e.g., "Fireside Dining Room" = capitalize, "dining room" = lowercase)
+7. "Company" - capitalize ONLY when part of specific company name
+8. Department names - capitalize ONLY when before program name
+9. NEVER capitalize these unless proper nouns: golf course, golf shop, clubhouse, tournament formats (scramble, best ball), caddie, pool, courts, driving range, practice facility, community, passholder, swim center
 
-STYLE RULES:
-1. Check all dates for accuracy (e.g., if text says "Wednesday, March 5", verify March 5 is actually a Wednesday in 2024)
-2. Apply AP Style for grammar and punctuation
-3. Check spacing consistency (e.g., if "7AM" is used, flag if "8 AM" appears elsewhere - should be consistent)
-4. Verify hyphenation based on context (compound adjectives)
-5. Check accent marks (e.g., "Remoulade" should be "Rémoulade")
-6. Flag any spelling or grammatical errors
-7. Check for inconsistent punctuation and formatting
+COMPREHENSIVE STYLE RULES:
+1. Verify ALL dates (if text says "Wednesday, March 5", confirm March 5 is actually Wednesday using 2024/2025 calendar)
+2. Check spacing consistency throughout document (if "7AM" appears, ALL times should be "7AM" not "8 AM")
+3. Hyphenation: compound adjectives before nouns need hyphens (e.g., "18-hole course" but "course is 18 holes")
+4. Remove hyphens from: "18-holes" or "9-holes" when used as standalone nouns
+5. Check ALL accent marks on foreign words (café, résumé, née, fiancé, résumé, Rémoulade, rosé, etc.)
+6. Verify spelling of ALL words - watch for common errors and typos
+7. Apply AP Style for punctuation and grammar
+8. Check brand names for exact spelling and punctuation
+9. Verify state names and abbreviations are consistent
+10. Check that compound words vs separate words are correct (e.g., "email" not "e-mail", specific to context)
 
-IMPORTANT INSTRUCTIONS:
-- Check EVERY instance of the words listed in the capitalization rules
-- Do not flag headers/section headers unless there's a spelling/punctuation error
-- Only output actual errors found in the text below, not from memory
-- If no text is provided below or if you can't identify the document content, say "No document text found to proofread"
+THOROUGH CHECKING INSTRUCTIONS:
+- Examine EVERY occurrence of the capitalization trigger words listed above
+- Do NOT assume any word is correct - verify each one
+- Check headers but only flag spelling/punctuation errors in headers
+- Look for inconsistent formatting patterns
+- Verify proper nouns are capitalized correctly
+- Check for missing or incorrect punctuation
+- Identify grammatical errors
+- Flag any word that appears misspelled
+- Ensure consistency in style choices throughout
 
-OUTPUT FORMAT:
-For each error found, provide in this EXACT format:
-- [Location in text] > [Specific correction needed]
+CRITICAL: You must check the ENTIRE document word by word. Do not skip any sections. Every instance of the words in the capitalization rules MUST be checked.
 
-=== DOCUMENT TO PROOFREAD BEGINS HERE ===
+OUTPUT FORMAT - Use ONLY this format:
+- [Location] > [Specific correction]
+
+Examples:
+- Page 2, Paragraph 3 > Capitalize "member" → "Member"  
+- Hours Section > Remove hyphen from "18-holes" → "18 holes"
+- Wine List > Add accent: "Rose" → "Rosé"
+- Third paragraph > Spelling: "Carbet" → "Cabernet"
+
+TEXT TO PROOFREAD:
 `;
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-});
 
 function initializeApp() {
     // Load saved API key
@@ -494,6 +500,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
