@@ -88,7 +88,8 @@ function setupEventListeners() {
     
     if (uploadArea) {
         uploadArea.addEventListener('click', (e) => {
-            if (e.target === uploadArea || uploadArea.contains(e.target)) {
+            // Prevent triggering when clicking on the file input itself
+            if (e.target.id !== 'file-input') {
                 fileInput.click();
             }
         });
@@ -523,6 +524,7 @@ window.saveApiKey = saveApiKey;
 console.log('Hampton Golf Proofreader loaded successfully');
 
 console.log('Current date for reference:', getCurrentDate());
+
 
 
 
