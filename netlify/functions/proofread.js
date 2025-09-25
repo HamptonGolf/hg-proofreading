@@ -16,7 +16,7 @@ exports.handler = async (event, context) => {
         'anthropic-beta': 'messages-2023-12-15'  // Add this for better isolation
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        CLAUDE_MODEL: 'claude-opus-4-1-20250805',
         max_tokens: 4000,
         temperature: 0,  // Add this for more consistent results
         system: "You are a proofreader. Only analyze the specific text provided in this message. Do not reference any other documents or previous conversations.",
@@ -53,3 +53,4 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
