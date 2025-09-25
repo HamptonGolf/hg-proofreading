@@ -326,7 +326,8 @@ async function proofreadWithClaude(text) {
             },
             body: JSON.stringify({
                 text: fullPrompt,
-                apiKey: apiKey
+                apiKey: apiKey,
+                model: CONFIG.CLAUDE_MODEL  // Added this line to fix the model error
             })
         });
         
@@ -527,6 +528,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
