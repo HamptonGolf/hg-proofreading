@@ -13,9 +13,9 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader. Review the following text for errors in spelling, grammar, punctuation, and style according to AP Style guidelines.
+const PROOFREADING_PROMPT = `You are a proofreader. Find only spelling errors, grammar mistakes, and formatting inconsistencies in the text below.
 
-HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear in the text):
+HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear):
 - "member" → "Member"
 - "guest" → "Guest" 
 - "neighbor" → "Neighbor"
@@ -23,16 +23,18 @@ HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear in the text)
 - "team member" → "Team Member"
 - "staff" → replace with "Team Member(s)"
 
-GENERAL PROOFREADING:
-- Spelling errors
-- Grammar and punctuation mistakes
-- Proper nouns and capitalization
-- Number style consistency
-- Compound adjective hyphenation
-- Foreign words with correct accents
-- Date and time format consistency
+LOOK FOR:
+- Misspelled words
+- Grammar errors
+- Inconsistent formatting (spacing, punctuation patterns)
+- Missing accents on foreign words
 
-Report only actual errors found in the text. Format each error as:
+DO NOT suggest changes to:
+- Design choices (dollar signs, layout, styling)
+- Content organization
+- Pricing format
+
+Report only actual errors. Format as:
 - [Location] > [Error] should be [Correction]
 
 Text to review:
@@ -498,6 +500,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
