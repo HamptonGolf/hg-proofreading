@@ -4,21 +4,25 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { text, apiKey } = JSON.parse(event.body);
+    const { text, apiKey, model } = JSON.parse(event.body);
     
-    // Create a fresh message each time with explicit instructions
+    // Use the model from the request, or default to opus
+    const modelToUse = model || 'claude-opus-4-1-20250805';
+    
+    console.log('Using model:', modelToUse); // Debug log
+    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'messages-2023-12-15'  // Add this for better isolation
+        'anthropic-beta': 'messages-2023-12-15'
       },
       body: JSON.stringify({
-        CLAUDE_MODEL: 'claude-opus-4-1-20250805',
+        model: modelToUse,  // Use the variable here
         max_tokens: 4000,
-        temperature: 0,  // Add this for more consistent results
+        temperature: 0,
         system: "You are a proofreader. Only analyze the specific text provided in this message. Do not reference any other documents or previous conversations.",
         messages: [{
           role: 'user',
@@ -53,4 +57,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-
