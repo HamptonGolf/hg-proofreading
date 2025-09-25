@@ -3,7 +3,7 @@
 // Configuration
 const CONFIG = {
     CLAUDE_API_URL: 'https://api.anthropic.com/v1/messages',
-    CLAUDE_MODEL: 'claude-3-haiku-20240307',
+    CLAUDE_MODEL: 'claude-opus-4-1-20250805',
     MAX_TOKENS: 4000,
     API_VERSION: '2023-06-01'
 };
@@ -527,6 +527,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
