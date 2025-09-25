@@ -13,14 +13,14 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a proofreader. Find only spelling errors, grammar mistakes, and formatting inconsistencies in the text below.Assume you are proofreading in AP format.
+const PROOFREADING_PROMPT = `You are a proofreader. Find only spelling errors, grammar mistakes, and formatting inconsistencies in the text below. Assume you are proofreading in AP format.
 
-HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear):
-- "member" → "Member"
-- "guest" → "Guest" 
-- "neighbor" → "Neighbor"
-- "homeowner" → "Homeowner"
-- "team member" → "Team Member"
+HAMPTON GOLF CAPITALIZATION RULES (apply to these words in any form when they appear):
+- "member" or "members" → "Member" or "Members"
+- "guest" or "guests" → "Guest" or "Guests" 
+- "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
+- "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
+- "team member" or "team members" → "Team Member" or "Team Members"
 - "team" → "Team"
 - "staff" → replace with "Team Member(s)"
 
@@ -31,7 +31,6 @@ LOOK FOR:
 - Missing accents on foreign words
 
 DO NOT report when something is correctly used, only errors
-
 DO NOT suggest changes to:
 - Design choices (dollar signs, layout, styling)
 - Content organization
@@ -503,6 +502,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
