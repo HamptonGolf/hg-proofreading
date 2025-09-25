@@ -13,60 +13,30 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a proofreader for Hampton Golf. You MUST find and report ALL errors in the text below.
+const PROOFREADING_PROMPT = `You are a professional proofreader. Review the following text for errors in spelling, grammar, punctuation, and style according to AP Style guidelines.
 
-STEP 1 - CHECK THESE WORDS WHEREVER THEY APPEAR:
-Find EVERY instance of these words and verify capitalization:
-- "member" → MUST be "Member" (capital M)
-- "membership" → MUST be "Membership" (except in email addresses)
-- "guest" → MUST be "Guest" (capital G)
-- "neighbor" → MUST be "Neighbor" (capital N)
-- "homeowner" → MUST be "Homeowner" (capital H)
-- "team" → MUST be "Team" (capital T)
-- "team member" → MUST be "Team Member" (both capitals)
-- "staff" → MUST be replaced with "Team Member(s)"
-- "club" → Only capitalize if part of club name (e.g., "Palencia Club" = yes, "the club" = no)
+HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear in the text):
+- "member" → "Member"
+- "guest" → "Guest" 
+- "neighbor" → "Neighbor"
+- "homeowner" → "Homeowner"
+- "team member" → "Team Member"
+- "staff" → replace with "Team Member(s)"
 
-STEP 2 - CHECK SPELLING OF EVERY WORD:
-Look for ANY misspelled words including but not limited to:
-- State names (California not Califonia)
-- Wine terms (Cabernet not Carbet)
-- Common typos
+GENERAL PROOFREADING:
+- Spelling errors
+- Grammar and punctuation mistakes
+- Proper nouns and capitalization
+- Number style consistency
+- Compound adjective hyphenation
+- Foreign words with correct accents
+- Date and time format consistency
 
-STEP 3 - CHECK FOREIGN WORDS:
-ANY French, Spanish, or Italian words MUST have proper accents:
-- Rose → Rosé
-- Aime → Aimé  
-- Remoulade → Rémoulade
-- Cafe → Café
-- Resume → Résumé
+Report only actual errors found in the text. Format each error as:
+- [Location] > [Error] should be [Correction]
 
-STEP 4 - CHECK COMPOUND WORDS:
-- "blackcurrant" = one word (the fruit)
-- "black currant" = WRONG if referring to the fruit flavor
-- Compound adjectives need hyphens: "pear-drop aromas" not "pear drop aromas"
+Text to review:
 
-STEP 5 - CHECK CONSISTENCY:
-- If "7AM" appears anywhere, ALL times must be "7AM" (no space)
-- If "7 AM" appears anywhere, ALL times must be "7 AM" (with space)
-- State abbreviations must be consistent
-
-INSTRUCTIONS:
-1. Read EVERY SINGLE WORD in the document
-2. You MUST report errors even if document seems professional
-3. Check the ENTIRE document - do not stop early
-4. Even well-formatted documents have errors - find them
-
-Report EACH error like this:
-- [Location] > [Error description with correction]
-
-Example outputs:
-- Line 3 > "member" should be "Member"
-- Wine list, Red wines section > "Califonia" should be "California"
-- Page 2 > "Rose" should be "Rosé" (add accent)
-- Paragraph 4 > "staff" should be replaced with "Team Members"
-
-START CHECKING HERE:
 `;
 
 function initializeApp() {
@@ -528,6 +498,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
