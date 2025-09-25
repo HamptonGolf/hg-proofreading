@@ -13,7 +13,7 @@ let selectedFile = null;
 let apiKey = null;
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader. Carefully review the following text and identify actual errors.
+const PROOFREADING_PROMPT = `You are a proofreader. Find only spelling errors, grammar mistakes, and formatting inconsistencies in the text below.Assume you are proofreading in AP format.
 
 HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear):
 - "member" → "Member"
@@ -23,24 +23,19 @@ HAMPTON GOLF CAPITALIZATION RULES (apply only if these words appear):
 - "team member" → "Team Member"
 - "staff" → replace with "Team Member(s)"
 
-FIND THESE ERRORS:
-- Spelling mistakes (check every word carefully)
-- Missing or incorrect accent marks on foreign words
-- Compound words written incorrectly (one word vs two words)
-- Missing hyphens in compound adjectives (adjective-adjective noun)
-- Subject-verb disagreement
-- Inconsistent punctuation or spacing patterns within the document
-- Obvious grammatical errors
+LOOK FOR:
+- Misspelled words
+- Grammar errors
+- Inconsistent formatting (spacing, punctuation patterns)
+- Missing accents on foreign words
 
-DO NOT flag:
-- Style preferences or formatting choices
-- Content organization decisions
-- Design elements
+DO NOT suggest changes to:
+- Design choices (dollar signs, layout, styling)
+- Content organization
+- Pricing format
 
-Read through the entire text systematically. For each error found, provide:
-[Location/Section] > "[Exact error text]" should be "[Correct version]"
-
-If no errors are found, respond with "No errors detected."
+Report only actual errors. Format as:
+- [Location] > [Error] should be [Correction]
 
 Text to review:
 
@@ -505,6 +500,7 @@ console.log('Current date for reference:', getCurrentDate());
 
 // Initialize app
 initializeApp();
+
 
 
 
