@@ -29,15 +29,16 @@
     <header class="header">
         <div class="header-content">
             <div class="logo" role="banner">
-                <div class="logo-icon" aria-label="Hampton Golf Logo">HG</div>
+                <div class="logo-icon" aria-label="Hampton Golf Logo">
+                    <img src="assets/logo/HG-door-element_cmyk.png" alt="Hampton Golf Logo" class="logo-image">
+                </div>
                 <div>
                     <div class="logo-text">Hampton<span>Golf</span></div>
-                    <div class="tagline">Professionally Managed By</div>
                 </div>
             </div>
             <div class="status-indicator" aria-live="polite">
                 <span class="status-dot"></span>
-                <span class="status-text">AI Ready</span>
+                <span class="status-text">Status: Active</span>
             </div>
         </div>
     </header>
@@ -46,14 +47,14 @@
     <main class="container">
         <!-- Hero Section -->
         <section class="hero-section">
-            <h1 class="main-title">AI Document Proofreader</h1>
-            <p class="subtitle">Excellence in Every Word • Powered by Claude AI & Hampton Golf Standards</p>
+            <h1 class="main-title">Document Proofreader</h1>
+            <p class="subtitle">Powered by Claude AI & Hampton Golf</p>
         </section>
 
         <!-- API Key Section -->
         <section class="api-key-section glass-card" aria-label="API Configuration">
             <div class="api-key-header">
-                <h2 class="section-title">Secure API Configuration</h2>
+                <h2 class="section-title">API Configuration</h2>
                 <span class="security-badge">🔒 256-bit Encrypted</span>
             </div>
             <div class="api-key-container">
@@ -79,7 +80,7 @@
             </div>
             <p id="api-key-note" class="api-key-note">
                 <span class="note-icon">ℹ️</span>
-                Your API key is stored locally on your device and never transmitted to our servers
+                Your API key is stored locally on your device and never transmitted
             </p>
         </section>
 
@@ -118,12 +119,12 @@
                 <textarea 
                     id="text-input" 
                     class="text-input" 
-                    placeholder="Paste or type your content here for AI-powered proofreading with Hampton Golf's professional standards..."
+                    placeholder="Paste or type your content here..."
                     aria-label="Text content for proofreading"
                     spellcheck="false"
                 ></textarea>
                 <div class="input-footer">
-                    <span class="input-tip">💡 Tip: For best results, include complete sentences and paragraphs</span>
+                    <span class="input-tip">💡 Tip: For best results, include entire sections rather than isolated sentences for context-aware analysis</span>
                 </div>
             </div>
 
@@ -141,8 +142,6 @@
                             <span class="spec-item">PDF Format</span>
                             <span class="spec-separator">•</span>
                             <span class="spec-item">Max 10MB</span>
-                            <span class="spec-separator">•</span>
-                            <span class="spec-item">Text-based</span>
                         </div>
                         <input type="file" id="file-input" class="file-input" accept=".pdf" aria-hidden="true">
                     </div>
@@ -162,54 +161,11 @@
             <!-- Proofread Button -->
             <button id="proofread-btn" class="proofread-btn" aria-label="Start proofreading">
                 <span class="btn-content">
-                    <span class="btn-icon">✨</span>
-                    <span class="btn-text">Analyze Document</span>
+                    <span class="btn-text">Analyze Text</span>
                     <span class="btn-arrow">→</span>
                 </span>
                 <div class="btn-bg"></div>
             </button>
-
-            <!-- Guidelines Info -->
-            <div class="guidelines-info">
-                <div class="guidelines-header">
-                    <h3 class="guidelines-title">
-                        <span class="guidelines-icon">🏆</span>
-                        Hampton Golf Excellence Standards
-                    </h3>
-                    <span class="guidelines-badge">AP Style Certified</span>
-                </div>
-                <div class="guidelines-grid">
-                    <ul class="guidelines-list">
-                        <li data-category="capitalization">
-                            <span class="list-icon">✓</span>
-                            <span>Premium capitalization for Member, Guest, Neighbor, Homeowner</span>
-                        </li>
-                        <li data-category="proper-nouns">
-                            <span class="list-icon">✓</span>
-                            <span>Club and Course proper noun verification</span>
-                        </li>
-                        <li data-category="grammar">
-                            <span class="list-icon">✓</span>
-                            <span>AP Style grammar and punctuation excellence</span>
-                        </li>
-                        <li data-category="dates">
-                            <span class="list-icon">✓</span>
-                            <span>Intelligent date and time accuracy verification</span>
-                        </li>
-                        <li data-category="formatting">
-                            <span class="list-icon">✓</span>
-                            <span>Professional spacing and hyphenation standards</span>
-                        </li>
-                        <li data-category="titles">
-                            <span class="list-icon">✓</span>
-                            <span>Executive department and title formatting</span>
-                        </li>
-                    </ul>
-                </div>
-                <div class="guidelines-footer">
-                    <p class="guidelines-note">Powered by Claude Opus 4.1 • Industry-leading AI accuracy</p>
-                </div>
-            </div>
         </section>
 
         <!-- Loading State -->
@@ -309,13 +265,9 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p class="footer-text">© 2024 Hampton Golf. Professionally Managed Excellence.</p>
+            <p class="footer-text">© 2025 Hampton Golf</p>
             <div class="footer-links">
-                <a href="#" class="footer-link">Privacy</a>
-                <span class="footer-separator">•</span>
-                <a href="#" class="footer-link">Terms</a>
-                <span class="footer-separator">•</span>
-                <a href="#" class="footer-link">Support</a>
+                <a href="https://hampton.golf/" class="footer-link" target="_blank">About Us</a>
             </div>
         </div>
     </footer>
@@ -345,5 +297,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
-
