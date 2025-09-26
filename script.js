@@ -326,6 +326,15 @@ function handleDrop(e) {
     
     const file = e.dataTransfer.files[0];
     processFile(file);
+    
+    // Update the file input value to match
+    const fileInput = document.getElementById('file-input');
+    if (fileInput && file) {
+        // Create a FileList-like object
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+    }
 }
 
 function processFile(file) {
