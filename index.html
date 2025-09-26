@@ -55,33 +55,32 @@
         <section class="api-key-section glass-card" aria-label="API Configuration">
             <div class="api-key-header">
                 <h2 class="section-title">API Configuration</h2>
-                <span class="security-badge">🔒 256-bit Encrypted</span>
             </div>
             <div class="api-key-container">
                 <label for="api-key" class="api-key-label">
                     <span class="label-text">Claude API Key</span>
                     <span class="label-required">*</span>
                 </label>
-                <div class="input-group">
-                    <input 
-                        type="password" 
-                        id="api-key" 
-                        class="api-key-input" 
-                        placeholder="sk-ant-api..." 
-                        autocomplete="off"
-                        aria-required="true"
-                        aria-describedby="api-key-note"
-                    >
-                    <button class="api-key-save" onclick="saveApiKey()" aria-label="Save API Key">
-                        <span class="button-text">Activate</span>
-                        <span class="button-icon">→</span>
-                    </button>
-                </div>
+                <input 
+                    type="password" 
+                    id="api-key" 
+                    class="api-key-input" 
+                    placeholder="sk-ant-api..." 
+                    autocomplete="off"
+                    aria-required="true"
+                    aria-describedby="api-key-note"
+                >
             </div>
-            <p id="api-key-note" class="api-key-note">
-                <span class="note-icon">ℹ️</span>
-                Your API key is stored locally on your device and never transmitted
-            </p>
+            <div class="api-key-footer">
+                <p id="api-key-note" class="api-key-note">
+                    <span class="note-icon">ℹ️</span>
+                    Your API key is stored locally on your device and never transmitted
+                </p>
+                <button class="api-key-save" onclick="saveApiKey()" aria-label="Save API Key">
+                    <span class="button-text">Activate</span>
+                    <span class="button-icon">→</span>
+                </button>
+            </div>
         </section>
 
         <!-- Input Section -->
