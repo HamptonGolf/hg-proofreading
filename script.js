@@ -18,6 +18,30 @@ let isProcessing = false;
 let currentResults = null;
 let characterCount = 0;
 
+// Check if PDF.js is loaded
+function checkPDFjsLoaded() {
+    return typeof pdfjsLib !== 'undefined';
+}
+
+// Wait for PDF.js to load with timeout
+function waitForPDFjs(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        
+        const checkInterval = setInterval(() => {
+            if (checkPDFjsLoaded()) {
+                clearInterval(checkInterval);
+                console.log('✅ PDF.js is ready');
+                resolve();
+            } else if (Date.now() - startTime > timeout) {
+                clearInterval(checkInterval);
+                console.error('❌ PDF.js loading timeout');
+                reject(new Error('PDF.js library failed to load. Please refresh the page.'));
+            }
+        }, 100);
+    });
+}
+
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
 const PROOFREADING_PROMPT = `You are a proofreader. Find only spelling errors, grammar mistakes, and formatting inconsistencies in the text below. Assume you are proofreading in AP format.
 
@@ -52,6 +76,13 @@ Text to review:
 // Initialize application
 function initializeApp() {
     console.log('🏌️ Hampton Golf AI Proofreader Initializing...');
+
+    // Check PDF.js status
+        if (checkPDFjsLoaded()) {
+    console.log('✅ PDF.js is available');
+}       else {
+    console.warn('⚠️ PDF.js is not yet loaded, will load on demand');
+}
     
     // Load saved API key
     loadApiKey();
@@ -382,54 +413,82 @@ function removeFile() {
 
 // Enhanced PDF Processing with Progress
 async function extractTextFromPDF(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        
-        reader.onload = async (e) => {
-            try {
-                if (typeof pdfjsLib === 'undefined') {
-                    throw new Error('PDF.js library not loaded. Please refresh the page.');
-                }
-                
-                updateLoadingProgress(10, 'Reading PDF file...');
-                
-                const typedarray = new Uint8Array(e.target.result);
-                const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let fullText = '';
-                
-                updateLoadingProgress(30, 'Extracting text content...');
-                
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const progress = 30 + (50 * (i / pdf.numPages));
-                    updateLoadingProgress(progress, `Processing page ${i} of ${pdf.numPages}...`);
-                    
-                    const page = await pdf.getPage(i);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items
-                        .map(item => item.str)
-                        .join(' ')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    
-                    if (pageText) {
-                        fullText += `Page ${i}:\n${pageText}\n\n`;
-                    }
-                }
-                
-                updateLoadingProgress(80, 'Text extraction complete...');
-                
-                if (!fullText.trim()) {
-                    throw new Error('No text content found in PDF. The PDF might be scanned or image-based.');
-                }
-                
-                resolve(fullText);
-            } catch (error) {
-                reject(error);
+    return new Promise(async (resolve, reject) => {
+        try {
+            // First, ensure PDF.js is loaded
+            if (!checkPDFjsLoaded()) {
+                console.log('⏳ Waiting for PDF.js to load...');
+                await waitForPDFjs();
             }
-        };
-        
-        reader.onerror = () => reject(new Error('Failed to read file'));
-        reader.readAsArrayBuffer(file);
+            
+            const reader = new FileReader();
+            
+            reader.onload = async (e) => {
+                try {
+                    console.log('📄 Starting PDF extraction...');
+                    
+                    updateLoadingProgress(10, 'Reading PDF file...');
+                    
+                    const typedarray = new Uint8Array(e.target.result);
+                    console.log('PDF file size:', typedarray.length, 'bytes');
+                    
+                    // Configure PDF.js to work properly
+                    const loadingTask = pdfjsLib.getDocument({
+                        data: typedarray,
+                        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                        cMapPacked: true,
+                        standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/'
+                    });
+                    
+                    const pdf = await loadingTask.promise;
+                    console.log('PDF loaded, pages:', pdf.numPages);
+                    
+                    let fullText = '';
+                    
+                    updateLoadingProgress(30, 'Extracting text content...');
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const progress = 30 + (50 * (i / pdf.numPages));
+                        updateLoadingProgress(progress, `Processing page ${i} of ${pdf.numPages}...`);
+                        
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items
+                            .map(item => item.str)
+                            .join(' ')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+                        
+                        if (pageText) {
+                            fullText += `Page ${i}:\n${pageText}\n\n`;
+                        }
+                    }
+                    
+                    updateLoadingProgress(80, 'Text extraction complete...');
+                    console.log('✅ PDF text extracted, length:', fullText.length);
+                    
+                    if (!fullText.trim()) {
+                        throw new Error('No text content found in PDF. The PDF might be scanned or image-based.');
+                    }
+                    
+                    resolve(fullText);
+                } catch (error) {
+                    console.error('❌ PDF extraction error:', error);
+                    reject(error);
+                }
+            };
+            
+            reader.onerror = () => {
+                console.error('❌ FileReader error');
+                reject(new Error('Failed to read file'));
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+        } catch (error) {
+            console.error('❌ PDF.js initialization error:', error);
+            reject(error);
+        }
     });
 }
 
@@ -920,3 +979,4 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
