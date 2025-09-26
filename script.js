@@ -217,7 +217,7 @@ function updateSystemStatus() {
     
     if (statusElement && statusDot) {
         if (apiKey) {
-            statusElement.textContent = 'AI Ready';
+            statusElement.textContent = 'Status: Active';
             statusDot.style.background = 'var(--hg-secondary-green)';
         } else {
             statusElement.textContent = 'API Key Required';
@@ -285,6 +285,19 @@ function loadApiKey() {
 function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-content');
     const buttons = document.querySelectorAll('.tab-btn');
+    const proofreadBtn = document.getElementById('proofread-btn');
+    
+    // Update button text based on active tab
+    if (proofreadBtn) {
+        const btnText = proofreadBtn.querySelector('.btn-text');
+        if (btnText) {
+            if (tab === 'text') {
+                btnText.textContent = 'Analyze Text';
+            } else if (tab === 'file') {
+                btnText.textContent = 'Analyze Document';
+            }
+        }
+    }
     
     // Fade out current tab
     tabs.forEach(t => {
@@ -979,4 +992,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
-
