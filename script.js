@@ -614,7 +614,7 @@ async function proofreadWithClaude(text) {
     console.log('🔍 Analyzing text with Claude AI...');
     
     try {
-        updateLoadingProgress(90, 'Analyzing Claude AI...');
+        updateLoadingProgress(90, 'Analyzing With Claude AI...');
         
         const response = await fetch('/.netlify/functions/proofread', {
             method: 'POST',
