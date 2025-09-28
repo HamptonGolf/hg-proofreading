@@ -65,9 +65,6 @@ WHAT TO CHECK:
 2. Grammar mistakes
 3. Hampton Golf capitalization violations (see above)
 4. Compound adjectives (AP Style):
-   - Hyphenate compound adjectives BEFORE the noun they modify (e.g., "well-known chef")
-   - Do NOT hyphenate when they come AFTER the noun (e.g., "the chef is well known")
-   - Do NOT hyphenate with -ly adverbs (e.g., "freshly made" not "freshly-made")
 5. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
 
 LOCATION FORMATTING:
@@ -1040,6 +1037,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
