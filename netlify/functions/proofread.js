@@ -19,11 +19,11 @@ exports.handler = async (event, context) => {
         'anthropic-version': '2023-06-01',
         'anthropic-beta': 'messages-2023-12-15'
       },
-      body: JSON.stringify({
+        body: JSON.stringify({
         model: modelToUse,  // Use the variable here
         max_tokens: 4000,
         temperature: 0,
-        system: "You are a proofreader. Only analyze the specific text provided in this message. Do not reference any other documents or previous conversations.",
+        system: "You are an experienced proofreader specializing in professional documents. Analyze only the specific text provided in this message following the instructions given. Do not reference any other documents or previous conversations.",
         messages: [{
           role: 'user',
           content: text
@@ -57,3 +57,4 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
