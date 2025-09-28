@@ -146,13 +146,12 @@
                     </div>
                     <div id="file-info" class="file-info">
                         <div class="file-info-content">
-                            <span class="file-icon">📎</span>
-                            <div class="file-details">
-                                <strong>Selected file:</strong>
-                                <span id="file-name" class="file-name"></span>
-                            </div>
-                            <button class="file-remove" onclick="removeFile()" aria-label="Remove file">×</button>
+                        <div class="file-details">
+                            <strong>Selected file:</strong>
+                            <span id="file-name" class="file-name"></span>
                         </div>
+                        <button class="file-remove" onclick="removeFile()" aria-label="Remove file">×</button>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -174,7 +173,7 @@
                     <div class="spinner-ring"></div>
                     <div class="spinner-ring"></div>
                 </div>
-                <p class="loading-text">AI Analyzing Your Document</p>
+                <p class="loading-text">Analyzing Your Document</p>
                 <div class="loading-progress">
                     <div class="progress-bar">
                         <div class="progress-fill"></div>
@@ -187,19 +186,14 @@
         <!-- Results Section -->
         <section id="results" class="results-section glass-card" aria-live="polite" aria-hidden="true">
             <div class="results-header">
-                <div class="results-title-group">
-                    <h2 class="results-title">
-                        <span class="results-icon">📋</span>
-                        Proofreading Analysis Complete
-                    </h2>
-                    <p class="results-timestamp" id="results-timestamp"></p>
-                </div>
+                <h2 class="results-title">Proofreading Analysis Complete</h2>
                 <div class="results-stats">
                     <span class="error-count" id="error-count">
                         <span class="count-number">0</span>
                         <span class="count-label">issues found</span>
                     </span>
                 </div>
+                <p class="results-timestamp" id="results-timestamp"></p>
             </div>
             
             <div class="results-body">
@@ -211,15 +205,7 @@
             <!-- Export Options -->
             <div class="results-footer">
                 <div class="export-options">
-                    <button class="export-btn" onclick="exportResults('pdf')" aria-label="Export as PDF">
-                        <span class="export-icon">📑</span>
-                        <span>Export PDF</span>
-                    </button>
-                    <button class="export-btn" onclick="exportResults('csv')" aria-label="Export as CSV">
-                        <span class="export-icon">📊</span>
-                        <span>Export CSV</span>
-                    </button>
-                    <button class="export-btn" onclick="copyResults()" aria-label="Copy to clipboard">
+                    <button class="export-btn copy-btn" onclick="copyResults()" aria-label="Copy to clipboard">
                         <span class="export-icon">📋</span>
                         <span>Copy Results</span>
                     </button>
@@ -231,30 +217,11 @@
         <template id="success-template">
             <div class="no-errors-message">
                 <div class="success-animation">
-                    <div class="check-icon">✓</div>
+                    <div class="check-icon">✔</div>
                     <div class="success-rings">
                         <div class="ring ring-1"></div>
                         <div class="ring ring-2"></div>
                         <div class="ring ring-3"></div>
-                    </div>
-                </div>
-                <h3 class="success-title">Perfect Score!</h3>
-                <p class="success-subtitle">Your document meets all Hampton Golf excellence standards</p>
-                <div class="success-stats">
-                    <div class="stat-item">
-                        <span class="stat-icon">✨</span>
-                        <span class="stat-label">Grammar</span>
-                        <span class="stat-value">Perfect</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">📝</span>
-                        <span class="stat-label">Style</span>
-                        <span class="stat-value">Excellent</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">🎯</span>
-                        <span class="stat-label">Accuracy</span>
-                        <span class="stat-value">100%</span>
                     </div>
                 </div>
             </div>
