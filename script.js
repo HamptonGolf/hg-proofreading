@@ -681,6 +681,7 @@ async function proofreadWithClaude(text) {
 }
 
 // Enhanced Results Display
+// Enhanced Results Display
 function displayResults(resultText) {
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
@@ -736,68 +737,69 @@ function displayResults(resultText) {
                 errors.push(trimmedLine.substring(1).trim());
             }
         }
-    
-    // Clear previous results
-    errorList.innerHTML = '';
-    
-    if (errors.length === 0 || (errors.length === 1 && errors[0] === '')) {
-        // No errors found - show success state
-        const successTemplate = document.getElementById('success-template');
-        if (successTemplate) {
-            errorList.innerHTML = successTemplate.innerHTML;
-        } else {
-            errorList.innerHTML = `
-                <div class="no-errors-message">
-                    <div class="success-animation">
-                        <div class="check-icon">✓</div>
+        
+        // Clear previous results
+        errorList.innerHTML = '';
+        
+        if (errors.length === 0 || (errors.length === 1 && errors[0] === '')) {
+            // No errors found - show success state
+            const successTemplate = document.getElementById('success-template');
+            if (successTemplate) {
+                errorList.innerHTML = successTemplate.innerHTML;
+            } else {
+                errorList.innerHTML = `
+                    <div class="no-errors-message">
+                        <div class="success-animation">
+                            <div class="check-icon">✔</div>
+                        </div>
+                        <h3>Perfect Score!</h3>
+                        <p>Your document meets all Hampton Golf excellence standards</p>
                     </div>
-                    <h3>Perfect Score!</h3>
-                    <p>Your document meets all Hampton Golf excellence standards</p>
-                </div>
+                `;
+            }
+            
+            errorCount.innerHTML = `
+                <span class="count-number">0</span>
+                <span class="count-label">issues found</span>
             `;
+            errorCount.className = 'error-count no-errors';
+            
+            showNotification('Document analysis complete - Perfect score!', 'success');
+        } else {
+            // Display errors with enhanced formatting
+            errors.forEach((error, index) => {
+                if (!error) return;
+                
+                const parts = error.split('>');
+                const location = parts[0] ? parts[0].trim() : `Issue ${index + 1}`;
+                const description = parts.slice(1).join('>').trim() || error;
+                
+                const li = document.createElement('li');
+                li.className = 'error-item';
+                li.style.animationDelay = `${index * 0.05}s`;
+                li.innerHTML = `
+                    <div class="error-number">${index + 1}</div>
+                    <div class="error-content">
+                        <div class="error-location">${location}</div>
+                        <div class="error-description">${description}</div>
+                    </div>
+                    <button class="error-action" onclick="copyError('${escapeHtml(error)}')" title="Copy this correction">
+                        <span class="action-icon">📋</span>
+                    </button>
+                `;
+                errorList.appendChild(li);
+            });
+            
+            const validErrors = errors.filter(e => e.trim() !== '');
+            errorCount.innerHTML = `
+                <span class="count-number">${validErrors.length}</span>
+                <span class="count-label">issue${validErrors.length === 1 ? '' : 's'} found</span>
+            `;
+            errorCount.className = 'error-count has-errors';
+            
+            showNotification(`Analysis complete - ${validErrors.length} issue${validErrors.length === 1 ? '' : 's'} found`, 'info');
         }
-        
-        errorCount.innerHTML = `
-            <span class="count-number">0</span>
-            <span class="count-label">issues found</span>
-        `;
-        errorCount.className = 'error-count no-errors';
-        
-        showNotification('Document analysis complete - Perfect score!', 'success');
-    } else {
-        // Display errors with enhanced formatting
-        errors.forEach((error, index) => {
-            if (!error) return;
-            
-            const parts = error.split('>');
-            const location = parts[0] ? parts[0].trim() : `Issue ${index + 1}`;
-            const description = parts.slice(1).join('>').trim() || error;
-            
-            const li = document.createElement('li');
-            li.className = 'error-item';
-            li.style.animationDelay = `${index * 0.05}s`;
-            li.innerHTML = `
-                <div class="error-number">${index + 1}</div>
-                <div class="error-content">
-                    <div class="error-location">${location}</div>
-                    <div class="error-description">${description}</div>
-                </div>
-                <button class="error-action" onclick="copyError('${escapeHtml(error)}')" title="Copy this correction">
-                    <span class="action-icon">📋</span>
-                </button>
-            `;
-            errorList.appendChild(li);
-        });
-        
-        const validErrors = errors.filter(e => e.trim() !== '');
-        errorCount.innerHTML = `
-            <span class="count-number">${validErrors.length}</span>
-            <span class="count-label">issue${validErrors.length === 1 ? '' : 's'} found</span>
-        `;
-        errorCount.className = 'error-count has-errors';
-        
-        showNotification(`Analysis complete - ${validErrors.length} issue${validErrors.length === 1 ? '' : 's'} found`, 'info');
-    }
+    } // This closing brace was missing
     
     // Show results section with animation
     resultsSection.classList.add('show');
@@ -1051,4 +1053,5 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
