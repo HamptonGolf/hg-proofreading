@@ -43,8 +43,7 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-// Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Focus on finding genuine spelling errors, grammar mistakes, and violations of Hampton Golf's specific style rules.
+const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Apply AP style guidelines and Hampton Golf's specific rules.
 
 Text to review:
 `;
@@ -62,27 +61,34 @@ When these words appear in ANY form, they MUST be capitalized as shown:
 - "staff" → replace with "Team Member(s)"
 
 WHAT TO CHECK:
-1. Spelling errors (actual misspellings, not formatting)
+1. Spelling errors
 2. Grammar mistakes
-3. Missing or incorrect punctuation
-4. Violations of the Hampton Golf capitalization rules above
-5. Inconsistent hyphenation in compound adjectives
+3. Hampton Golf capitalization violations (see above)
+4. Compound adjectives (AP Style):
+   - Hyphenate compound adjectives BEFORE the noun they modify (e.g., "well-known chef")
+   - Do NOT hyphenate when they come AFTER the noun (e.g., "the chef is well known")
+   - Do NOT hyphenate with -ly adverbs (e.g., "freshly made" not "freshly-made")
+5. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
 
-IMPORTANT:
-- IGNORE minor spacing issues in prices or numbers (these are often PDF extraction artifacts)
-- IGNORE formatting that appears to be from PDF conversion
-- DO NOT report on design choices, layout, or price formatting
-- DO NOT report correctly spelled brand names or proper nouns
-- DO NOT suggest style preferences that aren't actual errors
-- Only report GENUINE errors that would need correction in the original document
+LOCATION FORMATTING:
+- For SINGLE-PAGE documents: Use specific section names or menu item names as location
+  Example: "STARTERS section, French Onion Soup item"
+- For MULTI-PAGE documents (2+ pages): Include page number AND specific location
+  Example: "Page 1, ENTRÉES section, Salmon item"
+
+First, determine if the document has multiple pages by looking for "Page 2:" or similar markers.
 
 FORMAT YOUR RESPONSE:
-List each error on a new line starting with a dash:
-- [Location] > [Error] should be [Correction]
+List only genuine errors, one per line:
+- [Location with specific section/item] > [Error] should be [Correction]
 
-If no genuine errors are found, respond with: "No errors found."
+If no errors found: "No errors found."
 
-Remember: Focus only on real spelling/grammar errors and Hampton Golf capitalization violations. Skip any formatting artifacts from PDF extraction.`;
+IMPORTANT NOTES:
+- Be SPECIFIC about location - include section name AND item name when applicable
+- IGNORE spacing issues that appear to be PDF artifacts (like "8 " + . 75")
+- DO NOT report on style preferences, only actual errors
+- Focus on real mistakes that need correction`;
 
 // Initialize application
 function initializeApp() {
@@ -1034,6 +1040,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
