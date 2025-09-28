@@ -858,6 +858,10 @@ body::after {
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: all 0.3s ease;
+    display: inline-flex; 
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .error-count.no-errors {
@@ -1943,6 +1947,7 @@ body {
     font-size: 24px;
     font-weight: 700;
     display: block;
+    line-height: 1;  /* Add this for tighter spacing */
 }
 
 .count-label {
