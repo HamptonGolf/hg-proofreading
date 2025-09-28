@@ -43,9 +43,18 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a proofreader. Find only spelling errors, grammar mistakes, and formatting inconsistencies in the text below. Assume you are proofreading in AP format.
+const PROOFREADING_PROMPT = `You are an experienced proofreader specializing in professional documents. Your task is to identify only actual spelling errors, grammar mistakes, and formatting inconsistencies in the provided text, following AP style guidelines and specific Hampton Golf capitalization rules.
 
-HAMPTON GOLF CAPITALIZATION RULES (apply to these words in any form when they appear):
+Here is the text you need to review:
+
+<text_to_review>
+`;
+
+const PROOFREADING_PROMPT_SUFFIX = `
+</text_to_review>
+
+**Hampton Golf Capitalization Rules:**
+Apply these capitalization rules to the specified words in any form when they appear:
 - "member" or "members" → "Member" or "Members"
 - "guest" or "guests" → "Guest" or "Guests" 
 - "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
@@ -54,24 +63,45 @@ HAMPTON GOLF CAPITALIZATION RULES (apply to these words in any form when they ap
 - "team" → "Team"
 - "staff" → replace with "Team Member(s)"
 
-LOOK FOR:
+**What to Look For:**
 - Misspelled words
-- Grammar errors
+- Grammar errors (including proper hyphenation and compound adjective rules)
 - Inconsistent formatting (spacing, punctuation patterns)
 - Missing accents on foreign words
+- Violations of Hampton Golf capitalization rules
 
-DO NOT report when something is correctly used, only errors
-DO NOT suggest changes to:
-- Design choices (dollar signs, layout, styling)
-- Content organization
-- Pricing format
+**Important Guidelines:**
+- Only report actual errors - do not flag correctly applied rules
+- Do not suggest changes to design choices, content organization, or pricing format
+- Provide specific location information for each error
+- For documents with 2 or more pages, include page numbers in your location descriptions
+- For shorter documents, provide section/paragraph location without page numbers
 
-Report only actual errors. Format as:
-- [Location] > [Error] should be [Correction]
+**Instructions:**
+First, wrap your systematic analysis inside <analysis> tags in your thinking block. During your analysis:
+1. Determine if the document is 2+ pages (to decide whether to include page numbers)
+2. Go through each section methodically and quote any text segments that might contain errors
+3. For each potential issue you identify, explicitly evaluate it against the specific rules (spelling, grammar, Hampton Golf capitalization, etc.) to verify that it is actually an error before including it in your final report
+4. Create separate lists for different types of errors (spelling, grammar, capitalization, formatting) to ensure systematic coverage
+5. Pay special attention to hyphenation and compound adjective rules
+6. Double-check Hampton Golf capitalization rules are correctly applied
+It's OK for this section to be quite long.
 
-Text to review:
+After your analysis, provide your findings outside of your thinking block. If you find errors, format each one as:
+- [Specific Location] > [Error] should be [Correction]
 
-`;
+If you find no errors, simply state "No errors found."
+
+**Example Output Format:**
+For a multi-page document:
+- Page 2, Menu Section > "member" should be "Member"
+- Page 1, Introduction > "well-known" should be "well known" (compound adjective after noun)
+
+For a single-page document:
+- Header Section > "recieve" should be "receive"
+- Pricing Section > "Guests" should be "guests" (incorrectly capitalized)
+
+Your final output should consist only of your findings and should not duplicate or rehash any of the systematic analysis you performed in the thinking block. Format as: - [Location] > [Error] should be [Correction]`;
 
 // Initialize application
 function initializeApp() {
@@ -591,9 +621,9 @@ async function proofreadWithClaude(text) {
     hideAllNotifications();
     updateLoadingProgress(85, 'Connecting to Claude AI...');
     
-    const fullPrompt = PROOFREADING_PROMPT + text;
+    const fullPrompt = PROOFREADING_PROMPT + text + PROOFREADING_PROMPT_SUFFIX;
     
-    console.log('📝 Analyzing text with Claude AI...');
+    console.log('🔍 Analyzing text with Claude AI...');
     
     try {
         updateLoadingProgress(90, 'Analyzing with Hampton Golf standards...');
@@ -667,16 +697,45 @@ function displayResults(resultText) {
     // Update timestamp
     updateTimestamp();
     
-    // Parse results
-    const lines = resultText.split('\n');
-    const errors = [];
-    
-    for (const line of lines) {
-        const trimmedLine = line.trim();
-        if (trimmedLine.startsWith('-')) {
-            errors.push(trimmedLine.substring(1).trim());
+    // Check for "No errors found" response first
+    if (resultText.toLowerCase().includes('no errors found')) {
+        // Clear previous results
+        errorList.innerHTML = '';
+        
+        // Show success state
+        const successTemplate = document.getElementById('success-template');
+        if (successTemplate) {
+            errorList.innerHTML = successTemplate.innerHTML;
+        } else {
+            errorList.innerHTML = `
+                <div class="no-errors-message">
+                    <div class="success-animation">
+                        <div class="check-icon">✔</div>
+                    </div>
+                    <h3>Perfect Score!</h3>
+                    <p>Your document meets all Hampton Golf excellence standards</p>
+                </div>
+            `;
         }
-    }
+        
+        errorCount.innerHTML = `
+            <span class="count-number">0</span>
+            <span class="count-label">issues found</span>
+        `;
+        errorCount.className = 'error-count no-errors';
+        
+        showNotification('Document analysis complete - Perfect score!', 'success');
+    } else {
+        // Parse results for errors
+        const lines = resultText.split('\n');
+        const errors = [];
+        
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('-')) {
+                errors.push(trimmedLine.substring(1).trim());
+            }
+        }
     
     // Clear previous results
     errorList.innerHTML = '';
@@ -992,3 +1051,4 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
