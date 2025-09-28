@@ -43,65 +43,46 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are an experienced proofreader specializing in professional documents. Your task is to identify only actual spelling errors, grammar mistakes, and formatting inconsistencies in the provided text, following AP style guidelines and specific Hampton Golf capitalization rules.
+// Hampton Golf Proofreading Guidelines (formatted for Claude)
+const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Focus on finding genuine spelling errors, grammar mistakes, and violations of Hampton Golf's specific style rules.
 
-Here is the text you need to review:
-
-<text_to_review>
+Text to review:
 `;
 
 const PROOFREADING_PROMPT_SUFFIX = `
-</text_to_review>
 
-**Hampton Golf Capitalization Rules:**
-Apply these capitalization rules to the specified words in any form when they appear:
+HAMPTON GOLF REQUIRED CAPITALIZATIONS:
+When these words appear in ANY form, they MUST be capitalized as shown:
 - "member" or "members" → "Member" or "Members"
-- "guest" or "guests" → "Guest" or "Guests" 
+- "guest" or "guests" → "Guest" or "Guests"
 - "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
 - "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
 - "team member" or "team members" → "Team Member" or "Team Members"
 - "team" → "Team"
 - "staff" → replace with "Team Member(s)"
 
-**What to Look For:**
-- Misspelled words
-- Grammar errors (including proper hyphenation and compound adjective rules)
-- Inconsistent formatting (spacing, punctuation patterns)
-- Missing accents on foreign words
-- Violations of Hampton Golf capitalization rules
+WHAT TO CHECK:
+1. Spelling errors (actual misspellings, not formatting)
+2. Grammar mistakes
+3. Missing or incorrect punctuation
+4. Violations of the Hampton Golf capitalization rules above
+5. Inconsistent hyphenation in compound adjectives
 
-**Important Guidelines:**
-- Only report actual errors - do not flag correctly applied rules
-- Do not suggest changes to design choices, content organization, or pricing format
-- Provide specific location information for each error
-- For documents with 2 or more pages, include page numbers in your location descriptions
-- For shorter documents, provide section/paragraph location without page numbers
+IMPORTANT:
+- IGNORE minor spacing issues in prices or numbers (these are often PDF extraction artifacts)
+- IGNORE formatting that appears to be from PDF conversion
+- DO NOT report on design choices, layout, or price formatting
+- DO NOT report correctly spelled brand names or proper nouns
+- DO NOT suggest style preferences that aren't actual errors
+- Only report GENUINE errors that would need correction in the original document
 
-**Instructions:**
-First, wrap your systematic analysis inside <analysis> tags in your thinking block. During your analysis:
-1. Determine if the document is 2+ pages (to decide whether to include page numbers)
-2. Go through each section methodically and quote any text segments that might contain errors
-3. For each potential issue you identify, explicitly evaluate it against the specific rules (spelling, grammar, Hampton Golf capitalization, etc.) to verify that it is actually an error before including it in your final report
-4. Create separate lists for different types of errors (spelling, grammar, capitalization, formatting) to ensure systematic coverage
-5. Pay special attention to hyphenation and compound adjective rules
-6. Double-check Hampton Golf capitalization rules are correctly applied
-It's OK for this section to be quite long.
+FORMAT YOUR RESPONSE:
+List each error on a new line starting with a dash:
+- [Location] > [Error] should be [Correction]
 
-After your analysis, provide your findings outside of your thinking block. If you find errors, format each one as:
-- [Specific Location] > [Error] should be [Correction]
+If no genuine errors are found, respond with: "No errors found."
 
-If you find no errors, simply state "No errors found."
-
-**Example Output Format:**
-For a multi-page document:
-- Page 2, Menu Section > "member" should be "Member"
-- Page 1, Introduction > "well-known" should be "well known" (compound adjective after noun)
-
-For a single-page document:
-- Header Section > "recieve" should be "receive"
-- Pricing Section > "Guests" should be "guests" (incorrectly capitalized)
-
-Your final output should consist only of your findings and should not duplicate or rehash any of the systematic analysis you performed in the thinking block. Format as: - [Location] > [Error] should be [Correction]`;
+Remember: Focus only on real spelling/grammar errors and Hampton Golf capitalization violations. Skip any formatting artifacts from PDF extraction.`;
 
 // Initialize application
 function initializeApp() {
@@ -1053,5 +1034,6 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
