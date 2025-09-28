@@ -603,14 +603,18 @@ async function proofreadWithClaude(text) {
     isProcessing = true;
     showLoading(true);
     hideAllNotifications();
-    updateLoadingProgress(85, 'Connecting to Claude AI...');
+    const activeTab = document.querySelector('.tab-content.active');
+    const loadingMessage = activeTab && activeTab.id === 'file-tab' 
+        ? 'Analyzing your file with Claude AI...' 
+        : 'Analyzing your text with Claude AI...';
+    updateLoadingProgress(85, loadingMessage);
     
     const fullPrompt = PROOFREADING_PROMPT + text + PROOFREADING_PROMPT_SUFFIX;
     
     console.log('🔍 Analyzing text with Claude AI...');
     
     try {
-        updateLoadingProgress(90, 'Analyzing with Hampton Golf standards...');
+        updateLoadingProgress(90, 'Analyzing Claude AI...');
         
         const response = await fetch('/.netlify/functions/proofread', {
             method: 'POST',
@@ -1037,8 +1041,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
-
-
-
-
-
