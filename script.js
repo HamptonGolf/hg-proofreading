@@ -70,7 +70,7 @@ DO NOT capitalize: golf shop, clubhouse, caddie, pool, courts, driving range, pr
 
 ALSO CHECK:
 - Spelling and grammar errors
-- Date accuracy (Wednesday, October 21 should be 2020 or Thursday, October 21, 2021)
+- Date accuracy (make sure that the event date (if applicable) matches up with the day of the week)
 - Spacing consistency (7AM vs 7 AM)
 
 DO NOT FLAG:
@@ -1040,6 +1040,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
