@@ -55,9 +55,10 @@ When these words appear in ANY form, they MUST be capitalized as shown:
 - "member" or "members" → "Member" or "Members"
 - "guest" or "guests" → "Guest" or "Guests"
 - "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
+- "resident" or "residents" → "Resident" or "Residents"
 - "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
 - "team member" or "team members" → "Team Member" or "Team Members"
-- "team" → "Team"
+- "team" → "Team" when referring to an employee of the property
 - "staff" → replace with "Team Member(s)"
 
 WHAT TO CHECK:
@@ -1043,6 +1044,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
