@@ -43,7 +43,7 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. Review the text for errors according to Hampton Golf's specific rules and AP Style.
+const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Apply AP style guidelines and Hampton Golf's specific rules.
 
 Text to review:
 `;
@@ -51,40 +51,42 @@ Text to review:
 const PROOFREADING_PROMPT_SUFFIX = `
 
 HAMPTON GOLF REQUIRED CAPITALIZATIONS:
-Always capitalize these words:
-- member/members → Member/Members  
-- guest/guests → Guest/Guests
-- resident/residents → Resident/Residents
-- neighbor/neighbors → Neighbor/Neighbors
-- team → Team
-- team member/team members → Team Member/Team Members
-- Replace "staff" with "Team Member(s)"
+When these words appear in ANY form, they MUST be capitalized as shown:
+- "member" or "members" → "Member" or "Members"
+- "guest" or "guests" → "Guest" or "Guests"
+- "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
+- "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
+- "team member" or "team members" → "Team Member" or "Team Members"
+- "team" → "Team"
+- "staff" → replace with "Team Member(s)"
 
-ONLY capitalize when part of a proper name:
-- "Club" when in full club name (e.g., "Northland Country Club")
-- "Course" when in specific course name (e.g., "The Oaks Course")
-- Job titles when with a person's name
-- Room names when specific (e.g., "The Grille")
+WHAT TO CHECK:
+1. Spelling errors
+2. Grammar mistakes
+3. Hampton Golf capitalization violations (see above)
+4. Make sure that any event dates match up with the day of the week
+5. Compound adjectives (AP Style):
+6. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
 
-DO NOT capitalize: golf shop, clubhouse, caddie, pool, courts, driving range, practice facility, community, passholder
+LOCATION FORMATTING:
+- For SINGLE-PAGE documents: Use specific section names or menu item names as location
+  Example: "STARTERS section, French Onion Soup item"
+- For MULTI-PAGE documents (2+ pages): Include page number AND specific location
+  Example: "Page 1, ENTRÉES section, Salmon item"
 
-ALSO CHECK:
-- Spelling and grammar errors
-- Date accuracy (make sure that the event date (if applicable) matches up with the day of the week)
-- Spacing consistency (7AM vs 7 AM)
+First, determine if the document has multiple pages by looking for "Page 2:" or similar markers.
 
-DO NOT FLAG:
-- Capitalization in website URLs or email addresses
-- Proper nouns you're unsure about
-- Generic uses of "club" without the full name
-- Style preferences
-- PDF spacing artifacts
+FORMAT YOUR RESPONSE:
+List only genuine errors, one per line:
+- [Location with specific section/item] > [Error] should be [Correction]
 
-OUTPUT FORMAT:
-List only definite errors:
-- [Location] > [Error] should be [Correction]
+If no errors found: "No errors found."
 
-If no errors: "No errors found."`;
+IMPORTANT NOTES:
+- Be SPECIFIC about location - include section name AND item name when applicable
+- IGNORE spacing issues that appear to be PDF artifacts (like "8 " + . 75")
+- DO NOT report on style preferences, only actual errors
+- Focus on real mistakes that need correction`;
 
 // Initialize application
 function initializeApp() {
@@ -1040,6 +1042,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
