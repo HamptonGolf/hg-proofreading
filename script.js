@@ -43,49 +43,71 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Apply AP style guidelines and Hampton Golf's specific rules.
+const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. Review the following document and identify ALL errors according to Hampton Golf's style guide and AP Style.
 
 Text to review:
 `;
 
 const PROOFREADING_PROMPT_SUFFIX = `
 
-HAMPTON GOLF REQUIRED CAPITALIZATIONS:
-When these words appear in ANY form, they MUST be capitalized as shown:
-- "member" or "members" → "Member" or "Members"
-- "guest" or "guests" → "Guest" or "Guests"
-- "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
-- "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
-- "team member" or "team members" → "Team Member" or "Team Members"
+HAMPTON GOLF STYLE GUIDE:
+
+MANDATORY CAPITALIZATIONS:
+Always capitalize these words in ANY context:
+- "member/members" → "Member/Members"
+- "membership" → "Membership" (except in email addresses)
+- "guest/guests" → "Guest/Guests" (when referring to a guest of a Member)
+- "resident/residents" → "Resident/Residents"
+- "neighbor/neighbors" → "Neighbor/Neighbors"
+- "homeowner/homeowners" → "Homeowner/Homeowners"
 - "team" → "Team"
-- "staff" → replace with "Team Member(s)"
+- "team member/team members" → "Team Member/Team Members"
+- "staff" → REPLACE with "Team Member(s)"
+
+CONDITIONAL CAPITALIZATIONS:
+Capitalize ONLY when part of proper/specific names:
+- "Club" - capitalize with full club name (e.g., "Northland Country Club"), lowercase otherwise ("the club")
+- "Course/Golf Course" - capitalize with specific course name (e.g., "The Oaks Course"), lowercase otherwise ("golf course")
+- Job titles - capitalize with person's name (e.g., "Joe Williams, Superintendent"), lowercase for general references ("all superintendents")
+- Room/venue names - capitalize specific names (e.g., "Fireside Dining Room", "The Grille", "The Bunker Bar"), lowercase generic ("dining room", "bar")
+- "Company" - capitalize only when part of a specific company name (e.g., "The Company Store")
+- Departments - capitalize ONLY when before program name (e.g., "Department of Art and Design" vs "the food & beverage department")
+
+NEVER CAPITALIZE (unless starting sentence or proper noun):
+golf course, course (when not with specific name), golf shop, clubhouse, tournament formats, caddie, pool, courts, driving range, practice facility, facility, community, passholder
 
 WHAT TO CHECK:
-1. Spelling errors
-2. Grammar mistakes
-3. Hampton Golf capitalization violations (see above)
-4. Compound adjectives (AP Style):
-5. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
+1. Every instance of words in capitalization rules above
+2. Spelling errors and typos
+3. Grammar mistakes (AP Style)
+4. Date accuracy (verify day/date match if both given)
+5. Spacing consistency (e.g., "7AM" vs "7 AM" - flag inconsistencies)
+6. Compound adjectives and hyphenation (AP Style)
+7. Accent marks where needed (e.g., "Rémoulade")
+8. Punctuation consistency
+9. Ignore obvious PDF/OCR artifacts (broken spacing in numbers like "8 . 75")
 
 LOCATION FORMATTING:
-- For SINGLE-PAGE documents: Use specific section names or menu item names as location
-  Example: "STARTERS section, French Onion Soup item"
-- For MULTI-PAGE documents (2+ pages): Include page number AND specific location
-  Example: "Page 1, ENTRÉES section, Salmon item"
-
-First, determine if the document has multiple pages by looking for "Page 2:" or similar markers.
+Determine if document has multiple pages by looking for "Page 2:" markers.
+- SINGLE-PAGE: Use section/item names (e.g., "STARTERS section, French Onion item")
+- MULTI-PAGE: Include page number (e.g., "Page 2, ENTRÉES section, Salmon item")
 
 FORMAT YOUR RESPONSE:
-List only genuine errors, one per line:
-- [Location with specific section/item] > [Error] should be [Correction]
+List only actual errors, one per line:
+- [Specific location] > [Error] should be [Correction]
+
+Examples:
+- APPETIZERS section, Shrimp item > Change "guest" to "Guest"
+- Page 2, Hours section > Inconsistent spacing: "7AM" should be "7 AM"
+- Wine List section > Change "member" to "Member"
 
 If no errors found: "No errors found."
 
-IMPORTANT NOTES:
-- Be SPECIFIC about location - include section name AND item name when applicable
-- IGNORE spacing issues that appear to be PDF artifacts (like "8 " + . 75")
-- DO NOT report on style preferences, only actual errors
-- Focus on real mistakes that need correction`;
+IMPORTANT:
+- Check EVERY instance of the listed words
+- Be very specific about location
+- Do not list things that are correct, just errors
+- Focus on actual errors, not stylistic choices`;
 
 // Initialize application
 function initializeApp() {
@@ -1041,4 +1063,5 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
