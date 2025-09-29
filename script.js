@@ -86,7 +86,8 @@ IMPORTANT NOTES:
 - Be SPECIFIC about location - include section name AND item name when applicable
 - IGNORE spacing issues that appear to be PDF artifacts (like "8 " + . 75")
 - DO NOT report on style preferences, only actual errors
-- Focus on real mistakes that need correction`;
+- Only list each error once
+- Focus on real mistakes that need correction, do not list things that are already correct`;
 
 // Initialize application
 function initializeApp() {
@@ -1042,6 +1043,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
