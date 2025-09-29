@@ -64,7 +64,7 @@ WHAT TO CHECK:
 1. Spelling errors
 2. Grammar mistakes
 3. Hampton Golf capitalization violations (see above)
-4. Date verification: When text shows a day name with a date (like "Friday, September 5"), verify if this day/date combination is correct for the current year. Flag mismatches.
+4. When you see format "Day, Month Date" → verify the day is correct for current year. This is an ERROR that MUST be reported.
 5. Compound adjectives (AP Style):
 6. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
 
@@ -1042,6 +1042,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
