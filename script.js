@@ -3,7 +3,7 @@
 // Configuration
 const CONFIG = {
     CLAUDE_API_URL: 'https://api.anthropic.com/v1/messages',
-    CLAUDE_MODEL: 'claude-opus-4-1-20250805',
+    CLAUDE_MODEL: 'claude-sonnet-4-5-20250929',
     MAX_TOKENS: 4000,
     API_VERSION: '2023-06-01',
     MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
@@ -1041,3 +1041,4 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
