@@ -43,46 +43,50 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf. Review the following text and identify ALL errors according to these specific guidelines:
+const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Apply AP style guidelines and Hampton Golf's specific rules.
 
-CAPITALIZATION RULES:
-1. ALWAYS capitalize: "Member", "Membership" (except in email addresses), "Guest", "Neighbor", "Resident", "Homeowner", "Team", "Team Member"
-2. Replace "staff" with "Team Member(s)" in all instances
-3. Capitalize "Club" ONLY when used with the actual club name (e.g., "Northland Country Club" - capitalize, but "the club will be closed" - lowercase)
-4. Capitalize job titles ONLY when referring to a specific named person (e.g., "Joe Williams, Superintendent" - capitalize, but "all superintendents" - lowercase)
-5. Capitalize "Golf Course" ONLY when using specific course name (e.g., "The Oaks Course" - capitalize, but "the golf course" - lowercase)
-6. Capitalize room names ONLY when specific/unique names are used (e.g., "Fireside Dining Room" - capitalize, but "dining room" - lowercase)
-7. Capitalize "Company" ONLY when part of a specific title
-8. Capitalize department names ONLY when they come before the program name
-9. DO NOT capitalize unless proper noun: golf course, golf shop, clubhouse, tournament formats, caddie, pool, courts, driving range, practice facility, facility, community, passholder, swim center
-
-STYLE RULES:
-1. Check dates ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year
-2. Apply AP Style for grammar and punctuation
-3. Check spacing consistency (e.g., if "7AM" is used, flag if "8 AM" appears elsewhere - should be consistent)
-4. Verify hyphenation based on context (compound adjectives)
-5. DO NOT flag accent marks or proper nouns you're unsure about (Parmesan is correct, sauce names vary)
-6. Flag any spelling or grammatical errors
-7. Check for inconsistent punctuation and formatting
-
-IMPORTANT INSTRUCTIONS:
-- Check EVERY instance of the words listed in the capitalization rules
-- Do not flag headers/section headers unless there's a spelling/punctuation error
-- Ignore OCR/PDF artifacts (spacing issues in numbers)
-- DO NOT flag website URLs or email addresses
-- Only output actual errors, not confirmations or explanations
-
-OUTPUT FORMAT:
-For each error found, provide in this EXACT format:
-- [Location in text] > [Specific correction needed]
-
-Example:
-- Paragraph 2, Line 3 > Capitalize "member" → "Member"
-- Event date line > "Wednesday, October 21" - October 21 is not a Wednesday in current year
-- Hours Section > Spacing inconsistency: "7AM" should be "7 AM" to match document style
-
-TEXT TO PROOFREAD:
+Text to review:
 `;
+
+const PROOFREADING_PROMPT_SUFFIX = `
+
+HAMPTON GOLF REQUIRED CAPITALIZATIONS:
+When these words appear in ANY form, they MUST be capitalized as shown:
+- "member" or "members" → "Member" or "Members"
+- "guest" or "guests" → "Guest" or "Guests"
+- "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
+- "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
+- "team member" or "team members" → "Team Member" or "Team Members"
+- "team" → "Team"
+- "staff" → replace with "Team Member(s)"
+
+WHAT TO CHECK:
+1. Spelling errors
+2. Grammar mistakes
+3. Hampton Golf capitalization violations (see above)
+4. Compound adjectives (AP Style):
+5. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
+6. Check date accuracy ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year
+
+LOCATION FORMATTING:
+- For SINGLE-PAGE documents: Use specific section names or menu item names as location
+  Example: "STARTERS section, French Onion Soup item"
+- For MULTI-PAGE documents (2+ pages): Include page number AND specific location
+  Example: "Page 1, ENTRÉES section, Salmon item"
+
+First, determine if the document has multiple pages by looking for "Page 2:" or similar markers.
+
+FORMAT YOUR RESPONSE:
+List only genuine errors, one per line:
+- [Location with specific section/item] > [Error] should be [Correction]
+
+If no errors found: "No errors found."
+
+IMPORTANT NOTES:
+- Be SPECIFIC about location - include section name AND item name when applicable
+- IGNORE spacing issues that appear to be PDF artifacts (like "8 " + . 75")
+- DO NOT report on style preferences, only actual errors
+- Focus on real mistakes that need correction`;
 
 // Initialize application
 function initializeApp() {
@@ -1038,6 +1042,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
