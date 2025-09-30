@@ -66,7 +66,7 @@ WHAT TO CHECK:
 2. Grammar mistakes
 3. Hampton Golf capitalization violations (see above)
 4. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
-5. Check date accuracy ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year, 2025
+5. Check date accuracy ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year, 2025. Only output a result if there is an error with the date
 
 LOCATION FORMATTING:
 - For SINGLE-PAGE documents: Use specific section names or menu item names as location
@@ -1043,6 +1043,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
