@@ -67,7 +67,7 @@ WHAT TO CHECK:
 3. Hampton Golf capitalization violations (see above)
 4. Compound adjectives (AP Style):
 5. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
-6. Check date accuracy ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year
+6. Check date accuracy ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year, 2025
 
 LOCATION FORMATTING:
 - For SINGLE-PAGE documents: Use specific section names or menu item names as location
@@ -1044,6 +1044,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
