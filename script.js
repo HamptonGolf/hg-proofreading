@@ -728,10 +728,12 @@ async function proofreadWithClaude(text) {
                 const parts = content.split('>');
                 
                 if (parts.length >= 2) {
+                    const correctionPart = parts.slice(1).join('>').trim();
+                    
                     errors.push({
                         location: parts[0].trim(),
-                        error: content,
-                        correction: parts.slice(1).join('>').trim(),
+                        error: correctionPart.split(' should be ')[0] ? correctionPart.split(' should be ')[0].trim() : correctionPart,
+                        correction: correctionPart,
                         type: 'claude'
                     });
                 }
@@ -927,7 +929,7 @@ function displayCombinedResults(errors) {
                 <div class="error-number">${index + 1}</div>
                 <div class="error-content">
                     <div class="error-location">${error.location}</div>
-                    <div class="error-description">${error.error} should be ${error.correction}</div>
+                    <div class="error-description">${error.correction}</div>
                 </div>
                 <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
                     <span class="action-icon">📋</span>
@@ -1195,5 +1197,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
-
-
