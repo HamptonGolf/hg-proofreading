@@ -961,22 +961,32 @@ function displayCombinedResults(errors) {
         errorList.innerHTML = '';
         
         errors.forEach((error, index) => {
-            const li = document.createElement('li');
-            li.className = 'error-item';
-            li.style.animationDelay = `${index * 0.05}s`;
-            
-                li.innerHTML = `
-                    <div class="error-number">${index + 1}</div>
-                    <div class="error-content">
-                        <div class="error-location">${error.location}</div>
-                        <div class="error-description">${error.error} should be ${error.correction}</div>
-                    </div>
-                <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
-                    <span class="action-icon">📋</span>
-                </button>
-            `;
-            errorList.appendChild(li);
-        });
+    const li = document.createElement('li');
+    li.className = 'error-item';
+    li.style.animationDelay = `${index * 0.05}s`;
+    
+    // Format description based on error type
+    let description;
+    if (error.type === 'capitalization' || error.type === 'date' || error.type === 'style') {
+        // Rules engine errors: need to add "should be"
+        description = `${error.error} should be ${error.correction}`;
+    } else {
+        // Claude errors: already formatted with "should be"
+        description = error.correction;
+    }
+    
+    li.innerHTML = `
+        <div class="error-number">${index + 1}</div>
+        <div class="error-content">
+            <div class="error-location">${error.location}</div>
+            <div class="error-description">${description}</div>
+        </div>
+        <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
+            <span class="action-icon">📋</span>
+        </button>
+    `;
+    errorList.appendChild(li);
+});
         
         errorCount.innerHTML = `
             <span class="count-number">${errors.length}</span>
