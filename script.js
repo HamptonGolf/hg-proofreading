@@ -525,6 +525,7 @@ function runRulesEngine(text) {
         { pattern: /\bneighbors?\b/gi, correct: 'Neighbor(s)' },
         { pattern: /\bresidents?\b/gi, correct: 'Resident(s)' },
         { pattern: /\bhomeowners?\b/gi, correct: 'Homeowner(s)' },
+        { pattern: /\bteam\b/gi, correct: 'Team' },
         { pattern: /\bteam members?\b/gi, correct: 'Team Member(s)' }
     ];
     
