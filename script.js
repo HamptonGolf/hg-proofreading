@@ -61,6 +61,13 @@ Rules:
 Text:
 `;
 
+const PROOFREADING_PROMPT_SUFFIX = `
+
+List only genuine errors found in the text:
+- [Specific location] > [Error] should be [Correction]
+
+If no errors: "No errors found."`;
+
 // Initialize application
 function initializeApp() {
     console.log('🏌️ Hampton Golf AI Proofreader Initializing...');
@@ -1188,4 +1195,5 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
