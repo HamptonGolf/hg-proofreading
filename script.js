@@ -43,51 +43,23 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are a professional proofreader reviewing documents for Hampton Golf. Apply AP style guidelines and Hampton Golf's specific rules.
+const PROOFREADING_PROMPT = `Proofread this Hampton Golf document for errors only. Do not check these specific words for capitalization (automated separately): member, guest, neighbor, resident, homeowner, team member.
 
-Text to review:
+Find actual mistakes:
+- Spelling errors and typos (ignore OCR artifacts)
+- Grammar errors
+- Capitalization errors (proper nouns, sentence starts, titles—but NOT the automated words listed above)
+- Punctuation errors
+- Inconsistent time formatting (e.g., "7AM" in one place, "8 AM" elsewhere—only flag if inconsistent within same document)
+- Missing accent marks (e.g., "Remoulade" should be "Rémoulade")
+
+Rules:
+- Each error gets ONE bullet point only
+- Do not suggest word additions unless they fix grammar/spelling
+- Ignore spacing in headers—only flag header misspellings/punctuation
+
+Text:
 `;
-
-const PROOFREADING_PROMPT_SUFFIX = `
-
-HAMPTON GOLF REQUIRED CAPITALIZATIONS:
-When these words appear in ANY form, they MUST be capitalized as shown:
-- "member" or "members" → "Member" or "Members"
-- "guest" or "guests" → "Guest" or "Guests"
-- "neighbor" or "neighbors" → "Neighbor" or "Neighbors"
-- "resident" or "residents" → "Resident" or "Residents"
-- "homeowner" or "homeowners" → "Homeowner" or "Homeowners"
-- "team member" or "team members" → "Team Member" or "Team Members"
-- "team" → "Team" when referring to an employee of the property
-- "staff" → replace with "Team Member(s)"
-
-WHAT TO CHECK:
-1. Spelling errors
-2. Grammar mistakes
-3. Hampton Golf capitalization violations (see above)
-4. Consistent formatting and spacing (but ignore obvious PDF extraction artifacts like broken spacing in numbers)
-5. Check date accuracy ONLY when a day name is given with a date (e.g., "Wednesday, October 21"). Verify the day matches the date in the current year, 2025. Only output a result if there is an error with the date
-
-LOCATION FORMATTING:
-- For SINGLE-PAGE documents: Use specific section names or menu item names as location
-  Example: "STARTERS section, French Onion Soup item"
-- For MULTI-PAGE documents (2+ pages): Include page number AND specific location
-  Example: "Page 1, ENTRÉES section, Salmon item"
-
-First, determine if the document has multiple pages by looking for "Page 2:" or similar markers.
-
-FORMAT YOUR RESPONSE:
-List only genuine errors, one per line:
-- [Location with specific section/item] > [Error] should be [Correction]
-
-If no errors found: "No errors found."
-
-IMPORTANT NOTES:
-- Be SPECIFIC about location - include section name AND item name when applicable
-- IGNORE spacing issues that appear to be PDF artifacts (like "8 " + . 75")
-- DO NOT report on style preferences, only actual errors
-- Only list each error once
-- Focus on real mistakes that need correction, do not list things that are already correct`;
 
 // Initialize application
 function initializeApp() {
@@ -535,6 +507,87 @@ function updateLoadingProgress(percentage, message) {
     }
 }
 
+// Rule-based error detection
+function runRulesEngine(text) {
+    const errors = [];
+    
+    // Capitalization rules
+    const capitalizeWords = [
+        { pattern: /\bmembers?\b/gi, correct: 'Member(s)' },
+        { pattern: /\bguests?\b/gi, correct: 'Guest(s)' },
+        { pattern: /\bneighbors?\b/gi, correct: 'Neighbor(s)' },
+        { pattern: /\bresidents?\b/gi, correct: 'Resident(s)' },
+        { pattern: /\bhomeowners?\b/gi, correct: 'Homeowner(s)' },
+        { pattern: /\bteam members?\b/gi, correct: 'Team Member(s)' }
+    ];
+    
+    capitalizeWords.forEach(rule => {
+        let match;
+        const regex = new RegExp(rule.pattern);
+        const lines = text.split('\n');
+        
+        lines.forEach((line, lineIndex) => {
+            let searchRegex = new RegExp(rule.pattern.source, rule.pattern.flags);
+            while ((match = searchRegex.exec(line)) !== null) {
+                const found = match[0];
+                const firstChar = found.charAt(0);
+                
+                if (firstChar !== firstChar.toUpperCase()) {
+                    errors.push({
+                        location: `Line ${lineIndex + 1}`,
+                        error: found,
+                        correction: rule.correct,
+                        type: 'capitalization'
+                    });
+                }
+            }
+        });
+    });
+    
+    // Date validation
+    const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
+    let dateMatch;
+    
+    while ((dateMatch = datePattern.exec(text)) !== null) {
+        const dayName = dateMatch[1];
+        const month = dateMatch[2];
+        const day = parseInt(dateMatch[3]);
+        
+        const monthMap = {
+            'January': 0, 'February': 1, 'March': 2, 'April': 3,
+            'May': 4, 'June': 5, 'July': 6, 'August': 7,
+            'September': 8, 'October': 9, 'November': 10, 'December': 11
+        };
+        
+        if (monthMap.hasOwnProperty(month)) {
+            const date = new Date(2025, monthMap[month], day);
+            const actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+            
+            if (dayName !== actualDayName) {
+                errors.push({
+                    location: 'Date check',
+                    error: `${dayName}, ${month} ${day}`,
+                    correction: `${actualDayName}, ${month} ${day}`,
+                    type: 'date'
+                });
+            }
+        }
+    }
+    
+    // Staff → Team Member
+    const staffPattern = /\bstaff\b/gi;
+    if (staffPattern.test(text)) {
+        errors.push({
+            location: 'Style check',
+            error: '"staff"',
+            correction: '"Team Member(s)"',
+            type: 'style'
+        });
+    }
+    
+    return errors;
+}
+
 // Main Proofreading Function with Enhanced Error Handling
 async function startProofreading() {
     if (isProcessing) {
@@ -542,7 +595,6 @@ async function startProofreading() {
         return;
     }
     
-    // Check API key
     if (!apiKey) {
         showNotification('Please enter and save your Claude API key first', 'error');
         shakeElement(document.querySelector('.api-key-section'));
@@ -550,7 +602,6 @@ async function startProofreading() {
         return;
     }
     
-    // Get content to proofread
     const activeTab = document.querySelector('.tab-content.active');
     if (!activeTab) {
         showNotification('Please select an input method', 'error');
@@ -592,32 +643,36 @@ async function startProofreading() {
         }
     }
     
-    // Clear draft if analyzing
     if (activeTab.id === 'text-tab') {
         localStorage.removeItem('draft_content');
     }
     
-    // Call Claude API
-    proofreadWithClaude(textToProofread);
-}
-
-async function proofreadWithClaude(text) {
     isProcessing = true;
     showLoading(true);
     hideAllNotifications();
-    const activeTab = document.querySelector('.tab-content.active');
-    const loadingMessage = activeTab && activeTab.id === 'file-tab' 
-        ? 'Analyzing your file with Claude AI...' 
-        : 'Analyzing your text with Claude AI...';
-    updateLoadingProgress(85, loadingMessage);
     
+    updateLoadingProgress(10, 'Running style checks...');
+    const ruleErrors = runRulesEngine(textToProofread);
+    
+    updateLoadingProgress(30, 'Checking spelling and grammar with Claude AI...');
+    const claudeErrors = await proofreadWithClaude(textToProofread);
+    
+    const allErrors = [...ruleErrors, ...claudeErrors];
+    
+    updateLoadingProgress(100, 'Analysis complete!');
+    setTimeout(() => {
+        displayCombinedResults(allErrors);
+        showLoading(false);
+        isProcessing = false;
+    }, 500);
+}
+
+async function proofreadWithClaude(text) {
     const fullPrompt = PROOFREADING_PROMPT + text + PROOFREADING_PROMPT_SUFFIX;
     
-    console.log('🔍 Analyzing text with Claude AI...');
+    console.log('Analyzing text with Claude AI...');
     
     try {
-        updateLoadingProgress(90, 'Analyzing With Claude AI...');
-        
         const response = await fetch('/.netlify/functions/proofread', {
             method: 'POST',
             headers: {
@@ -646,27 +701,42 @@ async function proofreadWithClaude(text) {
             throw new Error(errorMessage);
         }
         
-        updateLoadingProgress(95, 'Processing results...');
-        
         if (!data.content || !data.content[0] || !data.content[0].text) {
             throw new Error('Invalid response format from API');
         }
         
-        const proofreadingResults = data.content[0].text;
+        const resultText = data.content[0].text;
         
-        updateLoadingProgress(100, 'Analysis complete!');
+        if (resultText.toLowerCase().includes('no errors found')) {
+            return [];
+        }
         
-        setTimeout(() => {
-            displayResults(proofreadingResults);
-            showLoading(false);
-            isProcessing = false;
-        }, 500);
+        const lines = resultText.split('\n');
+        const errors = [];
+        
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('-')) {
+                const content = trimmedLine.substring(1).trim();
+                const parts = content.split('>');
+                
+                if (parts.length >= 2) {
+                    errors.push({
+                        location: parts[0].trim(),
+                        error: content,
+                        correction: parts.slice(1).join('>').trim(),
+                        type: 'claude'
+                    });
+                }
+            }
+        }
+        
+        return errors;
         
     } catch (error) {
-        showLoading(false);
-        isProcessing = false;
-        showNotification(`Error: ${error.message}`, 'error', 5000);
         console.error('API error:', error);
+        showNotification(`Error: ${error.message}`, 'error', 5000);
+        return [];
     }
 }
 
@@ -796,6 +866,81 @@ function displayResults(resultText) {
     resultsSection.setAttribute('aria-hidden', 'false');
     
     // Smooth scroll to results
+    setTimeout(() => {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 300);
+}
+
+function displayCombinedResults(errors) {
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    const errorCount = document.getElementById('error-count');
+    
+    if (!resultsSection || !errorList || !errorCount) {
+        console.error('Results elements not found');
+        return;
+    }
+    
+    currentResults = errors.map(e => `- ${e.location} > ${e.error} should be ${e.correction}`).join('\n');
+    
+    updateTimestamp();
+    
+    if (errors.length === 0) {
+        const successTemplate = document.getElementById('success-template');
+        if (successTemplate) {
+            errorList.innerHTML = successTemplate.innerHTML;
+        } else {
+            errorList.innerHTML = `
+                <div class="no-errors-message">
+                    <div class="success-animation">
+                        <div class="check-icon">✓</div>
+                    </div>
+                    <h3>Perfect Score!</h3>
+                    <p>Your document meets all Hampton Golf excellence standards</p>
+                </div>
+            `;
+        }
+        
+        errorCount.innerHTML = `
+            <span class="count-number">0</span>
+            <span class="count-label">issues found</span>
+        `;
+        errorCount.className = 'error-count no-errors';
+        
+        showNotification('Document analysis complete - Perfect score!', 'success');
+    } else {
+        errorList.innerHTML = '';
+        
+        errors.forEach((error, index) => {
+            const li = document.createElement('li');
+            li.className = 'error-item';
+            li.style.animationDelay = `${index * 0.05}s`;
+            
+            li.innerHTML = `
+                <div class="error-number">${index + 1}</div>
+                <div class="error-content">
+                    <div class="error-location">${error.location}</div>
+                    <div class="error-description">${error.error} should be ${error.correction}</div>
+                </div>
+                <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
+                    <span class="action-icon">📋</span>
+                </button>
+            `;
+            errorList.appendChild(li);
+        });
+        
+        errorCount.innerHTML = `
+            <span class="count-number">${errors.length}</span>
+            <span class="count-label">issue${errors.length === 1 ? '' : 's'} found</span>
+        `;
+        errorCount.className = 'error-count has-errors';
+        
+        showNotification(`Analysis complete - ${errors.length} issue${errors.length === 1 ? '' : 's'} found`, 'info');
+    }
+    
+    resultsSection.classList.add('show');
+    resultsSection.setAttribute('aria-hidden', 'false');
+    
     setTimeout(() => {
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 300);
@@ -1043,17 +1188,4 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
