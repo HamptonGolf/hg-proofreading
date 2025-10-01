@@ -552,6 +552,7 @@ function runRulesEngine(text) {
     });
     
     // Date validation - detect year from document
+console.log('🔍 Starting date validation...');
 const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
 let dateMatch;
 
@@ -566,11 +567,15 @@ let endYear = 2025;
 if (yearRangeMatch) {
     startYear = parseInt('20' + yearRangeMatch[1]);
     endYear = parseInt('20' + yearRangeMatch[2]);
+    console.log(`📅 Detected year range: ${startYear}-${endYear}`);
 } else {
     const singleYearMatch = text.match(singleYearPattern);
     if (singleYearMatch) {
         startYear = parseInt(singleYearMatch[1]);
         endYear = parseInt(singleYearMatch[1]);
+        console.log(`📅 Detected single year: ${startYear}`);
+    } else {
+        console.log(`📅 No year found, defaulting to ${startYear}`);
     }
 }
 
@@ -578,6 +583,8 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
     const dayName = dateMatch[1];
     const month = dateMatch[2];
     const day = parseInt(dateMatch[3]);
+    
+    console.log(`📆 Checking: ${dayName}, ${month} ${day}`);
     
     const monthMap = {
         'January': 0, 'February': 1, 'March': 2, 'April': 3,
@@ -588,7 +595,6 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
     if (monthMap.hasOwnProperty(month)) {
         const monthNum = monthMap[month];
         
-        // Check both years if we have a range
         let correctYear = null;
         let actualDayName = null;
         
@@ -596,17 +602,21 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
             const date = new Date(year, monthNum, day);
             const testDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
             
+            console.log(`  Testing ${year}: ${month} ${day} is a ${testDayName}`);
+            
             if (testDayName === dayName) {
                 correctYear = year;
                 actualDayName = testDayName;
+                console.log(`  ✅ Match found in ${year}`);
                 break;
             }
         }
         
-        // If no matching year found, it's an error
         if (!correctYear) {
             const date = new Date(startYear, monthNum, day);
             actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+            
+            console.log(`  ❌ ERROR: ${dayName}, ${month} ${day} should be ${actualDayName}`);
             
             errors.push({
                 location: 'Date check',
@@ -617,6 +627,8 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
         }
     }
 }
+
+console.log(`✅ Date validation complete. Found ${errors.filter(e => e.type === 'date').length} date errors`);
     
     // Staff → Team Member
     const staffPattern = /\bstaff\b/gi;
