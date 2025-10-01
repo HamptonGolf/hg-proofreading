@@ -965,12 +965,12 @@ function displayCombinedResults(errors) {
             li.className = 'error-item';
             li.style.animationDelay = `${index * 0.05}s`;
             
-            li.innerHTML = `
-                <div class="error-number">${index + 1}</div>
-                <div class="error-content">
-                    <div class="error-location">${error.location}</div>
-                    <div class="error-description">${error.correction}</div>
-                </div>
+                li.innerHTML = `
+                    <div class="error-number">${index + 1}</div>
+                    <div class="error-content">
+                        <div class="error-location">${error.location}</div>
+                        <div class="error-description">${error.error} should be ${error.correction}</div>
+                    </div>
                 <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
                     <span class="action-icon">📋</span>
                 </button>
