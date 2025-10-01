@@ -529,27 +529,32 @@ function runRulesEngine(text) {
     ];
     
     capitalizeWords.forEach(rule => {
-        let match;
-        const regex = new RegExp(rule.pattern);
-        const lines = text.split('\n');
-        
-        lines.forEach((line, lineIndex) => {
-            let searchRegex = new RegExp(rule.pattern.source, rule.pattern.flags);
-            while ((match = searchRegex.exec(line)) !== null) {
-                const found = match[0];
-                const firstChar = found.charAt(0);
+    let match;
+    const regex = new RegExp(rule.pattern);
+    const lines = text.split('\n');
+    
+    lines.forEach((line, lineIndex) => {
+        let searchRegex = new RegExp(rule.pattern.source, rule.pattern.flags);
+        while ((match = searchRegex.exec(line)) !== null) {
+            const found = match[0];
+            const firstChar = found.charAt(0);
+            
+            if (firstChar !== firstChar.toUpperCase()) {
+                // Get surrounding context (10 chars before and after)
+                const start = Math.max(0, match.index - 10);
+                const end = Math.min(line.length, match.index + found.length + 10);
+                const context = line.substring(start, end).trim();
                 
-                if (firstChar !== firstChar.toUpperCase()) {
-                    errors.push({
-                        location: `Line ${lineIndex + 1}`,
-                        error: found,
-                        correction: rule.correct,
-                        type: 'capitalization'
-                    });
-                }
+                errors.push({
+                    location: `Line ${lineIndex + 1}`,
+                    error: `"${found}" in "${context}"`,
+                    correction: `"${found.charAt(0).toUpperCase() + found.slice(1)}"`,
+                    type: 'capitalization'
+                });
             }
-        });
+        }
     });
+});
     
     // Date validation - detect year from document
 const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
