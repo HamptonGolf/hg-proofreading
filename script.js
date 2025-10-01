@@ -551,35 +551,72 @@ function runRulesEngine(text) {
         });
     });
     
-    // Date validation
-    const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
-    let dateMatch;
+    // Date validation - detect year from document
+const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
+let dateMatch;
+
+// Try to detect year range or single year from document
+const yearRangePattern = /20(\d{2})\s*-\s*20(\d{2})/;
+const singleYearPattern = /\b(20\d{2})\b/;
+
+const yearRangeMatch = text.match(yearRangePattern);
+let startYear = 2025;
+let endYear = 2025;
+
+if (yearRangeMatch) {
+    startYear = parseInt('20' + yearRangeMatch[1]);
+    endYear = parseInt('20' + yearRangeMatch[2]);
+} else {
+    const singleYearMatch = text.match(singleYearPattern);
+    if (singleYearMatch) {
+        startYear = parseInt(singleYearMatch[1]);
+        endYear = parseInt(singleYearMatch[1]);
+    }
+}
+
+while ((dateMatch = datePattern.exec(text)) !== null) {
+    const dayName = dateMatch[1];
+    const month = dateMatch[2];
+    const day = parseInt(dateMatch[3]);
     
-    while ((dateMatch = datePattern.exec(text)) !== null) {
-        const dayName = dateMatch[1];
-        const month = dateMatch[2];
-        const day = parseInt(dateMatch[3]);
+    const monthMap = {
+        'January': 0, 'February': 1, 'March': 2, 'April': 3,
+        'May': 4, 'June': 5, 'July': 6, 'August': 7,
+        'September': 8, 'October': 9, 'November': 10, 'December': 11
+    };
+    
+    if (monthMap.hasOwnProperty(month)) {
+        const monthNum = monthMap[month];
         
-        const monthMap = {
-            'January': 0, 'February': 1, 'March': 2, 'April': 3,
-            'May': 4, 'June': 5, 'July': 6, 'August': 7,
-            'September': 8, 'October': 9, 'November': 10, 'December': 11
-        };
+        // Check both years if we have a range
+        let correctYear = null;
+        let actualDayName = null;
         
-        if (monthMap.hasOwnProperty(month)) {
-            const date = new Date(2025, monthMap[month], day);
-            const actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+        for (let year = startYear; year <= endYear; year++) {
+            const date = new Date(year, monthNum, day);
+            const testDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
             
-            if (dayName !== actualDayName) {
-                errors.push({
-                    location: 'Date check',
-                    error: `${dayName}, ${month} ${day}`,
-                    correction: `${actualDayName}, ${month} ${day}`,
-                    type: 'date'
-                });
+            if (testDayName === dayName) {
+                correctYear = year;
+                actualDayName = testDayName;
+                break;
             }
         }
+        
+        // If no matching year found, it's an error
+        if (!correctYear) {
+            const date = new Date(startYear, monthNum, day);
+            actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+            
+            errors.push({
+                location: 'Date check',
+                error: `${dayName}, ${month} ${day}`,
+                correction: `${actualDayName}, ${month} ${day}`,
+                type: 'date'
+            });
+        }
     }
+}
     
     // Staff → Team Member
     const staffPattern = /\bstaff\b/gi;
