@@ -46,7 +46,7 @@ function waitForPDFjs(timeout = 5000) {
 const PROOFREADING_PROMPT = `Proofread this Hampton Golf document for errors only. Do not check these specific words for capitalization (automated separately): member, guest, neighbor, resident, homeowner, team member.
 
 Find actual mistakes:
-- Spelling errors and typos (ignore OCR artifacts)
+- Spelling errors and typos - check every word carefully
 - Grammar errors
 - Capitalization errors (proper nouns, sentence starts, titles—but NOT the automated words listed above)
 - Punctuation errors
@@ -1248,3 +1248,4 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
