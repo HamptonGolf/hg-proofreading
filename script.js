@@ -732,7 +732,7 @@ async function startProofreading() {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const targetPosition = scrollTop + rect.top - 150;
-            smoothScrollTo(targetPosition, 1000);
+            smoothScrollTo(targetPosition, 1500);
         }
         
     } else if (activeTab.id === 'file-tab') {
@@ -753,7 +753,7 @@ async function startProofreading() {
                 const rect = loadingSection.getBoundingClientRect();
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 const targetPosition = scrollTop + rect.top - 150;
-                smoothScrollTo(targetPosition, 1000);
+                smoothScrollTo(targetPosition, 1500);
             }
             
             textToProofread = await extractTextFromPDF(selectedFile);
