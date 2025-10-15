@@ -727,7 +727,6 @@ async function startProofreading() {
         localStorage.removeItem('draft_content');
         
         // Smooth scroll to loading section
-        setTimeout(() => {
             const loadingSection = document.getElementById('loading');
             if (loadingSection) {
                 const rect = loadingSection.getBoundingClientRect();
@@ -735,7 +734,6 @@ async function startProofreading() {
                 const targetPosition = scrollTop + rect.top - 150;
                 smoothScrollTo(targetPosition, 2500); // 2.5 second smooth scroll
             }
-        }, 100);
         
     } else if (activeTab.id === 'file-tab') {
         if (!selectedFile) {
