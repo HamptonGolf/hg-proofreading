@@ -1148,8 +1148,26 @@ async function proofreadWithClaude(text) {
     setTimeout(() => {
         const rect = resultsSection.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetPosition = scrollTop + rect.top - 150;  // 150px offset from top
-        smoothScrollTo(targetPosition, 1000);  // Same smooth scroll as loading
+        
+        // Adjust scroll position based on number of errors
+        let offset;
+        if (errors.length === 0) {
+            // No errors - minimal scroll needed
+            offset = window.innerHeight / 2;  // Center it
+        } else if (errors.length <= 2) {
+            // Few errors - don't scroll as far
+            offset = 400;  // Stop earlier
+        } else {
+            // Many errors - normal scroll
+            offset = 150;  // Standard offset
+        }
+        
+        const targetPosition = scrollTop + rect.top - offset;
+        
+        // Only scroll if we actually need to
+        if (Math.abs(targetPosition - scrollTop) > 100) {  // Only scroll if more than 100px difference
+            smoothScrollTo(targetPosition, 1000);
+        }
     }, 300);
 }
 
