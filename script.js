@@ -721,19 +721,19 @@ async function startProofreading() {
             return;
         }
         
-        // For text input, show loading and scroll
+        // For text input, show loading and scroll immediately
         isProcessing = true;
         showLoading(true);
         localStorage.removeItem('draft_content');
         
-        // Smooth scroll to loading section
-            const loadingSection = document.getElementById('loading');
-            if (loadingSection) {
-                const rect = loadingSection.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetPosition = scrollTop + rect.top - 150;
-                smoothScrollTo(targetPosition, 2500); // 2.5 second smooth scroll
-            }
+        // Start scroll IMMEDIATELY - no delay
+        const loadingSection = document.getElementById('loading');
+        if (loadingSection) {
+            const rect = loadingSection.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetPosition = scrollTop + rect.top - 150;
+            smoothScrollTo(targetPosition, 2500);
+        }
         
     } else if (activeTab.id === 'file-tab') {
         if (!selectedFile) {
@@ -747,16 +747,14 @@ async function startProofreading() {
             showLoading(true);
             updateLoadingProgress(0, 'Starting PDF analysis...');
             
-            // Smooth scroll to loading section
-            setTimeout(() => {
-                const loadingSection = document.getElementById('loading');
-                if (loadingSection) {
-                    const rect = loadingSection.getBoundingClientRect();
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const targetPosition = scrollTop + rect.top - 150;
-                    smoothScrollTo(targetPosition, 2500); // 2.5 second smooth scroll
-                }
-            }, 100);
+            // Start scroll IMMEDIATELY - no delay
+            const loadingSection = document.getElementById('loading');
+            if (loadingSection) {
+                const rect = loadingSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetPosition = scrollTop + rect.top - 150;
+                smoothScrollTo(targetPosition, 2500);
+            }
             
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
