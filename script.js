@@ -1141,67 +1141,66 @@ function copyError(errorText) {
 }
 
 function clearResults() {
-    // Clear the results section
+    // Get references to elements
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
     const textInput = document.getElementById('text-input');
     const fileInput = document.getElementById('file-input');
     const fileInfo = document.getElementById('file-info');
     
-    // Hide results section with animation
+    // First, animate the results section fading out
     if (resultsSection) {
-        resultsSection.classList.remove('show');
-        resultsSection.setAttribute('aria-hidden', 'true');
+        resultsSection.style.opacity = '0';
+        resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     }
     
-    // Clear error list
-    if (errorList) {
-        errorList.innerHTML = '';
-    }
-    
-    // Clear current results
-    currentResults = null;
-    
-    // Clear text input
-    if (textInput) {
-        textInput.value = '';
-        updateCharacterCount(0);
-    }
-    
-    // Clear file input and info
-    if (fileInput) {
-        fileInput.value = '';
-    }
-    if (fileInfo) {
-        fileInfo.classList.remove('show');
-    }
-    selectedFile = null;
-    
-    // Clear draft content from localStorage
-    localStorage.removeItem('draft_content');
-    
-    // Smooth scroll to top with custom easing
-    const scrollDuration = 1200; // Duration in milliseconds
-    const scrollStep = -window.scrollY / (scrollDuration / 15);
-    
-    const scrollInterval = setInterval(() => {
-        if (window.scrollY !== 0) {
-            window.scrollBy(0, scrollStep);
-        } else {
-            clearInterval(scrollInterval);
-        }
-    }, 15);
-    
-    // Fallback using native smooth scroll after custom animation
+    // After animation completes, clear everything and scroll
     setTimeout(() => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    }, scrollDuration);
-    
-    // Show notification
-    showNotification('Results cleared - Ready for new analysis', 'info');
+        // Hide results section
+        if (resultsSection) {
+            resultsSection.classList.remove('show');
+            resultsSection.setAttribute('aria-hidden', 'true');
+            resultsSection.style.opacity = '';
+            resultsSection.style.transform = '';
+            resultsSection.style.transition = '';
+        }
+        
+        // Clear error list
+        if (errorList) {
+            errorList.innerHTML = '';
+        }
+        
+        // Clear current results
+        currentResults = null;
+        
+        // Clear text input
+        if (textInput) {
+            textInput.value = '';
+            updateCharacterCount(0);
+        }
+        
+        // Clear file input and info
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        if (fileInfo) {
+            fileInfo.classList.remove('show');
+        }
+        selectedFile = null;
+        
+        // Clear draft content from localStorage
+        localStorage.removeItem('draft_content');
+        
+        // Smooth scroll to top using your preferred function
+        smoothScrollTo(0, 1000);
+        
+        // Show notification after scroll starts
+        setTimeout(() => {
+            showNotification('Results cleared - Ready for new analysis', 'info');
+        }, 300);
+        
+    }, 500); // Wait for fade out animation to complete
 }
 
 // Utility Functions
@@ -1260,6 +1259,40 @@ function showNotification(message, type = 'info', duration = 3000) {
             }, CONFIG.ANIMATION_DURATION);
         }, duration);
     }
+}
+
+// Smooth scroll function
+function smoothScrollTo(targetPosition, duration) {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
+    if (isIOS) {
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+        return;
+    }
+
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    let startTime = null;
+
+    function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const run = ease(timeElapsed, startPosition, distance, duration);
+        window.scrollTo(0, run);
+        if (timeElapsed < duration) requestAnimationFrame(animation);
+    }
+
+    function ease(t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t + b;
+        t--;
+        return -c / 2 * (t * (t - 2) - 1) + b;
+    }
+
+    requestAnimationFrame(animation);
 }
 
 function hideAllNotifications() {
