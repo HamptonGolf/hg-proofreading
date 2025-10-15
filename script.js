@@ -1180,11 +1180,25 @@ function clearResults() {
     // Clear draft content from localStorage
     localStorage.removeItem('draft_content');
     
-    // Scroll to top smoothly
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
+    // Smooth scroll to top with custom easing
+    const scrollDuration = 1200; // Duration in milliseconds
+    const scrollStep = -window.scrollY / (scrollDuration / 15);
+    
+    const scrollInterval = setInterval(() => {
+        if (window.scrollY !== 0) {
+            window.scrollBy(0, scrollStep);
+        } else {
+            clearInterval(scrollInterval);
+        }
+    }, 15);
+    
+    // Fallback using native smooth scroll after custom animation
+    setTimeout(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }, scrollDuration);
     
     // Show notification
     showNotification('Results cleared - Ready for new analysis', 'info');
