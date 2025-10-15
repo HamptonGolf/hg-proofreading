@@ -376,7 +376,7 @@ function handleDrop(e) {
     }
 }
 
-function processFile(file) {
+async function processFile(file) {
     if (!file) return;
     
     // Validate file type
@@ -392,12 +392,24 @@ function processFile(file) {
         return;
     }
     
-    // Clear any previous results when new file is attached
+    // Clear any previous results when new file is attached with animation
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
     if (resultsSection && resultsSection.classList.contains('show')) {
+        // Animate out
+        resultsSection.style.opacity = '0';
+        resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        // Wait for animation, then clear
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         resultsSection.classList.remove('show');
         resultsSection.setAttribute('aria-hidden', 'true');
+        resultsSection.style.opacity = '';
+        resultsSection.style.transform = '';
+        resultsSection.style.transition = '';
+        
         if (errorList) {
             errorList.innerHTML = '';
         }
@@ -650,12 +662,24 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
 
 // Main Proofreading Function with Enhanced Error Handling
 async function startProofreading() {
-    // Clear any previous results first
+    // Clear any previous results first with animation
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
     if (resultsSection && resultsSection.classList.contains('show')) {
+        // Animate out
+        resultsSection.style.opacity = '0';
+        resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        // Wait for animation, then clear
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         resultsSection.classList.remove('show');
         resultsSection.setAttribute('aria-hidden', 'true');
+        resultsSection.style.opacity = '';
+        resultsSection.style.transform = '';
+        resultsSection.style.transition = '';
+        
         if (errorList) {
             errorList.innerHTML = '';
         }
@@ -705,11 +729,14 @@ async function startProofreading() {
         
         try {
             showLoading(true);
-            // Scroll to loading section immediately after showing it
+            // Scroll to loading section with custom smooth scroll
             setTimeout(() => {
                 const loadingSection = document.getElementById('loading');
                 if (loadingSection) {
-                    loadingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const rect = loadingSection.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetPosition = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+                    smoothScrollTo(targetPosition, 1000);
                 }
             }, 100);
             updateLoadingProgress(0, 'Starting PDF analysis...');
@@ -729,11 +756,14 @@ async function startProofreading() {
     isProcessing = true;
     showLoading(true);
     
-    // Scroll to loading section immediately after showing it
+    // Scroll to loading section with custom smooth scroll
     setTimeout(() => {
         const loadingSection = document.getElementById('loading');
         if (loadingSection) {
-            loadingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const rect = loadingSection.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetPosition = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
+            smoothScrollTo(targetPosition, 1000);
         }
     }, 100);
     
