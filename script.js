@@ -790,7 +790,7 @@ async function proofreadWithClaude(text) {
     }
 }
 
-// Enhanced Results Display
+    // Enhanced Results Display
     function displayResults(resultText) {
         const resultsSection = document.getElementById('results');
         const errorList = document.getElementById('error-list');
@@ -835,9 +835,17 @@ async function proofreadWithClaude(text) {
             `;
             errorCount.className = 'error-count no-errors';
             
-            // Hide the results footer (copy button)
+            // Update results footer for no errors (hide copy, show clear)
             if (resultsFooter) {
-                resultsFooter.style.display = 'none';
+                resultsFooter.innerHTML = `
+                    <div class="export-options">
+                        <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                            <span class="export-icon">🔄</span>
+                            <span>Clear & Start Over</span>
+                        </button>
+                    </div>
+                `;
+                resultsFooter.style.display = 'block';
             }
             
             showNotification('Document analysis complete - Perfect score!', 'success');
@@ -879,9 +887,17 @@ async function proofreadWithClaude(text) {
                 `;
                 errorCount.className = 'error-count no-errors';
                 
-                // Hide the results footer (copy button)
+                // Update results footer for no errors (hide copy, show clear)
                 if (resultsFooter) {
-                    resultsFooter.style.display = 'none';
+                    resultsFooter.innerHTML = `
+                        <div class="export-options">
+                            <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                                <span class="export-icon">🔄</span>
+                                <span>Clear & Start Over</span>
+                            </button>
+                        </div>
+                    `;
+                    resultsFooter.style.display = 'block';
                 }
                 
                 showNotification('Document analysis complete - Perfect score!', 'success');
@@ -917,8 +933,20 @@ async function proofreadWithClaude(text) {
                 `;
                 errorCount.className = 'error-count has-errors';
                 
-                // Show the results footer (copy button)
+                // Update results footer to show both copy and clear buttons
                 if (resultsFooter) {
+                    resultsFooter.innerHTML = `
+                        <div class="export-options">
+                            <button class="export-btn copy-btn" onclick="copyResults()" aria-label="Copy to clipboard">
+                                <span class="export-icon">📋</span>
+                                <span>Copy Results</span>
+                            </button>
+                            <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                                <span class="export-icon">🔄</span>
+                                <span>Clear & Start Over</span>
+                            </button>
+                        </div>
+                    `;
                     resultsFooter.style.display = 'block';
                 }
                 
@@ -937,100 +965,120 @@ async function proofreadWithClaude(text) {
     }
 
     function displayCombinedResults(errors) {
-        const resultsSection = document.getElementById('results');
-        const errorList = document.getElementById('error-list');
-        const errorCount = document.getElementById('error-count');
-        const resultsFooter = document.querySelector('.results-footer');
-        
-        if (!resultsSection || !errorList || !errorCount) {
-            console.error('Results elements not found');
-            return;
-        }
-        
-        currentResults = errors.map(e => `- ${e.location} > ${e.error} should be ${e.correction}`).join('\n');
-        
-        updateTimestamp();
-        
-        if (errors.length === 0) {
-            const successTemplate = document.getElementById('success-template');
-            if (successTemplate) {
-                errorList.innerHTML = successTemplate.innerHTML;
-            } else {
-                errorList.innerHTML = `
-                    <div class="no-errors-message">
-                        <div class="success-animation">
-                            <div class="check-icon">✓</div>
-                        </div>
-                        <h3>Perfect Score!</h3>
-                        <p>Your document meets all Hampton Golf excellence standards</p>
-                    </div>
-                `;
-            }
-            
-            errorCount.innerHTML = `
-                <span class="count-number">0</span>
-                <span class="count-label">issues found</span>
-            `;
-            errorCount.className = 'error-count no-errors';
-            
-            // Hide the results footer (copy button)
-            if (resultsFooter) {
-                resultsFooter.style.display = 'none';
-            }
-            
-            showNotification('Document analysis complete - Perfect score!', 'success');
-        } else {
-            errorList.innerHTML = '';
-            
-            errors.forEach((error, index) => {
-                const li = document.createElement('li');
-                li.className = 'error-item';
-                li.style.animationDelay = `${index * 0.05}s`;
-                
-                // Format description based on error type
-                let description;
-                if (error.type === 'capitalization' || error.type === 'date' || error.type === 'style') {
-                    // Rules engine errors: need to add "should be"
-                    description = `${error.error} should be ${error.correction}`;
-                } else {
-                    // Claude errors: already formatted with "should be"
-                    description = error.correction;
-                }
-                
-                li.innerHTML = `
-                    <div class="error-number">${index + 1}</div>
-                    <div class="error-content">
-                        <div class="error-location">${error.location}</div>
-                        <div class="error-description">${description}</div>
-                    </div>
-                    <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
-                        <span class="action-icon">📋</span>
-                    </button>
-                `;
-                errorList.appendChild(li);
-            });
-            
-            errorCount.innerHTML = `
-                <span class="count-number">${errors.length}</span>
-                <span class="count-label">issue${errors.length === 1 ? '' : 's'} found</span>
-            `;
-            errorCount.className = 'error-count has-errors';
-            
-            // Show the results footer (copy button)
-            if (resultsFooter) {
-                resultsFooter.style.display = 'block';
-            }
-            
-            showNotification(`Analysis complete - ${errors.length} issue${errors.length === 1 ? '' : 's'} found`, 'info');
-        }
-        
-        resultsSection.classList.add('show');
-        resultsSection.setAttribute('aria-hidden', 'false');
-        
-        setTimeout(() => {
-            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 300);
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    const errorCount = document.getElementById('error-count');
+    const resultsFooter = document.querySelector('.results-footer');
+    
+    if (!resultsSection || !errorList || !errorCount) {
+        console.error('Results elements not found');
+        return;
     }
+    
+    currentResults = errors.map(e => `- ${e.location} > ${e.error} should be ${e.correction}`).join('\n');
+    
+    updateTimestamp();
+    
+    if (errors.length === 0) {
+        const successTemplate = document.getElementById('success-template');
+        if (successTemplate) {
+            errorList.innerHTML = successTemplate.innerHTML;
+        } else {
+            errorList.innerHTML = `
+                <div class="no-errors-message">
+                    <div class="success-animation">
+                        <div class="check-icon">✓</div>
+                    </div>
+                    <h3>Perfect Score!</h3>
+                    <p>Your document meets all Hampton Golf excellence standards</p>
+                </div>
+            `;
+        }
+        
+        errorCount.innerHTML = `
+            <span class="count-number">0</span>
+            <span class="count-label">issues found</span>
+        `;
+        errorCount.className = 'error-count no-errors';
+        
+        // Update results footer for no errors (hide copy, show clear)
+        if (resultsFooter) {
+            resultsFooter.innerHTML = `
+                <div class="export-options">
+                    <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                        <span class="export-icon">🔄</span>
+                        <span>Clear & Start Over</span>
+                    </button>
+                </div>
+            `;
+            resultsFooter.style.display = 'block';
+        }
+        
+        showNotification('Document analysis complete - Perfect score!', 'success');
+    } else {
+        errorList.innerHTML = '';
+        
+        errors.forEach((error, index) => {
+            const li = document.createElement('li');
+            li.className = 'error-item';
+            li.style.animationDelay = `${index * 0.05}s`;
+            
+            // Format description based on error type
+            let description;
+            if (error.type === 'capitalization' || error.type === 'date' || error.type === 'style') {
+                // Rules engine errors: need to add "should be"
+                description = `${error.error} should be ${error.correction}`;
+            } else {
+                // Claude errors: already formatted with "should be"
+                description = error.correction;
+            }
+            
+            li.innerHTML = `
+                <div class="error-number">${index + 1}</div>
+                <div class="error-content">
+                    <div class="error-location">${error.location}</div>
+                    <div class="error-description">${description}</div>
+                </div>
+                <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
+                    <span class="action-icon">📋</span>
+                </button>
+            `;
+            errorList.appendChild(li);
+        });
+        
+        errorCount.innerHTML = `
+            <span class="count-number">${errors.length}</span>
+            <span class="count-label">issue${errors.length === 1 ? '' : 's'} found</span>
+        `;
+        errorCount.className = 'error-count has-errors';
+        
+        // Update results footer to show both copy and clear buttons
+        if (resultsFooter) {
+            resultsFooter.innerHTML = `
+                <div class="export-options">
+                    <button class="export-btn copy-btn" onclick="copyResults()" aria-label="Copy to clipboard">
+                        <span class="export-icon">📋</span>
+                        <span>Copy Results</span>
+                    </button>
+                    <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                        <span class="export-icon">🔄</span>
+                        <span>Clear & Start Over</span>
+                    </button>
+                </div>
+            `;
+            resultsFooter.style.display = 'block';
+        }
+        
+        showNotification(`Analysis complete - ${errors.length} issue${errors.length === 1 ? '' : 's'} found`, 'info');
+    }
+    
+    resultsSection.classList.add('show');
+    resultsSection.setAttribute('aria-hidden', 'false');
+    
+    setTimeout(() => {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 300);
+}
 
 // Export Functions
 function exportResults(format) {
@@ -1090,6 +1138,56 @@ function copyError(errorText) {
     navigator.clipboard.writeText(decoded).then(() => {
         showNotification('Correction copied', 'success', 1500);
     });
+}
+
+function clearResults() {
+    // Clear the results section
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    const textInput = document.getElementById('text-input');
+    const fileInput = document.getElementById('file-input');
+    const fileInfo = document.getElementById('file-info');
+    
+    // Hide results section with animation
+    if (resultsSection) {
+        resultsSection.classList.remove('show');
+        resultsSection.setAttribute('aria-hidden', 'true');
+    }
+    
+    // Clear error list
+    if (errorList) {
+        errorList.innerHTML = '';
+    }
+    
+    // Clear current results
+    currentResults = null;
+    
+    // Clear text input
+    if (textInput) {
+        textInput.value = '';
+        updateCharacterCount(0);
+    }
+    
+    // Clear file input and info
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    if (fileInfo) {
+        fileInfo.classList.remove('show');
+    }
+    selectedFile = null;
+    
+    // Clear draft content from localStorage
+    localStorage.removeItem('draft_content');
+    
+    // Scroll to top smoothly
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+    
+    // Show notification
+    showNotification('Results cleared - Ready for new analysis', 'info');
 }
 
 // Utility Functions
@@ -1259,6 +1357,7 @@ window.removeFile = removeFile;
 window.exportResults = exportResults;
 window.copyResults = copyResults;
 window.copyError = copyError;
+window.clearResults = clearResults;
 
 // Performance monitoring
 console.log('📊 Performance:', {
