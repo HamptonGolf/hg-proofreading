@@ -729,14 +729,14 @@ async function startProofreading() {
         
         try {
             showLoading(true);
-            // Scroll to loading section with faster smooth scroll (500ms)
+            // Scroll to loading section - exact same as clear results
             setTimeout(() => {
                 const loadingSection = document.getElementById('loading');
                 if (loadingSection) {
                     const rect = loadingSection.getBoundingClientRect();
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const targetPosition = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
-                    smoothScrollTo(targetPosition, 500);
+                    const targetPosition = scrollTop + rect.top - 100; // Position near top with 100px padding
+                    smoothScrollTo(targetPosition, 1000);
                 }
             }, 100);
             updateLoadingProgress(0, 'Starting PDF analysis...');
@@ -756,14 +756,14 @@ async function startProofreading() {
     isProcessing = true;
     showLoading(true);
     
-    // Scroll to loading section with faster smooth scroll (500ms)
+    // Scroll to loading section - exact same as clear results
     setTimeout(() => {
         const loadingSection = document.getElementById('loading');
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - (window.innerHeight / 2) + (rect.height / 2);
-            smoothScrollTo(targetPosition, 500);
+            const targetPosition = scrollTop + rect.top - 100; // Position near top with 100px padding
+            smoothScrollTo(targetPosition, 1000);
         }
     }, 100);
     
