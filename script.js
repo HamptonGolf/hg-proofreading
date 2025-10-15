@@ -729,16 +729,16 @@ async function startProofreading() {
         
         try {
             showLoading(true);
-            // Scroll to loading section - exact same as clear results
+            // Wait for loading animation to complete, then scroll
             setTimeout(() => {
                 const loadingSection = document.getElementById('loading');
                 if (loadingSection) {
                     const rect = loadingSection.getBoundingClientRect();
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const targetPosition = scrollTop + rect.top - 100; // Position near top with 100px padding
-                    smoothScrollTo(targetPosition, 600);
+                    const targetPosition = scrollTop + rect.top - 100;
+                    smoothScrollTo(targetPosition, 800);
                 }
-            }, 100);
+            }, 450); // Wait for loading fade-in animation
             updateLoadingProgress(0, 'Starting PDF analysis...');
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
@@ -756,16 +756,16 @@ async function startProofreading() {
     isProcessing = true;
     showLoading(true);
     
-    // Scroll to loading section - exact same as clear results
+    // Wait for loading animation to complete, then scroll
     setTimeout(() => {
         const loadingSection = document.getElementById('loading');
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - 100; // Position near top with 100px padding
-            smoothScrollTo(targetPosition, 600);
+            const targetPosition = scrollTop + rect.top - 100;
+            smoothScrollTo(targetPosition, 800);
         }
-    }, 100);
+    }, 450); // Wait for loading fade-in animation
     
     hideAllNotifications();
     
