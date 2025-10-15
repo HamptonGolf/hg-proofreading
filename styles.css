@@ -135,8 +135,7 @@ body::after {
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: 1px solid rgba(0, 180, 81, 0.2);
     padding: 24px 0;
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 1000;
     animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     transition: all 0.3s ease;
