@@ -1239,11 +1239,14 @@ function showNotification(message, type = 'info', duration = 3000) {
     notification.innerHTML = `
         <span class="notification-icon">${getNotificationIcon(type)}</span>
         <span class="notification-message">${message}</span>
-        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        <button class="notification-close" onclick="this.parentElement.remove()" aria-label="Close notification">×</button>
     `;
     
     // Add to document
     document.body.appendChild(notification);
+    
+    // Trigger reflow for animation
+    notification.offsetHeight;
     
     // Animate in
     setTimeout(() => {
@@ -1255,8 +1258,10 @@ function showNotification(message, type = 'info', duration = 3000) {
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => {
-                notification.remove();
-            }, CONFIG.ANIMATION_DURATION);
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 500); // Wait for animation to complete
         }, duration);
     }
 }
@@ -1296,15 +1301,22 @@ function smoothScrollTo(targetPosition, duration) {
 }
 
 function hideAllNotifications() {
-    document.querySelectorAll('.notification').forEach(n => n.remove());
+    document.querySelectorAll('.notification').forEach(n => {
+        n.classList.remove('show');
+        setTimeout(() => {
+            if (n.parentElement) {
+                n.remove();
+            }
+        }, 500);
+    });
 }
 
 function getNotificationIcon(type) {
     const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
+        success: '✓',
+        error: '✕',
+        warning: '!',
+        info: 'i'
     };
     return icons[type] || icons.info;
 }
