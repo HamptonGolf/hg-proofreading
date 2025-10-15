@@ -693,6 +693,13 @@ async function startProofreading() {
         
         try {
             showLoading(true);
+            // Scroll to loading section immediately after showing it
+            setTimeout(() => {
+                const loadingSection = document.getElementById('loading');
+                if (loadingSection) {
+                    loadingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
             updateLoadingProgress(0, 'Starting PDF analysis...');
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
@@ -709,6 +716,15 @@ async function startProofreading() {
     
     isProcessing = true;
     showLoading(true);
+    
+    // Scroll to loading section immediately after showing it
+    setTimeout(() => {
+        const loadingSection = document.getElementById('loading');
+        if (loadingSection) {
+            loadingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 100);
+    
     hideAllNotifications();
     
     updateLoadingProgress(10, 'Running style checks...');
