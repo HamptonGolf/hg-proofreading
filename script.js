@@ -731,7 +731,7 @@ async function startProofreading() {
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - 150;
+            const targetPosition = scrollTop + rect.top - 300;
             smoothScrollTo(targetPosition, 1500);
         }
         
@@ -752,7 +752,7 @@ async function startProofreading() {
             if (loadingSection) {
                 const rect = loadingSection.getBoundingClientRect();
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetPosition = scrollTop + rect.top - 150;
+                const targetPosition = scrollTop + rect.top - 300;
                 smoothScrollTo(targetPosition, 1500);
             }
             
