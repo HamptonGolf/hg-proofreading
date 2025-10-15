@@ -741,7 +741,7 @@ async function startProofreading() {
                 const rect = loadingSection.getBoundingClientRect();
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 const targetPosition = scrollTop + rect.top - 150; 
-                smoothScrollTo(targetPosition, 1000); // Same duration as clearResults
+                smoothScrollTo(targetPosition, 1800); // Same duration as clearResults
             }
             
             textToProofread = await extractTextFromPDF(selectedFile);
@@ -769,7 +769,7 @@ async function startProofreading() {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const targetPosition = scrollTop + rect.top - 150;
-            smoothScrollTo(targetPosition, 1000);
+            smoothScrollTo(targetPosition, 1800);
         }
     }
     
@@ -1366,12 +1366,11 @@ function smoothScrollTo(targetPosition, duration) {
         if (timeElapsed < duration) requestAnimationFrame(animation);
     }
 
-    // Enhanced easing function with smoother deceleration
+    // Using easeOutCubic for smoother deceleration
     function ease(t, b, c, d) {
-        // Using easeOutQuart for a much smoother deceleration
         t /= d;
         t--;
-        return -c * (t * t * t * t - 1) + b;
+        return c * (t * t * t + 1) + b;
     }
 
     requestAnimationFrame(animation);
