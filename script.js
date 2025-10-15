@@ -720,6 +720,23 @@ async function startProofreading() {
             showNotification('Please enter at least 10 characters', 'error');
             return;
         }
+        
+        // For text input, show loading and scroll
+        isProcessing = true;
+        showLoading(true);
+        localStorage.removeItem('draft_content');
+        
+        // Smooth scroll to loading section
+        setTimeout(() => {
+            const loadingSection = document.getElementById('loading');
+            if (loadingSection) {
+                const rect = loadingSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetPosition = scrollTop + rect.top - 150;
+                smoothScrollTo(targetPosition, 2500); // 2.5 second smooth scroll
+            }
+        }, 100);
+        
     } else if (activeTab.id === 'file-tab') {
         if (!selectedFile) {
             showNotification('Please select a PDF file to proofread', 'error');
@@ -728,43 +745,29 @@ async function startProofreading() {
         }
         
         try {
+            isProcessing = true;
             showLoading(true);
             updateLoadingProgress(0, 'Starting PDF analysis...');
             
-            // Use native smooth scrolling
+            // Smooth scroll to loading section
             setTimeout(() => {
-                document.getElementById('loading').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start',
-                    inline: 'nearest' 
-                });
-            }, 50);
+                const loadingSection = document.getElementById('loading');
+                if (loadingSection) {
+                    const rect = loadingSection.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const targetPosition = scrollTop + rect.top - 150;
+                    smoothScrollTo(targetPosition, 2500); // 2.5 second smooth scroll
+                }
+            }, 100);
             
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
             showLoading(false);
+            isProcessing = false;
             showNotification(`Error reading PDF: ${error.message}`, 'error');
             console.error('PDF extraction error:', error);
             return;
         }
-    }
-    
-    if (activeTab.id === 'text-tab') {
-        localStorage.removeItem('draft_content');
-    }
-    
-    isProcessing = true;
-    showLoading(true);
-    
-    // For text input, also use native smooth scrolling
-    if (activeTab.id === 'text-tab') {
-        setTimeout(() => {
-            document.getElementById('loading').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start',
-                inline: 'nearest' 
-            });
-        }, 50);
     }
     
     hideAllNotifications();
@@ -1360,11 +1363,12 @@ function smoothScrollTo(targetPosition, duration) {
         if (timeElapsed < duration) requestAnimationFrame(animation);
     }
 
-    // Using easeOutCubic for smoother deceleration
+    // Smooth ease-in-out for gentle acceleration and deceleration
     function ease(t, b, c, d) {
-        t /= d;
-        t--;
-        return c * (t * t * t + 1) + b;
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t + 2) + b;
     }
 
     requestAnimationFrame(animation);
