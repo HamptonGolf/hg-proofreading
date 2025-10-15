@@ -2283,3 +2283,16 @@ body {
     border: 5px solid transparent;
     border-top-color: rgba(0, 0, 0, 0.9);
 }
+
+/* Clear Button Specific Styling */
+.clear-btn {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.3) !important;
+    color: #ff6b6b !important;
+}
+
+.clear-btn:hover {
+    background: rgba(220, 53, 69, 0.2) !important;
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
+}
