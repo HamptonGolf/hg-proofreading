@@ -392,6 +392,18 @@ function processFile(file) {
         return;
     }
     
+    // Clear any previous results when new file is attached
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        resultsSection.classList.remove('show');
+        resultsSection.setAttribute('aria-hidden', 'true');
+        if (errorList) {
+            errorList.innerHTML = '';
+        }
+        currentResults = null;
+    }
+    
     selectedFile = file;
     
     // Update UI
