@@ -1242,11 +1242,22 @@ function clearResults() {
     const fileInput = document.getElementById('file-input');
     const fileInfo = document.getElementById('file-info');
     
-    // First, animate the results section fading out
-    if (resultsSection) {
+    // First, capture current height for smooth animation
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        const currentHeight = resultsSection.offsetHeight;
+        
+        // Set explicit height to enable transition
+        resultsSection.style.height = currentHeight + 'px';
+        resultsSection.style.overflow = 'hidden';
+        
+        // Force reflow
+        resultsSection.offsetHeight;
+        
+        // Now animate to zero height
+        resultsSection.style.transition = 'height 0.6s ease-out, opacity 0.5s ease, transform 0.5s ease';
+        resultsSection.style.height = '0px';
         resultsSection.style.opacity = '0';
         resultsSection.style.transform = 'translateY(30px)';
-        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     }
     
     // After animation completes, clear everything and scroll
@@ -1255,9 +1266,11 @@ function clearResults() {
         if (resultsSection) {
             resultsSection.classList.remove('show');
             resultsSection.setAttribute('aria-hidden', 'true');
+            resultsSection.style.height = '';
             resultsSection.style.opacity = '';
             resultsSection.style.transform = '';
             resultsSection.style.transition = '';
+            resultsSection.style.overflow = '';
         }
         
         // Clear error list
@@ -1286,7 +1299,7 @@ function clearResults() {
         // Clear draft content from localStorage
         localStorage.removeItem('draft_content');
         
-        // Smooth scroll to top using your preferred function
+        // Smooth scroll to top
         smoothScrollTo(0, 1000);
         
         // Show notification after scroll starts
@@ -1294,7 +1307,7 @@ function clearResults() {
             showNotification('Results cleared - Ready for new analysis', 'info');
         }, 300);
         
-    }, 500); // Wait for fade out animation to complete
+    }, 600); // Increased to 600ms to match height animation
 }
 
 // Utility Functions
