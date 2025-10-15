@@ -1149,7 +1149,7 @@ async function proofreadWithClaude(text) {
         const rect = resultsSection.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const targetPosition = scrollTop + rect.top - 150;  // 150px offset from top
-        smoothScrollTo(targetPosition, 1800);  // Same smooth scroll as loading
+        smoothScrollTo(targetPosition, 1000);  // Same smooth scroll as loading
     }, 300);
 }
 
