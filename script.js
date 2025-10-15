@@ -791,68 +791,29 @@ async function proofreadWithClaude(text) {
 }
 
 // Enhanced Results Display
-// Enhanced Results Display
-function displayResults(resultText) {
-    const resultsSection = document.getElementById('results');
-    const errorList = document.getElementById('error-list');
-    const errorCount = document.getElementById('error-count');
-    
-    if (!resultsSection || !errorList || !errorCount) {
-        console.error('Results elements not found');
-        return;
-    }
-    
-    // Store results for export
-    currentResults = resultText;
-    
-    // Update timestamp
-    updateTimestamp();
-    
-    // Check for "No errors found" response first
-    if (resultText.toLowerCase().includes('no errors found')) {
-        // Clear previous results
-        errorList.innerHTML = '';
+    function displayResults(resultText) {
+        const resultsSection = document.getElementById('results');
+        const errorList = document.getElementById('error-list');
+        const errorCount = document.getElementById('error-count');
+        const resultsFooter = document.querySelector('.results-footer');
         
-        // Show success state
-        const successTemplate = document.getElementById('success-template');
-        if (successTemplate) {
-            errorList.innerHTML = successTemplate.innerHTML;
-        } else {
-            errorList.innerHTML = `
-                <div class="no-errors-message">
-                    <div class="success-animation">
-                        <div class="check-icon">✔</div>
-                    </div>
-                    <h3>Perfect Score!</h3>
-                    <p>Your document meets all Hampton Golf excellence standards</p>
-                </div>
-            `;
+        if (!resultsSection || !errorList || !errorCount) {
+            console.error('Results elements not found');
+            return;
         }
         
-        errorCount.innerHTML = `
-            <span class="count-number">0</span>
-            <span class="count-label">issues found</span>
-        `;
-        errorCount.className = 'error-count no-errors';
+        // Store results for export
+        currentResults = resultText;
         
-        showNotification('Document analysis complete - Perfect score!', 'success');
-    } else {
-        // Parse results for errors
-        const lines = resultText.split('\n');
-        const errors = [];
+        // Update timestamp
+        updateTimestamp();
         
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith('-')) {
-                errors.push(trimmedLine.substring(1).trim());
-            }
-        }
-        
-        // Clear previous results
-        errorList.innerHTML = '';
-        
-        if (errors.length === 0 || (errors.length === 1 && errors[0] === '')) {
-            // No errors found - show success state
+        // Check for "No errors found" response first
+        if (resultText.toLowerCase().includes('no errors found')) {
+            // Clear previous results
+            errorList.innerHTML = '';
+            
+            // Show success state
             const successTemplate = document.getElementById('success-template');
             if (successTemplate) {
                 errorList.innerHTML = successTemplate.innerHTML;
@@ -860,7 +821,7 @@ function displayResults(resultText) {
                 errorList.innerHTML = `
                     <div class="no-errors-message">
                         <div class="success-animation">
-                            <div class="check-icon">✔</div>
+                            <div class="check-icon">✓</div>
                         </div>
                         <h3>Perfect Score!</h3>
                         <p>Your document meets all Hampton Golf excellence standards</p>
@@ -874,137 +835,202 @@ function displayResults(resultText) {
             `;
             errorCount.className = 'error-count no-errors';
             
+            // Hide the results footer (copy button)
+            if (resultsFooter) {
+                resultsFooter.style.display = 'none';
+            }
+            
             showNotification('Document analysis complete - Perfect score!', 'success');
         } else {
-            // Display errors with enhanced formatting
+            // Parse results for errors
+            const lines = resultText.split('\n');
+            const errors = [];
+            
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('-')) {
+                    errors.push(trimmedLine.substring(1).trim());
+                }
+            }
+            
+            // Clear previous results
+            errorList.innerHTML = '';
+            
+            if (errors.length === 0 || (errors.length === 1 && errors[0] === '')) {
+                // No errors found - show success state
+                const successTemplate = document.getElementById('success-template');
+                if (successTemplate) {
+                    errorList.innerHTML = successTemplate.innerHTML;
+                } else {
+                    errorList.innerHTML = `
+                        <div class="no-errors-message">
+                            <div class="success-animation">
+                                <div class="check-icon">✓</div>
+                            </div>
+                            <h3>Perfect Score!</h3>
+                            <p>Your document meets all Hampton Golf excellence standards</p>
+                        </div>
+                    `;
+                }
+                
+                errorCount.innerHTML = `
+                    <span class="count-number">0</span>
+                    <span class="count-label">issues found</span>
+                `;
+                errorCount.className = 'error-count no-errors';
+                
+                // Hide the results footer (copy button)
+                if (resultsFooter) {
+                    resultsFooter.style.display = 'none';
+                }
+                
+                showNotification('Document analysis complete - Perfect score!', 'success');
+            } else {
+                // Display errors with enhanced formatting
+                errors.forEach((error, index) => {
+                    if (!error) return;
+                    
+                    const parts = error.split('>');
+                    const location = parts[0] ? parts[0].trim() : `Issue ${index + 1}`;
+                    const description = parts.slice(1).join('>').trim() || error;
+                    
+                    const li = document.createElement('li');
+                    li.className = 'error-item';
+                    li.style.animationDelay = `${index * 0.05}s`;
+                    li.innerHTML = `
+                        <div class="error-number">${index + 1}</div>
+                        <div class="error-content">
+                            <div class="error-location">${location}</div>
+                            <div class="error-description">${description}</div>
+                        </div>
+                        <button class="error-action" onclick="copyError('${escapeHtml(error)}')" title="Copy this correction">
+                            <span class="action-icon">📋</span>
+                        </button>
+                    `;
+                    errorList.appendChild(li);
+                });
+                
+                const validErrors = errors.filter(e => e.trim() !== '');
+                errorCount.innerHTML = `
+                    <span class="count-number">${validErrors.length}</span>
+                    <span class="count-label">issue${validErrors.length === 1 ? '' : 's'} found</span>
+                `;
+                errorCount.className = 'error-count has-errors';
+                
+                // Show the results footer (copy button)
+                if (resultsFooter) {
+                    resultsFooter.style.display = 'block';
+                }
+                
+                showNotification(`Analysis complete - ${validErrors.length} issue${validErrors.length === 1 ? '' : 's'} found`, 'info');
+            }
+        }
+        
+        // Show results section with animation
+        resultsSection.classList.add('show');
+        resultsSection.setAttribute('aria-hidden', 'false');
+        
+        // Smooth scroll to results
+        setTimeout(() => {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
+    }
+
+    function displayCombinedResults(errors) {
+        const resultsSection = document.getElementById('results');
+        const errorList = document.getElementById('error-list');
+        const errorCount = document.getElementById('error-count');
+        const resultsFooter = document.querySelector('.results-footer');
+        
+        if (!resultsSection || !errorList || !errorCount) {
+            console.error('Results elements not found');
+            return;
+        }
+        
+        currentResults = errors.map(e => `- ${e.location} > ${e.error} should be ${e.correction}`).join('\n');
+        
+        updateTimestamp();
+        
+        if (errors.length === 0) {
+            const successTemplate = document.getElementById('success-template');
+            if (successTemplate) {
+                errorList.innerHTML = successTemplate.innerHTML;
+            } else {
+                errorList.innerHTML = `
+                    <div class="no-errors-message">
+                        <div class="success-animation">
+                            <div class="check-icon">✓</div>
+                        </div>
+                        <h3>Perfect Score!</h3>
+                        <p>Your document meets all Hampton Golf excellence standards</p>
+                    </div>
+                `;
+            }
+            
+            errorCount.innerHTML = `
+                <span class="count-number">0</span>
+                <span class="count-label">issues found</span>
+            `;
+            errorCount.className = 'error-count no-errors';
+            
+            // Hide the results footer (copy button)
+            if (resultsFooter) {
+                resultsFooter.style.display = 'none';
+            }
+            
+            showNotification('Document analysis complete - Perfect score!', 'success');
+        } else {
+            errorList.innerHTML = '';
+            
             errors.forEach((error, index) => {
-                if (!error) return;
-                
-                const parts = error.split('>');
-                const location = parts[0] ? parts[0].trim() : `Issue ${index + 1}`;
-                const description = parts.slice(1).join('>').trim() || error;
-                
                 const li = document.createElement('li');
                 li.className = 'error-item';
                 li.style.animationDelay = `${index * 0.05}s`;
+                
+                // Format description based on error type
+                let description;
+                if (error.type === 'capitalization' || error.type === 'date' || error.type === 'style') {
+                    // Rules engine errors: need to add "should be"
+                    description = `${error.error} should be ${error.correction}`;
+                } else {
+                    // Claude errors: already formatted with "should be"
+                    description = error.correction;
+                }
+                
                 li.innerHTML = `
                     <div class="error-number">${index + 1}</div>
                     <div class="error-content">
-                        <div class="error-location">${location}</div>
+                        <div class="error-location">${error.location}</div>
                         <div class="error-description">${description}</div>
                     </div>
-                    <button class="error-action" onclick="copyError('${escapeHtml(error)}')" title="Copy this correction">
+                    <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
                         <span class="action-icon">📋</span>
                     </button>
                 `;
                 errorList.appendChild(li);
             });
             
-            const validErrors = errors.filter(e => e.trim() !== '');
             errorCount.innerHTML = `
-                <span class="count-number">${validErrors.length}</span>
-                <span class="count-label">issue${validErrors.length === 1 ? '' : 's'} found</span>
+                <span class="count-number">${errors.length}</span>
+                <span class="count-label">issue${errors.length === 1 ? '' : 's'} found</span>
             `;
             errorCount.className = 'error-count has-errors';
             
-            showNotification(`Analysis complete - ${validErrors.length} issue${validErrors.length === 1 ? '' : 's'} found`, 'info');
-        }
-    } // This closing brace was missing
-    
-    // Show results section with animation
-    resultsSection.classList.add('show');
-    resultsSection.setAttribute('aria-hidden', 'false');
-    
-    // Smooth scroll to results
-    setTimeout(() => {
-        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 300);
-}
-
-function displayCombinedResults(errors) {
-    const resultsSection = document.getElementById('results');
-    const errorList = document.getElementById('error-list');
-    const errorCount = document.getElementById('error-count');
-    
-    if (!resultsSection || !errorList || !errorCount) {
-        console.error('Results elements not found');
-        return;
-    }
-    
-    currentResults = errors.map(e => `- ${e.location} > ${e.error} should be ${e.correction}`).join('\n');
-    
-    updateTimestamp();
-    
-    if (errors.length === 0) {
-        const successTemplate = document.getElementById('success-template');
-        if (successTemplate) {
-            errorList.innerHTML = successTemplate.innerHTML;
-        } else {
-            errorList.innerHTML = `
-                <div class="no-errors-message">
-                    <div class="success-animation">
-                        <div class="check-icon">✓</div>
-                    </div>
-                    <h3>Perfect Score!</h3>
-                    <p>Your document meets all Hampton Golf excellence standards</p>
-                </div>
-            `;
+            // Show the results footer (copy button)
+            if (resultsFooter) {
+                resultsFooter.style.display = 'block';
+            }
+            
+            showNotification(`Analysis complete - ${errors.length} issue${errors.length === 1 ? '' : 's'} found`, 'info');
         }
         
-        errorCount.innerHTML = `
-            <span class="count-number">0</span>
-            <span class="count-label">issues found</span>
-        `;
-        errorCount.className = 'error-count no-errors';
+        resultsSection.classList.add('show');
+        resultsSection.setAttribute('aria-hidden', 'false');
         
-        showNotification('Document analysis complete - Perfect score!', 'success');
-    } else {
-        errorList.innerHTML = '';
-        
-        errors.forEach((error, index) => {
-    const li = document.createElement('li');
-    li.className = 'error-item';
-    li.style.animationDelay = `${index * 0.05}s`;
-    
-    // Format description based on error type
-    let description;
-    if (error.type === 'capitalization' || error.type === 'date' || error.type === 'style') {
-        // Rules engine errors: need to add "should be"
-        description = `${error.error} should be ${error.correction}`;
-    } else {
-        // Claude errors: already formatted with "should be"
-        description = error.correction;
+        setTimeout(() => {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
     }
-    
-    li.innerHTML = `
-        <div class="error-number">${index + 1}</div>
-        <div class="error-content">
-            <div class="error-location">${error.location}</div>
-            <div class="error-description">${description}</div>
-        </div>
-        <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
-            <span class="action-icon">📋</span>
-        </button>
-    `;
-    errorList.appendChild(li);
-});
-        
-        errorCount.innerHTML = `
-            <span class="count-number">${errors.length}</span>
-            <span class="count-label">issue${errors.length === 1 ? '' : 's'} found</span>
-        `;
-        errorCount.className = 'error-count has-errors';
-        
-        showNotification(`Analysis complete - ${errors.length} issue${errors.length === 1 ? '' : 's'} found`, 'info');
-    }
-    
-    resultsSection.classList.add('show');
-    resultsSection.setAttribute('aria-hidden', 'false');
-    
-    setTimeout(() => {
-        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 300);
-}
 
 // Export Functions
 function exportResults(format) {
@@ -1248,4 +1274,3 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
-
