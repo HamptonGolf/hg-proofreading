@@ -736,7 +736,7 @@ async function startProofreading() {
                     const rect = loadingSection.getBoundingClientRect();
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                     const targetPosition = scrollTop + rect.top - 100; // Position near top with 100px padding
-                    smoothScrollTo(targetPosition, 1000);
+                    smoothScrollTo(targetPosition, 600);
                 }
             }, 100);
             updateLoadingProgress(0, 'Starting PDF analysis...');
@@ -763,7 +763,7 @@ async function startProofreading() {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const targetPosition = scrollTop + rect.top - 100; // Position near top with 100px padding
-            smoothScrollTo(targetPosition, 1000);
+            smoothScrollTo(targetPosition, 600);
         }
     }, 100);
     
