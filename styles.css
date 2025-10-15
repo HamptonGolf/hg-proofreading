@@ -2186,9 +2186,8 @@ body {
 /* Notification Styles - Minimalist Glass Toast */
 .notification {
     position: fixed;
-    top: -100px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 24px;
+    right: -600px;
     padding: 16px 28px;
     border-radius: 12px;
     display: flex;
@@ -2205,10 +2204,11 @@ body {
     min-width: 320px;
     max-width: 500px;
     opacity: 0;
+    overflow: hidden;
 }
 
 .notification.show {
-    top: 24px;
+    right: 24px;
     opacity: 1;
 }
 
@@ -2324,6 +2324,7 @@ body {
         transparent
     );
     transition: left 0.6s ease;
+    pointer-events: none;
 }
 
 .notification.show::before {
@@ -2335,13 +2336,10 @@ body {
     .notification {
         min-width: auto;
         max-width: calc(100% - 40px);
-        left: 20px;
-        right: 20px;
-        transform: none;
+        right: -600px;
     }
     
     .notification.show {
-        left: 20px;
         right: 20px;
     }
 }
