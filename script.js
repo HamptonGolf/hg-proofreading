@@ -1142,33 +1142,36 @@ async function proofreadWithClaude(text) {
     }
     
     resultsSection.classList.add('show');
-    resultsSection.setAttribute('aria-hidden', 'false');
+resultsSection.setAttribute('aria-hidden', 'false');
 
-    // Smooth scroll to results after a short delay for the show animation
-    setTimeout(() => {
-        const rect = resultsSection.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // Adjust scroll position based on number of errors
-        let offset;
-        if (errors.length === 0) {
-            // No errors - minimal scroll needed
-            offset = window.innerHeight / 2;  // Center it
-        } else if (errors.length <= 2) {
-            // Few errors - don't scroll as far
-            offset = 400;  // Stop earlier
-        } else {
-            // Many errors - normal scroll
-            offset = 150;  // Standard offset
-        }
-        
-        const targetPosition = scrollTop + rect.top - offset;
-        
-        // Only scroll if we actually need to
-        if (Math.abs(targetPosition - scrollTop) > 100) {  // Only scroll if more than 100px difference
-            smoothScrollTo(targetPosition, 1000);
-        }
-    }, 300);
+// Smooth scroll to results after a short delay for the show animation
+setTimeout(() => {
+    const rect = resultsSection.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    // Adjust scroll position based on number of errors
+    let offset;
+    if (errors.length === 0) {
+        // No errors - scroll normally to show success message
+        offset = 150;  // Back to standard offset
+    } else if (errors.length === 1) {
+        // Single error - stop a bit earlier to avoid slam
+        offset = 300;  
+    } else if (errors.length === 2) {
+        // Two errors - moderate offset
+        offset = 250;
+    } else {
+        // Many errors - normal scroll
+        offset = 150;  // Standard offset
+    }
+    
+    const targetPosition = scrollTop + rect.top - offset;
+    
+    // Only scroll if we actually need to
+    if (Math.abs(targetPosition - scrollTop) > 100) {
+        smoothScrollTo(targetPosition, 1000);
+    }
+}, 300);
 }
 
 // Export Functions
