@@ -729,17 +729,21 @@ async function startProofreading() {
         
         try {
             showLoading(true);
-            // Wait for loading animation to complete, then scroll
-            setTimeout(() => {
-                const loadingSection = document.getElementById('loading');
-                if (loadingSection) {
-                    const rect = loadingSection.getBoundingClientRect();
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    const targetPosition = scrollTop + rect.top - 100;
-                    smoothScrollTo(targetPosition, 800);
-                }
-            }, 450); // Wait for loading fade-in animation
             updateLoadingProgress(0, 'Starting PDF analysis...');
+            
+            // Use the same smooth scroll function that works in clearResults
+            // Small delay to ensure loading section is rendered
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Now scroll smoothly like clearResults does
+            const loadingSection = document.getElementById('loading');
+            if (loadingSection) {
+                const rect = loadingSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetPosition = scrollTop + rect.top - 100; // 100px offset from top
+                smoothScrollTo(targetPosition, 1000); // Same duration as clearResults
+            }
+            
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
             showLoading(false);
@@ -756,16 +760,18 @@ async function startProofreading() {
     isProcessing = true;
     showLoading(true);
     
-    // Wait for loading animation to complete, then scroll
-    setTimeout(() => {
+    // For text input, also scroll to loading section
+    if (activeTab.id === 'text-tab') {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const loadingSection = document.getElementById('loading');
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const targetPosition = scrollTop + rect.top - 100;
-            smoothScrollTo(targetPosition, 800);
+            smoothScrollTo(targetPosition, 1000);
         }
-    }, 450); // Wait for loading fade-in animation
+    }
     
     hideAllNotifications();
     
