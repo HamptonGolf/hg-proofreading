@@ -1143,9 +1143,13 @@ async function proofreadWithClaude(text) {
     
     resultsSection.classList.add('show');
     resultsSection.setAttribute('aria-hidden', 'false');
-    
+
+    // Smooth scroll to results after a short delay for the show animation
     setTimeout(() => {
-        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const rect = resultsSection.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetPosition = scrollTop + rect.top - 150;  // 150px offset from top
+        smoothScrollTo(targetPosition, 1800);  // Same smooth scroll as loading
     }, 300);
 }
 
