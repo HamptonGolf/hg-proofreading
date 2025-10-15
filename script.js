@@ -740,7 +740,7 @@ async function startProofreading() {
             if (loadingSection) {
                 const rect = loadingSection.getBoundingClientRect();
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetPosition = scrollTop + rect.top - 100; // 100px offset from top
+                const targetPosition = scrollTop + rect.top - 150; 
                 smoothScrollTo(targetPosition, 1000); // Same duration as clearResults
             }
             
@@ -768,7 +768,7 @@ async function startProofreading() {
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - 100;
+            const targetPosition = scrollTop + rect.top - 150;
             smoothScrollTo(targetPosition, 1000);
         }
     }
@@ -1366,11 +1366,12 @@ function smoothScrollTo(targetPosition, duration) {
         if (timeElapsed < duration) requestAnimationFrame(animation);
     }
 
+    // Enhanced easing function with smoother deceleration
     function ease(t, b, c, d) {
-        t /= d / 2;
-        if (t < 1) return c / 2 * t * t + b;
+        // Using easeOutQuart for a much smoother deceleration
+        t /= d;
         t--;
-        return -c / 2 * (t * (t - 2) - 1) + b;
+        return -c * (t * t * t * t - 1) + b;
     }
 
     requestAnimationFrame(animation);
