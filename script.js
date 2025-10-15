@@ -638,6 +638,18 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
 
 // Main Proofreading Function with Enhanced Error Handling
 async function startProofreading() {
+    // Clear any previous results first
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        resultsSection.classList.remove('show');
+        resultsSection.setAttribute('aria-hidden', 'true');
+        if (errorList) {
+            errorList.innerHTML = '';
+        }
+        currentResults = null;
+    }
+    
     if (isProcessing) {
         showNotification('Analysis already in progress', 'warning');
         return;
