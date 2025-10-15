@@ -731,18 +731,14 @@ async function startProofreading() {
             showLoading(true);
             updateLoadingProgress(0, 'Starting PDF analysis...');
             
-            // Use the same smooth scroll function that works in clearResults
-            // Small delay to ensure loading section is rendered
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Now scroll smoothly like clearResults does
-            const loadingSection = document.getElementById('loading');
-            if (loadingSection) {
-                const rect = loadingSection.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetPosition = scrollTop + rect.top - 150; 
-                smoothScrollTo(targetPosition, 1800); // Same duration as clearResults
-            }
+            // Use native smooth scrolling
+            setTimeout(() => {
+                document.getElementById('loading').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'nearest' 
+                });
+            }, 50);
             
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
@@ -760,17 +756,15 @@ async function startProofreading() {
     isProcessing = true;
     showLoading(true);
     
-    // For text input, also scroll to loading section
+    // For text input, also use native smooth scrolling
     if (activeTab.id === 'text-tab') {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        const loadingSection = document.getElementById('loading');
-        if (loadingSection) {
-            const rect = loadingSection.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - 150;
-            smoothScrollTo(targetPosition, 1800);
-        }
+        setTimeout(() => {
+            document.getElementById('loading').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start',
+                inline: 'nearest' 
+            });
+        }, 50);
     }
     
     hideAllNotifications();
