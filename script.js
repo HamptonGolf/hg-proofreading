@@ -1253,14 +1253,17 @@ function clearResults() {
         // Force reflow
         resultsSection.offsetHeight;
         
-        // Now animate to zero height
-        resultsSection.style.transition = 'height 0.6s ease-out, opacity 0.5s ease, transform 0.5s ease';
+        // Now animate to zero height with smoother, longer animation
+        resultsSection.style.transition = 'height 0.8s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out';
         resultsSection.style.height = '0px';
         resultsSection.style.opacity = '0';
         resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.marginBottom = '0';
+        resultsSection.style.paddingTop = '0';
+        resultsSection.style.paddingBottom = '0';
     }
     
-    // After animation completes, clear everything and scroll
+    // After animation completes, wait longer then scroll
     setTimeout(() => {
         // Hide results section
         if (resultsSection) {
@@ -1271,6 +1274,9 @@ function clearResults() {
             resultsSection.style.transform = '';
             resultsSection.style.transition = '';
             resultsSection.style.overflow = '';
+            resultsSection.style.marginBottom = '';
+            resultsSection.style.paddingTop = '';
+            resultsSection.style.paddingBottom = '';
         }
         
         // Clear error list
@@ -1299,15 +1305,17 @@ function clearResults() {
         // Clear draft content from localStorage
         localStorage.removeItem('draft_content');
         
-        // Smooth scroll to top
-        smoothScrollTo(0, 1000);
-        
-        // Show notification after scroll starts
+        // Wait a bit longer before scrolling for smoother experience
         setTimeout(() => {
-            showNotification('Results cleared - Ready for new analysis', 'info');
-        }, 300);
+            smoothScrollTo(0, 1000);
+            
+            // Show notification after scroll starts
+            setTimeout(() => {
+                showNotification('Results cleared - Ready for new analysis', 'info');
+            }, 300);
+        }, 200); // Additional delay before scroll
         
-    }, 600); // Increased to 600ms to match height animation
+    }, 800); // Increased to match the height animation duration
 }
 
 // Utility Functions
