@@ -156,6 +156,65 @@
                 </div>
             </div>
 
+            <!-- Context Selection Section -->
+            <div class="context-selection">
+                <div class="context-header">
+                    <h3 class="context-title">Proofreading Context</h3>
+                    <span class="context-required">* Required</span>
+                </div>
+                
+                <div class="context-grid">
+                    <!-- Project Type Dropdown -->
+                    <div class="context-field">
+                        <label for="project-type" class="context-label">
+                            <span class="label-text">Project Type</span>
+                            <span class="label-required">*</span>
+                        </label>
+                        <select id="project-type" class="context-select" required>
+                            <option value="">Select Type...</option>
+                            <option value="flyer">Flyer</option>
+                            <option value="menu">Menu</option>
+                            <option value="collateral">Collateral Booklet</option>
+                            <option value="calendar">Calendar</option>
+                            <option value="newsletter">Newsletter</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Year Input -->
+                    <div class="context-field">
+                        <label for="year-input" class="context-label">
+                            <span class="label-text">Applicable Year(s)</span>
+                            <span class="label-required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="year-input" 
+                            class="context-input" 
+                            placeholder="e.g., 2025 or 2025-2026"
+                            pattern="^\d{4}(-\d{4})?$"
+                            title="Enter a year (2025) or year range (2025-2026)"
+                            required
+                        >
+                        <span class="input-hint">Single year or range (YYYY-YYYY)</span>
+                    </div>
+                    
+                    <!-- Additional Context -->
+                    <div class="context-field context-field-full">
+                        <label for="additional-context" class="context-label">
+                            <span class="label-text">Additional Context</span>
+                            <span class="label-optional">(Optional)</span>
+                        </label>
+                        <textarea 
+                            id="additional-context" 
+                            class="context-textarea" 
+                            placeholder="Any other relevant information about this text/document (e.g., club-specific capitalization, intentional formatting choices, etc.)..."
+                            rows="3"
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+
             <!-- Proofread Button -->
             <button id="proofread-btn" class="proofread-btn" aria-label="Start proofreading">
                 <span class="btn-content">
