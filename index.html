@@ -291,6 +291,44 @@
         </template>
     </main>
 
+    <!-- Error Detail Modal -->
+    <div id="error-modal" class="error-modal" aria-hidden="true">
+        <div class="error-modal-overlay"></div>
+        <div class="error-modal-content">
+            <div class="error-modal-header">
+                <h3 class="error-modal-title">Error Analysis</h3>
+                <button class="error-modal-close" onclick="closeErrorModal()" aria-label="Close modal">×</button>
+            </div>
+            <div class="error-modal-body">
+                <div class="error-modal-section">
+                    <div class="error-modal-label">Location</div>
+                    <div class="error-modal-value" id="modal-location"></div>
+                </div>
+                <div class="error-modal-section">
+                    <div class="error-modal-label">Issue Found</div>
+                    <div class="error-modal-value error-highlight" id="modal-error"></div>
+                </div>
+                <div class="error-modal-section">
+                    <div class="error-modal-label">Correction</div>
+                    <div class="error-modal-value correction-highlight" id="modal-correction"></div>
+                </div>
+                <div class="error-modal-section">
+                    <div class="error-modal-label">Explanation</div>
+                    <div class="error-modal-explanation" id="modal-explanation"></div>
+                </div>
+            </div>
+            <div class="error-modal-footer">
+                <button class="modal-action-btn copy-correction-btn" onclick="copyCorrection()" aria-label="Copy correction">
+                    <span class="export-icon">📋</span>
+                    <span>Copy Correction</span>
+                </button>
+                <button class="modal-action-btn close-modal-btn" onclick="closeErrorModal()" aria-label="Close">
+                    <span>Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
