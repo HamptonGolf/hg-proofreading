@@ -1718,12 +1718,27 @@ function closeErrorModal() {
     const modal = document.getElementById('error-modal');
     
     if (modal) {
-        modal.classList.remove('show');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = ''; // Restore scrolling
+        const content = modal.querySelector('.error-modal-content');
         
-        // Remove escape key handler
-        document.removeEventListener('keydown', handleModalEscape);
+        // Add closing animation
+        if (content) {
+            content.classList.add('closing');
+        }
+        
+        // Wait for animation to complete before hiding
+        setTimeout(() => {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = ''; // Restore scrolling
+            
+            // Remove closing class for next time
+            if (content) {
+                content.classList.remove('closing');
+            }
+            
+            // Remove escape key handler
+            document.removeEventListener('keydown', handleModalEscape);
+        }, 300); // Match animation duration
     }
     
     currentModalError = null;
