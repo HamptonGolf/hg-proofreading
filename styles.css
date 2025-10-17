@@ -2909,25 +2909,27 @@ body {
 
 /* Click indicator for error items */
 .error-item::after {
-    content: 'HG';
+    content: 'Error Analysis';
     position: absolute;
-    right: 70px;
+    right: 80px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--hg-secondary-green);
     font-family: 'Oswald', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     background: rgba(0, 180, 81, 0.15);
     border: 1px solid rgba(0, 180, 81, 0.3);
-    border-radius: 4px;
-    padding: 4px 6px;
+    border-radius: 6px;
+    padding: 6px 10px;
     opacity: 0;
     transition: all 0.3s ease;
     letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .error-item:hover::after {
     opacity: 1;
-    right: 70px;
+    right: 80px;
 }
