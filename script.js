@@ -1188,6 +1188,9 @@ async function proofreadWithClaude(text) {
             const li = document.createElement('li');
             li.className = 'error-item';
             li.style.animationDelay = `${index * 0.05}s`;
+            li.setAttribute('role', 'button');
+            li.setAttribute('tabindex', '0');
+            li.setAttribute('aria-label', `View details for error ${index + 1}`);
             
             // Format description based on error type
             let description;
@@ -1205,10 +1208,24 @@ async function proofreadWithClaude(text) {
                     <div class="error-location">${error.location}</div>
                     <div class="error-description">${description}</div>
                 </div>
-                <button class="error-action" onclick="copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
+                <button class="error-action" onclick="event.stopPropagation(); copyError('${escapeHtml(error.error + ' → ' + error.correction)}')" title="Copy this correction">
                     <span class="action-icon">📋</span>
                 </button>
             `;
+            
+            // Add click handler to open modal
+            li.addEventListener('click', () => {
+                openErrorModal(error, index + 1);
+            });
+            
+            // Add keyboard support
+            li.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openErrorModal(error, index + 1);
+                }
+            });
+            
             errorList.appendChild(li);
         });
         
@@ -1649,6 +1666,104 @@ function decodeHtml(html) {
     return txt.value;
 }
 
+// Error Modal Functions
+let currentModalError = null;
+
+function openErrorModal(error, errorNumber) {
+    currentModalError = error;
+    const modal = document.getElementById('error-modal');
+    
+    if (!modal) {
+        console.error('Modal element not found');
+        return;
+    }
+    
+    // Populate modal content
+    document.getElementById('modal-location').textContent = error.location;
+    document.getElementById('modal-error').textContent = error.error;
+    document.getElementById('modal-correction').textContent = error.correction;
+    document.getElementById('modal-explanation').textContent = generateExplanation(error);
+    
+    // Show modal
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    
+    // Add click handler to overlay
+    const overlay = modal.querySelector('.error-modal-overlay');
+    overlay.onclick = closeErrorModal;
+    
+    // Add escape key handler
+    document.addEventListener('keydown', handleModalEscape);
+}
+
+function closeErrorModal() {
+    const modal = document.getElementById('error-modal');
+    
+    if (modal) {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = ''; // Restore scrolling
+        
+        // Remove escape key handler
+        document.removeEventListener('keydown', handleModalEscape);
+    }
+    
+    currentModalError = null;
+}
+
+function handleModalEscape(e) {
+    if (e.key === 'Escape') {
+        closeErrorModal();
+    }
+}
+
+function copyCorrection() {
+    if (!currentModalError) return;
+    
+    const correctionText = currentModalError.correction;
+    navigator.clipboard.writeText(correctionText).then(() => {
+        showNotification('Correction copied to clipboard', 'success', 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        showNotification('Failed to copy correction', 'error');
+    });
+}
+
+function generateExplanation(error) {
+    // Generate contextual explanations based on error type
+    switch (error.type) {
+        case 'capitalization':
+            return `Hampton Golf brand standards require that terms like "Member," "Guest," "Neighbor," "Resident," "Homeowner," and "Team Member" are always capitalized. This maintains consistency across all communications and reinforces the premium nature of our community and service.`;
+        
+        case 'date':
+            return `The day of the week doesn't match the date provided. This error was caught by cross-referencing the stated date with the actual calendar for the year(s) you specified. Incorrect dates can cause confusion for members and guests planning their schedules.`;
+        
+        case 'style':
+            if (error.error.toLowerCase().includes('staff')) {
+                return `Hampton Golf uses "Team Member(s)" instead of "staff" in all communications. This terminology better reflects our culture of service excellence and the collaborative nature of our organization.`;
+            }
+            return `This doesn't align with Hampton Golf's style guidelines and brand voice. Consistent terminology helps maintain our professional image and ensures clear communication.`;
+        
+        case 'claude':
+            // For Claude-detected errors, provide general guidance
+            if (error.location.toLowerCase().includes('spelling')) {
+                return `This appears to be a spelling error. Correct spelling is essential for maintaining professionalism and credibility in all Hampton Golf communications.`;
+            } else if (error.location.toLowerCase().includes('grammar')) {
+                return `This is a grammatical error that affects the clarity and professionalism of the document. Proper grammar ensures your message is understood correctly by all readers.`;
+            } else if (error.location.toLowerCase().includes('punctuation')) {
+                return `Punctuation errors can change the meaning of sentences and affect readability. Correct punctuation ensures your message is clear and professional.`;
+            } else if (error.correction.toLowerCase().includes('accent')) {
+                return `Proper accent marks are important for accurate spelling, especially in culinary terms and proper nouns. They show attention to detail and respect for the correct presentation of words.`;
+            } else {
+                return `This issue was identified by AI analysis of your document. The suggested correction will improve the accuracy, clarity, or professionalism of your content according to Hampton Golf standards.`;
+            }
+        
+        default:
+            return `This issue may affect the clarity, accuracy, or professionalism of your document. The suggested correction aligns with Hampton Golf's quality standards and best practices for communications.`;
+    }
+}
+
 // Export functions for global access
 window.switchTab = switchTab;
 window.saveApiKey = saveApiKey;
@@ -1657,6 +1772,9 @@ window.exportResults = exportResults;
 window.copyResults = copyResults;
 window.copyError = copyError;
 window.clearResults = clearResults;
+window.openErrorModal = openErrorModal;
+window.closeErrorModal = closeErrorModal;
+window.copyCorrection = copyCorrection;
 
 // Performance monitoring
 console.log('📊 Performance:', {
