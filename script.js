@@ -852,7 +852,7 @@ async function startProofreading() {
         }
         
         isProcessing = true;
-        showLoading(true);
+        showLoading(true, 'text');
         localStorage.removeItem('draft_content');
         
         const loadingSection = document.getElementById('loading');
@@ -872,7 +872,7 @@ async function startProofreading() {
         
         try {
             isProcessing = true;
-            showLoading(true);
+            showLoading(true, 'document');
             updateLoadingProgress(0, 'Starting PDF analysis...');
             
             const loadingSection = document.getElementById('loading');
@@ -1530,13 +1530,19 @@ function clearResults() {
 }
 
 // Utility Functions
-function showLoading(show) {
+function showLoading(show, type = 'document') {
     const loading = document.getElementById('loading');
     const proofreadBtn = document.getElementById('proofread-btn');
+    const loadingText = document.querySelector('.loading-text');
     
     if (!loading) return;
     
     if (show) {
+        // Update text based on type
+        if (loadingText) {
+            loadingText.textContent = type === 'text' ? 'Analyzing Your Text' : 'Analyzing Your Document';
+        }
+        
         loading.classList.add('show');
         loading.setAttribute('aria-hidden', 'false');
         if (proofreadBtn) {
