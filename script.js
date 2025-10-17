@@ -1350,7 +1350,19 @@ function copyResults() {
         return;
     }
     
-    navigator.clipboard.writeText(currentResults).then(() => {
+    // Filter to only include lines that are actual errors (start with '- ')
+    const lines = currentResults.split('\n');
+    const errorLines = lines.filter(line => line.trim().startsWith('-'));
+    
+    // If no error lines found, currentResults might be in a different format
+    if (errorLines.length === 0) {
+        showNotification('No errors to copy', 'error');
+        return;
+    }
+    
+    const cleanedResults = errorLines.join('\n');
+    
+    navigator.clipboard.writeText(cleanedResults).then(() => {
         showNotification('Results copied to clipboard', 'success');
     }).catch(err => {
         console.error('Failed to copy:', err);
