@@ -1339,6 +1339,33 @@ function clearResults() {
     const fileInput = document.getElementById('file-input');
     const fileInfo = document.getElementById('file-info');
     
+    // Reset context fields
+    const projectTypeSelect = document.getElementById('project-type');
+    const yearInput = document.getElementById('year-input');
+    const additionalContext = document.getElementById('additional-context');
+    
+    if (projectTypeSelect) {
+        projectTypeSelect.value = '';
+    }
+    
+    if (yearInput) {
+        yearInput.value = '';
+    }
+    
+    if (additionalContext) {
+        additionalContext.value = '';
+        additionalContext.removeAttribute('required');
+        additionalContext.style.borderColor = '';
+        additionalContext.placeholder = 'Any other relevant information about this text/document (e.g., club-specific capitalization, intentional formatting choices, etc.)...';
+        
+        // Reset the label back to optional
+        const additionalContextLabel = additionalContext.closest('.context-field').querySelector('.context-label');
+        const requiredSpan = additionalContextLabel.querySelector('.label-required');
+        if (requiredSpan) {
+            requiredSpan.innerHTML = '<span class="label-optional">(Optional)</span>';
+        }
+    }
+    
     // First, capture current height for smooth animation
     if (resultsSection && resultsSection.classList.contains('show')) {
         const currentHeight = resultsSection.offsetHeight;
