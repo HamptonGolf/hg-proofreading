@@ -485,6 +485,32 @@ async function processFile(file) {
         }
         currentResults = null;
     }
+
+    // Clear context fields when new file is attached
+    const projectTypeSelect = document.getElementById('project-type');
+    const yearInput = document.getElementById('year-input');
+    const additionalContext = document.getElementById('additional-context');
+    
+    if (projectTypeSelect) {
+        projectTypeSelect.value = '';
+    }
+    
+    if (yearInput) {
+        yearInput.value = '';
+    }
+    
+    if (additionalContext) {
+        additionalContext.value = '';
+        additionalContext.removeAttribute('required');
+        additionalContext.style.borderColor = '';
+        
+        // Reset the label back to optional
+        const additionalContextLabel = additionalContext.closest('.context-field').querySelector('.context-label');
+        const requiredSpan = additionalContextLabel ? additionalContextLabel.querySelector('.label-required') : null;
+        if (requiredSpan) {
+            requiredSpan.innerHTML = '<span class="label-optional">(Optional)</span>';
+        }
+    }
     
     selectedFile = file;
     
