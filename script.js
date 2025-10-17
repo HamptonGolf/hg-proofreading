@@ -45,20 +45,20 @@ function waitForPDFjs(timeout = 5000) {
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
 const PROOFREADING_PROMPT = `You are proofreading a Hampton Golf document. The document type and year information has been provided for context.
 
-Proofread for errors only. Do not check these specific words for capitalization (automated separately): member, guest, neighbor, resident, homeowner, team member.
+Proofread for spelling, grammar, punctuation, and formatting consistency only. Skip any capitalization checks for: member, guest, neighbor, resident, homeowner, team member (handled separately).
 
 Find actual mistakes:
 - Spelling errors and typos - check every word carefully
 - Grammar errors
-- Capitalization errors (proper nouns, sentence starts, titles—but NOT the automated words listed above)
+- Capitalization errors (proper nouns, sentence starts, titles)
 - Punctuation errors
-- Inconsistent time formatting (e.g., "7AM" in one place, "8 AM" elsewhere—only flag if inconsistent within same document)
+- Inconsistent time formatting (e.g., "7AM" in one place, "8 AM" elsewhere - only flag if inconsistent within same document)
 - Missing accent marks (e.g., "Remoulade" should be "Rémoulade")
 
 Rules:
 - Each error gets ONE bullet point only
 - Do not suggest word additions unless they fix grammar/spelling
-- Ignore spacing in headers—only flag header misspellings/punctuation
+- Ignore spacing in headers - only flag header misspellings/punctuation
 - Consider the document type when evaluating formatting consistency
 
 Text:
@@ -67,13 +67,15 @@ Text:
 const PROOFREADING_PROMPT_SUFFIX = `
 
 For each error found, format your response EXACTLY as follows:
-- [Specific location] > [Error] should be [Correction] | EXPLAIN: [One sentence explaining why this is an error and what rule or principle it violates]
+- [Specific location] > "[exact error text]" should be "[exact correction]" | EXPLAIN: [One sentence explaining why]
 
 Example format:
 - Page 2, paragraph 3 > "recieve" should be "receive" | EXPLAIN: Common spelling error - "i before e except after c" rule applies here.
 - Header section > "it's" should be "its" | EXPLAIN: Possessive form doesn't use an apostrophe; "it's" means "it is."
 
 If no errors: "No errors found."
+
+Remember: Do NOT flag member, guest, neighbor, resident, homeowner, or team member for capitalization.
 
 Important: Each error MUST include the " | EXPLAIN: " section with a brief, specific explanation.`;
 
@@ -973,19 +975,34 @@ async function proofreadWithClaude(text) {
                 const errorInfo = parts[0];
                 const explanation = parts[1] || '';
                 
-                // Now split the error info by '>'
+                // Now split the error info by '>' to get location and correction
                 const infoParts = errorInfo.split('>');
                 
                 if (infoParts.length >= 2) {
+                    const location = infoParts[0].trim();
                     const correctionPart = infoParts.slice(1).join('>').trim();
                     
-                    errors.push({
-                        location: infoParts[0].trim(),
-                        error: correctionPart.split(' should be ')[0] ? correctionPart.split(' should be ')[0].trim() : correctionPart,
-                        correction: correctionPart,
-                        type: 'claude',
-                        explanation: explanation.trim() // Store Claude's custom explanation
-                    });
+                    // Extract the "error" and "correction" from the format: "error" should be "correction"
+                    const shouldBeMatch = correctionPart.match(/^["'](.+?)["']\s+should be\s+["'](.+?)["']/);
+                    
+                    if (shouldBeMatch) {
+                        errors.push({
+                            location: location,
+                            error: shouldBeMatch[1],
+                            correction: shouldBeMatch[2],
+                            type: 'claude',
+                            explanation: explanation.trim()
+                        });
+                    } else {
+                        // Fallback for older format
+                        errors.push({
+                            location: location,
+                            error: correctionPart.split(' should be ')[0] ? correctionPart.split(' should be ')[0].trim() : correctionPart,
+                            correction: correctionPart,
+                            type: 'claude',
+                            explanation: explanation.trim()
+                        });
+                    }
                 }
             }
         }
