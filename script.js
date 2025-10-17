@@ -66,10 +66,16 @@ Text:
 
 const PROOFREADING_PROMPT_SUFFIX = `
 
-List only genuine errors found in the text:
-- [Specific location] > [Error] should be [Correction]
+For each error found, format your response EXACTLY as follows:
+- [Specific location] > [Error] should be [Correction] | EXPLAIN: [One sentence explaining why this is an error and what rule or principle it violates]
 
-If no errors: "No errors found."`;
+Example format:
+- Page 2, paragraph 3 > "recieve" should be "receive" | EXPLAIN: Common spelling error - "i before e except after c" rule applies here.
+- Header section > "it's" should be "its" | EXPLAIN: Possessive form doesn't use an apostrophe; "it's" means "it is."
+
+If no errors: "No errors found."
+
+Important: Each error MUST include the " | EXPLAIN: " section with a brief, specific explanation.`;
 
 // Initialize application
 function initializeApp() {
@@ -637,7 +643,8 @@ function runRulesEngine(text) {
                         location: `Line ${lineIndex + 1}`,
                         error: `"${found}" in "${context}"`,
                         correction: `"${found.charAt(0).toUpperCase() + found.slice(1)}"`,
-                        type: 'capitalization'
+                        type: 'capitalization',
+                        explanation: `Hampton Golf brand standards require that "${found.charAt(0).toUpperCase() + found.slice(1)}" is always capitalized to maintain consistency and reinforce the premium nature of our community.`
                     });
                 }
             }
@@ -699,7 +706,8 @@ function runRulesEngine(text) {
                     location: 'Date check',
                     error: `${dayName}, ${month} ${day}`,
                     correction: `${actualDayName}, ${month} ${day}`,
-                    type: 'date'
+                    type: 'date',
+                    explanation: `The date ${dayName}, ${month} ${day} is incorrect for ${startYear}${endYear !== startYear ? `-${endYear}` : ''}. The correct day of the week is ${actualDayName}. This was verified against the calendar for the year(s) you specified.`
                 });
             }
         }
@@ -712,7 +720,8 @@ function runRulesEngine(text) {
             location: 'Style check',
             error: '"staff"',
             correction: '"Team Member(s)"',
-            type: 'style'
+            type: 'style',
+            explanation: 'Hampton Golf uses "Team Member(s)" instead of "staff" in all communications. This terminology better reflects our culture of service excellence and the collaborative nature of our organization.'
         });
     }
     
@@ -932,16 +941,24 @@ async function proofreadWithClaude(text) {
             const trimmedLine = line.trim();
             if (trimmedLine.startsWith('-')) {
                 const content = trimmedLine.substring(1).trim();
-                const parts = content.split('>');
                 
-                if (parts.length >= 2) {
-                    const correctionPart = parts.slice(1).join('>').trim();
+                // Split by " | EXPLAIN: " to separate error info from explanation
+                const parts = content.split(' | EXPLAIN: ');
+                const errorInfo = parts[0];
+                const explanation = parts[1] || '';
+                
+                // Now split the error info by '>'
+                const infoParts = errorInfo.split('>');
+                
+                if (infoParts.length >= 2) {
+                    const correctionPart = infoParts.slice(1).join('>').trim();
                     
                     errors.push({
-                        location: parts[0].trim(),
+                        location: infoParts[0].trim(),
                         error: correctionPart.split(' should be ')[0] ? correctionPart.split(' should be ')[0].trim() : correctionPart,
                         correction: correctionPart,
-                        type: 'claude'
+                        type: 'claude',
+                        explanation: explanation.trim() // Store Claude's custom explanation
                     });
                 }
             }
@@ -1746,7 +1763,12 @@ function generateExplanation(error) {
             return `This doesn't align with Hampton Golf's style guidelines and brand voice. Consistent terminology helps maintain our professional image and ensures clear communication.`;
         
         case 'claude':
-            // For Claude-detected errors, provide general guidance
+            // Use Claude's custom explanation if available
+            if (error.explanation && error.explanation.length > 0) {
+                return error.explanation;
+            }
+            
+            // Fallback to generic explanations if Claude didn't provide one
             if (error.location.toLowerCase().includes('spelling')) {
                 return `This appears to be a spelling error. Correct spelling is essential for maintaining professionalism and credibility in all Hampton Golf communications.`;
             } else if (error.location.toLowerCase().includes('grammar')) {
