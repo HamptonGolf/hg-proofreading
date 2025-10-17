@@ -43,7 +43,9 @@ function waitForPDFjs(timeout = 5000) {
 }
 
 // Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `Proofread this Hampton Golf document for errors only. Do not check these specific words for capitalization (automated separately): member, guest, neighbor, resident, homeowner, team member.
+const PROOFREADING_PROMPT = `You are proofreading a Hampton Golf document. The document type and year information has been provided for context.
+
+Proofread for errors only. Do not check these specific words for capitalization (automated separately): member, guest, neighbor, resident, homeowner, team member.
 
 Find actual mistakes:
 - Spelling errors and typos - check every word carefully
@@ -57,6 +59,7 @@ Rules:
 - Each error gets ONE bullet point only
 - Do not suggest word additions unless they fix grammar/spelling
 - Ignore spacing in headers—only flag header misspellings/punctuation
+- Consider the document type when evaluating formatting consistency
 
 Text:
 `;
@@ -163,6 +166,67 @@ function setupEventListeners() {
             }
         });
     }
+}
+
+// Project type change handler
+const projectTypeSelect = document.getElementById('project-type');
+if (projectTypeSelect) {
+    projectTypeSelect.addEventListener('change', (e) => {
+        const additionalContextField = document.getElementById('additional-context');
+        const additionalContextLabel = additionalContextField.closest('.context-field').querySelector('.context-label');
+        
+        if (e.target.value === 'other') {
+            // Make additional context required
+            additionalContextField.setAttribute('required', 'required');
+            
+            // Update label to show required
+            const optionalSpan = additionalContextLabel.querySelector('.label-optional');
+            if (optionalSpan) {
+                optionalSpan.innerHTML = '<span class="label-required">*</span>';
+            }
+            
+            // Add red border to indicate required
+            if (!additionalContextField.value.trim()) {
+                additionalContextField.style.borderColor = 'rgba(220, 53, 69, 0.4)';
+            }
+            
+            // Update placeholder
+            additionalContextField.placeholder = 'Please describe the project type and any relevant information...';
+        } else {
+            // Make additional context optional
+            additionalContextField.removeAttribute('required');
+            
+            // Update label to show optional
+            const requiredSpan = additionalContextLabel.querySelector('.label-required');
+            if (requiredSpan) {
+                requiredSpan.innerHTML = '<span class="label-optional">(Optional)</span>';
+            }
+            
+            // Reset visual styling
+            additionalContextField.style.borderColor = '';
+            
+            // Reset placeholder
+            additionalContextField.placeholder = 'Any other relevant information about this text/document (e.g., club-specific capitalization, intentional formatting choices, etc.)...';
+        }
+    });
+}
+
+// Additional context input handler for validation styling
+const additionalContextField = document.getElementById('additional-context');
+if (additionalContextField) {
+    additionalContextField.addEventListener('input', (e) => {
+        const projectType = document.getElementById('project-type').value;
+        
+        if (projectType === 'other') {
+            if (e.target.value.trim()) {
+                // Has content - turn green
+                e.target.style.borderColor = 'rgba(0, 180, 81, 0.3)';
+            } else {
+                // No content - turn red
+                e.target.style.borderColor = 'rgba(220, 53, 69, 0.4)';
+            }
+        }
+    });
 }
 
 // UI Enhancement Functions
@@ -554,97 +618,92 @@ function runRulesEngine(text) {
     ];
     
     capitalizeWords.forEach(rule => {
-    let match;
-    const regex = new RegExp(rule.pattern);
-    const lines = text.split('\n');
+        let match;
+        const regex = new RegExp(rule.pattern);
+        const lines = text.split('\n');
+        
+        lines.forEach((line, lineIndex) => {
+            let searchRegex = new RegExp(rule.pattern.source, rule.pattern.flags);
+            while ((match = searchRegex.exec(line)) !== null) {
+                const found = match[0];
+                const firstChar = found.charAt(0);
+                
+                if (firstChar !== firstChar.toUpperCase()) {
+                    const start = Math.max(0, match.index - 10);
+                    const end = Math.min(line.length, match.index + found.length + 10);
+                    const context = line.substring(start, end).trim();
+                    
+                    errors.push({
+                        location: `Line ${lineIndex + 1}`,
+                        error: `"${found}" in "${context}"`,
+                        correction: `"${found.charAt(0).toUpperCase() + found.slice(1)}"`,
+                        type: 'capitalization'
+                    });
+                }
+            }
+        });
+    });
     
-    lines.forEach((line, lineIndex) => {
-        let searchRegex = new RegExp(rule.pattern.source, rule.pattern.flags);
-        while ((match = searchRegex.exec(line)) !== null) {
-            const found = match[0];
-            const firstChar = found.charAt(0);
+    // Get year from context selection
+    const yearInput = document.getElementById('year-input').value.trim();
+    let startYear, endYear;
+    
+    if (yearInput.includes('-')) {
+        // Year range
+        const years = yearInput.split('-');
+        startYear = parseInt(years[0]);
+        endYear = parseInt(years[1]);
+    } else {
+        // Single year
+        startYear = parseInt(yearInput);
+        endYear = parseInt(yearInput);
+    }
+    
+    // Date validation using context year
+    const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
+    let dateMatch;
+    
+    while ((dateMatch = datePattern.exec(text)) !== null) {
+        const dayName = dateMatch[1];
+        const month = dateMatch[2];
+        const day = parseInt(dateMatch[3]);
+        
+        const monthMap = {
+            'January': 0, 'February': 1, 'March': 2, 'April': 3,
+            'May': 4, 'June': 5, 'July': 6, 'August': 7,
+            'September': 8, 'October': 9, 'November': 10, 'December': 11
+        };
+        
+        if (monthMap.hasOwnProperty(month)) {
+            const monthNum = monthMap[month];
             
-            if (firstChar !== firstChar.toUpperCase()) {
-                // Get surrounding context (10 chars before and after)
-                const start = Math.max(0, match.index - 10);
-                const end = Math.min(line.length, match.index + found.length + 10);
-                const context = line.substring(start, end).trim();
+            let correctYear = null;
+            let actualDayName = null;
+            
+            for (let year = startYear; year <= endYear; year++) {
+                const date = new Date(year, monthNum, day);
+                const testDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+                
+                if (testDayName === dayName) {
+                    correctYear = year;
+                    actualDayName = testDayName;
+                    break;
+                }
+            }
+            
+            if (!correctYear) {
+                const date = new Date(startYear, monthNum, day);
+                actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
                 
                 errors.push({
-                    location: `Line ${lineIndex + 1}`,
-                    error: `"${found}" in "${context}"`,
-                    correction: `"${found.charAt(0).toUpperCase() + found.slice(1)}"`,
-                    type: 'capitalization'
+                    location: 'Date check',
+                    error: `${dayName}, ${month} ${day}`,
+                    correction: `${actualDayName}, ${month} ${day}`,
+                    type: 'date'
                 });
             }
         }
-    });
-});
-    
-    // Date validation - detect year from document
-const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
-let dateMatch;
-
-// Try to detect year range or single year from document
-const yearRangePattern = /20(\d{2})\s*-\s*20(\d{2})/;
-const singleYearPattern = /\b(20\d{2})\b/;
-
-const yearRangeMatch = text.match(yearRangePattern);
-let startYear = 2025;
-let endYear = 2025;
-
-if (yearRangeMatch) {
-    startYear = parseInt('20' + yearRangeMatch[1]);
-    endYear = parseInt('20' + yearRangeMatch[2]);
-} else {
-    const singleYearMatch = text.match(singleYearPattern);
-    if (singleYearMatch) {
-        startYear = parseInt(singleYearMatch[1]);
-        endYear = parseInt(singleYearMatch[1]);
     }
-}
-
-while ((dateMatch = datePattern.exec(text)) !== null) {
-    const dayName = dateMatch[1];
-    const month = dateMatch[2];
-    const day = parseInt(dateMatch[3]);
-    
-    const monthMap = {
-        'January': 0, 'February': 1, 'March': 2, 'April': 3,
-        'May': 4, 'June': 5, 'July': 6, 'August': 7,
-        'September': 8, 'October': 9, 'November': 10, 'December': 11
-    };
-    
-    if (monthMap.hasOwnProperty(month)) {
-        const monthNum = monthMap[month];
-        
-        let correctYear = null;
-        let actualDayName = null;
-        
-        for (let year = startYear; year <= endYear; year++) {
-            const date = new Date(year, monthNum, day);
-            const testDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-            
-            if (testDayName === dayName) {
-                correctYear = year;
-                actualDayName = testDayName;
-                break;
-            }
-        }
-        
-        if (!correctYear) {
-            const date = new Date(startYear, monthNum, day);
-            actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-            
-            errors.push({
-                location: 'Date check',
-                error: `${dayName}, ${month} ${day}`,
-                correction: `${actualDayName}, ${month} ${day}`,
-                type: 'date'
-            });
-        }
-    }
-}
     
     // Staff → Team Member
     const staffPattern = /\bstaff\b/gi;
@@ -660,18 +719,52 @@ while ((dateMatch = datePattern.exec(text)) !== null) {
     return errors;
 }
 
-// Main Proofreading Function with Enhanced Error Handling
 async function startProofreading() {
+    // Validate context fields first
+    const projectType = document.getElementById('project-type').value;
+    const yearInput = document.getElementById('year-input').value.trim();
+    const additionalContext = document.getElementById('additional-context').value.trim();
+    
+    // Check required fields
+    if (!projectType) {
+        showNotification('Please select a project type', 'error');
+        shakeElement(document.getElementById('project-type'));
+        document.getElementById('project-type').focus();
+        return;
+    }
+    
+    if (!yearInput) {
+        showNotification('Please enter the applicable year(s)', 'error');
+        shakeElement(document.getElementById('year-input'));
+        document.getElementById('year-input').focus();
+        return;
+    }
+    
+    // Validate year format
+    const yearPattern = /^\d{4}(-\d{4})?$/;
+    if (!yearPattern.test(yearInput)) {
+        showNotification('Please enter a valid year (e.g., 2025) or year range (e.g., 2025-2026)', 'error');
+        shakeElement(document.getElementById('year-input'));
+        document.getElementById('year-input').focus();
+        return;
+    }
+
+    // Validate additional context if "Other" is selected
+    if (projectType === 'other' && !additionalContext) {
+        showNotification('Please provide additional context for "Other" project type', 'error');
+        shakeElement(document.getElementById('additional-context'));
+        document.getElementById('additional-context').focus();
+        return;
+    }
+    
     // Clear any previous results first with animation
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
     if (resultsSection && resultsSection.classList.contains('show')) {
-        // Animate out
         resultsSection.style.opacity = '0';
         resultsSection.style.transform = 'translateY(30px)';
         resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
         
-        // Wait for animation, then clear
         await new Promise(resolve => setTimeout(resolve, 500));
         
         resultsSection.classList.remove('show');
@@ -721,12 +814,10 @@ async function startProofreading() {
             return;
         }
         
-        // For text input, show loading and scroll immediately
         isProcessing = true;
         showLoading(true);
         localStorage.removeItem('draft_content');
         
-        // Start scroll IMMEDIATELY - no delay
         const loadingSection = document.getElementById('loading');
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
@@ -747,7 +838,6 @@ async function startProofreading() {
             showLoading(true);
             updateLoadingProgress(0, 'Starting PDF analysis...');
             
-            // Start scroll IMMEDIATELY - no delay
             const loadingSection = document.getElementById('loading');
             if (loadingSection) {
                 const rect = loadingSection.getBoundingClientRect();
@@ -766,13 +856,20 @@ async function startProofreading() {
         }
     }
     
+    // Build context string for Claude
+    const contextString = `Document Type: ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}
+Year(s): ${yearInput}
+${additionalContext ? `Additional Context: ${additionalContext}` : ''}
+
+`;
+    
     hideAllNotifications();
     
     updateLoadingProgress(10, 'Running style checks...');
     const ruleErrors = runRulesEngine(textToProofread);
     
     updateLoadingProgress(30, 'Analyzing with Claude AI...');
-    const claudeErrors = await proofreadWithClaude(textToProofread);
+    const claudeErrors = await proofreadWithClaude(contextString + textToProofread);
     
     const allErrors = [...ruleErrors, ...claudeErrors];
     
