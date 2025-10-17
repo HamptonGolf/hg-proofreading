@@ -975,31 +975,27 @@ async function proofreadWithClaude(text) {
                 const errorInfo = parts[0];
                 const explanation = parts[1] || '';
                 
-                // Now split the error info by '>' to get location and correction
+                // Split by '>' to get location and correction
                 const infoParts = errorInfo.split('>');
                 
                 if (infoParts.length >= 2) {
                     const location = infoParts[0].trim();
-                    const correctionPart = infoParts.slice(1).join('>').trim();
+                    let correctionPart = infoParts.slice(1).join('>').trim();
                     
-                    // Extract error and correction, but keep the full description
-                    // Format is: "error text" should be "correction text"
-                    const shouldBeMatch = correctionPart.match(/^["']?(.+?)["']?\s+should be\s+["']?(.+?)["']?$/);
+                    // Remove quotes if present
+                    correctionPart = correctionPart.replace(/^["']|["']$/g, '');
                     
-                    if (shouldBeMatch) {
+                    // Extract the actual error and correction from "X should be Y" format
+                    const match = correctionPart.match(/(.+?)\s+should be\s+(.+)/);
+                    
+                    if (match) {
+                        const errorText = match[1].replace(/^["']|["']$/g, '').trim();
+                        const correctionText = match[2].replace(/^["']|["']$/g, '').trim();
+                        
                         errors.push({
                             location: location,
-                            error: shouldBeMatch[1].trim(),
-                            correction: correctionPart, // Keep full "X should be Y" format
-                            type: 'claude',
-                            explanation: explanation.trim()
-                        });
-                    } else {
-                        // Fallback: just use the correction part as-is
-                        errors.push({
-                            location: location,
-                            error: correctionPart.split(' should be ')[0]?.trim() || correctionPart,
-                            correction: correctionPart,
+                            error: errorText,
+                            correction: correctionText,
                             type: 'claude',
                             explanation: explanation.trim()
                         });
@@ -1202,7 +1198,8 @@ async function proofreadWithClaude(text) {
         return;
     }
     
-    currentResults = errors.map(e => `- ${e.location} > ${e.error} should be ${e.correction}`).join('\n');
+    // Store results in clean format for copying
+    currentResults = errors.map(e => `- ${e.location} > "${e.error}" should be "${e.correction}"`).join('\n');
     
     updateTimestamp();
     
@@ -1256,11 +1253,11 @@ async function proofreadWithClaude(text) {
             // Format description based on error type
             let description;
             if (error.type === 'capitalization' || error.type === 'date' || error.type === 'style') {
-                // Rules engine errors: need to add "should be"
-                description = `${error.error} should be ${error.correction}`;
+                // Rules engine errors: format consistently
+                description = `"${error.error}" should be "${error.correction}"`;
             } else {
-                // Claude errors: already formatted with "should be"
-                description = error.correction;
+                // Claude errors: format consistently
+                description = `"${error.error}" should be "${error.correction}"`;
             }
             
             li.innerHTML = `
