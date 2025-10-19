@@ -17,6 +17,8 @@ let apiKey = null;
 let isProcessing = false;
 let currentResults = null;
 let characterCount = 0;
+let lastAnalyzedText = null;
+let isReanalyzing = false;
 
 // Calculate estimated time saved by AI proofreading based on project type
 function calculateTimeSaved(textLength, errorCount, projectType) {
@@ -213,6 +215,34 @@ Rules:
 - Do not suggest word additions unless they fix grammar/spelling
 - Ignore spacing in headers - only flag header misspellings/punctuation
 - Consider the document type when evaluating formatting consistency
+
+Text:
+`;
+
+const PROOFREADING_PROMPT_THOROUGH = `You are proofreading a Hampton Golf document for the SECOND TIME. This is a thorough re-analysis, so be EXTRA meticulous and catch errors that might have been missed in the first pass.
+
+The document type and year information has been provided for context.
+
+IMPORTANT: This is a second review, so look even more carefully for:
+- Subtle spelling errors and typos - scrutinize EVERY single word
+- Minor grammar issues that are easy to overlook
+- Capitalization inconsistencies (proper nouns, sentence starts, titles)
+- Punctuation errors, especially subtle ones (comma splices, missing commas, etc.)
+- Formatting inconsistencies throughout the entire document
+- Missing or incorrect accent marks (e.g., "Remoulade" should be "Rémoulade", "Sauvignon" needs proper accents)
+- Number/date formatting inconsistencies
+- Spacing issues between words or punctuation
+- Hyphenation errors
+- Commonly confused words (its/it's, your/you're, their/there/they're)
+
+Skip any capitalization checks for: member, guest, neighbor, resident, homeowner, team member (handled separately).
+
+Rules:
+- Each error gets ONE bullet point only
+- Do not suggest word additions unless they fix grammar/spelling
+- Ignore spacing in headers - only flag header misspellings/punctuation
+- Consider the document type when evaluating formatting consistency
+- Be MORE thorough than a typical first pass - this is a second review
 
 Text:
 `;
@@ -1054,27 +1084,33 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
 `;
     
     hideAllNotifications();
-    
+
+    // Store the text for potential reanalysis
+    lastAnalyzedText = textToProofread;
+
     updateLoadingProgress(10, 'Running style checks...');
     const ruleErrors = runRulesEngine(textToProofread);
-    
-    updateLoadingProgress(30, 'Analyzing with Claude AI...');
+
+    updateLoadingProgress(30, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     const claudeErrors = await proofreadWithClaude(contextString + textToProofread);
-    
+
     const allErrors = [...ruleErrors, ...claudeErrors];
-    
+
     updateLoadingProgress(100, 'Analysis complete!');
     setTimeout(() => {
         displayCombinedResults(allErrors);
         showLoading(false);
         isProcessing = false;
+        isReanalyzing = false; // Reset the flag after analysis
     }, 500);
 }
 
 async function proofreadWithClaude(text) {
-    const fullPrompt = PROOFREADING_PROMPT + text + PROOFREADING_PROMPT_SUFFIX;
+    // Use thorough prompt if this is a reanalysis
+    const promptToUse = isReanalyzing ? PROOFREADING_PROMPT_THOROUGH : PROOFREADING_PROMPT;
+    const fullPrompt = promptToUse + text + PROOFREADING_PROMPT_SUFFIX;
     
-    console.log('Analyzing with Claude AI...');
+    console.log(isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     
     try {
         const response = await fetch('/.netlify/functions/proofread', {
@@ -1453,13 +1489,17 @@ async function proofreadWithClaude(text) {
         `;
         errorCount.className = 'error-count has-errors';
         
-        // Update results footer to show both copy and clear buttons
+        // Update results footer to show copy, reanalyze, and clear buttons
         if (resultsFooter) {
             resultsFooter.innerHTML = `
                 <div class="export-options">
                     <button class="export-btn copy-btn" onclick="copyResults()" aria-label="Copy to clipboard">
                         <span class="export-icon">📋</span>
                         <span>Copy Results</span>
+                    </button>
+                    <button class="export-btn reanalyze-btn" onclick="reanalyze()" aria-label="Reanalyze with more scrutiny">
+                        <span class="export-icon">🔍</span>
+                        <span>Reanalyze</span>
                     </button>
                     <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
                         <span class="export-icon">🔄</span>
@@ -1689,7 +1729,90 @@ function clearResults() {
     }, 800); // Increased to match the height animation duration
 }
 
-// Utility Functions
+// Reanalyze the last document/text with more thorough checking
+async function reanalyze() {
+    if (!lastAnalyzedText) {
+        showNotification('No previous analysis found to reanalyze', 'error');
+        return;
+    }
+    
+    if (isProcessing) {
+        showNotification('Analysis already in progress', 'warning');
+        return;
+    }
+    
+    if (!apiKey) {
+        showNotification('Please enter and save your Claude API key first', 'error');
+        return;
+    }
+    
+    // Set the reanalysis flag
+    isReanalyzing = true;
+    
+    // Get context information
+    const projectType = document.getElementById('project-type').value;
+    const yearInput = document.getElementById('year-input').value.trim();
+    const additionalContext = document.getElementById('additional-context').value.trim();
+    
+    // Build context string
+    const contextString = `Document Type: ${projectType.charAt(0).toUpperCase() + projectType.slice(1)}
+Year(s): ${yearInput}
+${additionalContext ? `Additional Context: ${additionalContext}` : ''}
+
+`;
+    
+    // Clear previous results with animation
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        resultsSection.style.opacity = '0';
+        resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        resultsSection.classList.remove('show');
+        resultsSection.setAttribute('aria-hidden', 'true');
+        resultsSection.style.opacity = '';
+        resultsSection.style.transform = '';
+        resultsSection.style.transition = '';
+        
+        if (errorList) {
+            errorList.innerHTML = '';
+        }
+        currentResults = null;
+    }
+    
+    isProcessing = true;
+    showLoading(true, 'document');
+    
+    const loadingSection = document.getElementById('loading');
+    if (loadingSection) {
+        const rect = loadingSection.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetPosition = scrollTop + rect.top - 450;
+        smoothScrollTo(targetPosition, 1500);
+    }
+    
+    hideAllNotifications();
+    
+    updateLoadingProgress(10, 'Running enhanced style checks...');
+    const ruleErrors = runRulesEngine(lastAnalyzedText);
+    
+    updateLoadingProgress(30, 'Re-analyzing with extra scrutiny...');
+    const claudeErrors = await proofreadWithClaude(contextString + lastAnalyzedText);
+    
+    const allErrors = [...ruleErrors, ...claudeErrors];
+    
+    updateLoadingProgress(100, 'Thorough re-analysis complete!');
+    setTimeout(() => {
+        displayCombinedResults(allErrors);
+        showLoading(false);
+        isProcessing = false;
+        isReanalyzing = false;
+    }, 500);
+}
+
 function showLoading(show, type = 'document') {
     const loading = document.getElementById('loading');
     const proofreadBtn = document.getElementById('proofread-btn');
@@ -2028,6 +2151,7 @@ window.exportResults = exportResults;
 window.copyResults = copyResults;
 window.copyError = copyError;
 window.clearResults = clearResults;
+window.reanalyze = reanalyze;
 window.openErrorModal = openErrorModal;
 window.closeErrorModal = closeErrorModal;
 window.copyCorrection = copyCorrection;
