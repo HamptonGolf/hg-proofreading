@@ -18,6 +18,59 @@ let isProcessing = false;
 let currentResults = null;
 let characterCount = 0;
 
+// Calculate estimated time saved by AI proofreading
+function calculateTimeSaved(textLength, errorCount) {
+    // Average human proofreading speed: 250-300 words per minute
+    // We'll use 275 words/min as average
+    // Average word length: 5 characters + 1 space = 6 characters per word
+    const wordsPerMinute = 275;
+    const charsPerWord = 6;
+    const estimatedWords = textLength / charsPerWord;
+    
+    // Base reading/proofreading time
+    let humanMinutes = estimatedWords / wordsPerMinute;
+    
+    // Add time for each error found (human would need to stop, think, correct)
+    // Estimate: 30 seconds per error for human to identify and correct
+    const minutesPerError = 0.5;
+    humanMinutes += (errorCount * minutesPerError);
+    
+    // AI analysis time (roughly 10-30 seconds depending on length)
+    const aiMinutes = Math.max(0.2, Math.min(0.5, textLength / 10000));
+    
+    // Calculate time saved (minimum 1 minute to show value)
+    const timeSaved = Math.max(1, Math.round(humanMinutes - aiMinutes));
+    
+    return timeSaved;
+}
+
+// Update time saved display
+function updateTimeSaved(minutes) {
+    const timeSavedBadge = document.getElementById('time-saved-badge');
+    const timeSavedValue = document.getElementById('time-saved-value');
+    
+    if (timeSavedValue) {
+        // Animate the number counting up
+        let currentValue = 0;
+        const increment = Math.ceil(minutes / 20);
+        const interval = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= minutes) {
+                currentValue = minutes;
+                clearInterval(interval);
+            }
+            timeSavedValue.textContent = currentValue;
+        }, 30);
+    }
+    
+    if (timeSavedBadge) {
+        setTimeout(() => {
+            timeSavedBadge.style.opacity = '1';
+            timeSavedBadge.style.transform = 'scale(1)';
+        }, 100);
+    }
+}
+
 // Check if PDF.js is loaded
 function checkPDFjsLoaded() {
     return typeof pdfjsLib !== 'undefined';
@@ -1202,6 +1255,12 @@ async function proofreadWithClaude(text) {
     currentResults = errors.map(e => `- ${e.location} > "${e.error}" should be "${e.correction}"`).join('\n');
     
     updateTimestamp();
+    
+    // Calculate and display time saved
+    const textInput = document.getElementById('text-input');
+    const textLength = textInput && textInput.value ? textInput.value.length : characterCount;
+    const timeSaved = calculateTimeSaved(textLength, errors.length);
+    updateTimeSaved(timeSaved);
     
     if (errors.length === 0) {
         const successTemplate = document.getElementById('success-template');
