@@ -20,52 +20,67 @@ let characterCount = 0;
 
 // Calculate estimated time saved by AI proofreading
 function calculateTimeSaved(textLength, errorCount) {
-    // Human proofreading is NOT just reading - it's careful analysis
-    // Professional proofreading speed: 8-10 pages per hour (2000-2500 words per hour)
-    // That's roughly 40-50 words per minute when proofreading carefully
+    // Reality check: Professional proofreading is SLOW and methodical
+    // Industry standard: 8-10 manuscript pages per hour = 2000-2500 words per hour
+    // That's only 35-42 words per minute for careful proofreading
     
-    const wordsPerMinute = 45; // Careful proofreading speed (not reading speed!)
+    const wordsPerMinute = 35; // Conservative, realistic proofreading speed
     const charsPerWord = 5; // Average word length
     const estimatedWords = Math.ceil(textLength / charsPerWord);
     
-    // Base proofreading time (careful, methodical review)
+    // Base proofreading time (first careful pass)
     let humanMinutes = estimatedWords / wordsPerMinute;
     
-    // Multiple review passes that humans typically need:
-    // - Initial scan: 50% of base time
-    // - Detailed review: 100% of base time (already calculated above)
-    // - Final verification: 30% of base time
-    const multiplePassMultiplier = 1.8; // Total: 180% of base time
+    // Humans need multiple passes for quality work:
+    // Pass 1: Initial scan and familiarization (60% speed) = 40% extra time
+    // Pass 2: Detailed review (100% - already calculated)
+    // Pass 3: Final verification pass (80% speed) = 25% extra time
+    // Pass 4: Cross-checking repeated terms, formatting = 20% extra time
+    const multiplePassMultiplier = 1.85; // Total: 185% of base time
     humanMinutes *= multiplePassMultiplier;
     
-    // Additional time for each error found and corrected
-    // Human needs to: identify, research/verify, decide on correction, make change
-    // Realistic estimate: 1-2 minutes per error
-    const minutesPerError = 1.5;
-    humanMinutes += (errorCount * minutesPerError);
+    // Document complexity factors
+    const estimatedLines = Math.ceil(textLength / 75); // ~75 chars per line average
     
-    // For documents with many line items (menus, lists, etc.), add extra time
-    // These require careful line-by-line verification
-    // textLength is a number, so we estimate lines based on average line length
-    const estimatedLines = Math.ceil(textLength / 80); // ~80 chars per line average
-    if (estimatedLines > 20) {
-        // Add 15 seconds per line item for careful verification
-        humanMinutes += (estimatedLines * 0.25);
+    // Menu-specific time additions (line items need individual attention)
+    if (estimatedLines > 15) {
+        // Menus have many small items that each need careful review
+        // Each line item (menu item, description, price) needs ~20-30 seconds
+        const lineItemTime = 0.35; // 21 seconds per line item
+        humanMinutes += (estimatedLines * lineItemTime);
     }
     
-    // AI analysis time (10-45 seconds depending on length and complexity)
-    const aiMinutes = Math.max(0.17, Math.min(0.75, textLength / 8000));
+    // Additional time for each error found and corrected
+    // Human process: spot error → verify it's wrong → research correct form → 
+    // decide on fix → make correction → re-read for context
+    // Realistic: 1.5-2.5 minutes per error depending on complexity
+    const minutesPerError = 2;
+    humanMinutes += (errorCount * minutesPerError);
+    
+    // Additional time for specialized content
+    // Menus have prices, accents, culinary terms that need extra verification
+    if (textLength > 1500) {
+        // Add 30% more time for specialized terminology verification
+        humanMinutes *= 1.3;
+    }
+    
+    // AI analysis time is much faster (typically 15-60 seconds total)
+    const aiMinutes = Math.max(0.25, Math.min(1, textLength / 7000));
     
     // Calculate time saved
     let timeSaved = Math.round(humanMinutes - aiMinutes);
     
-    // Minimum thresholds based on content length
-    if (textLength > 3000) {
-        timeSaved = Math.max(5, timeSaved); // At least 5 minutes for substantial documents
-    } else if (textLength > 1000) {
-        timeSaved = Math.max(3, timeSaved); // At least 3 minutes for medium documents
+    // Realistic minimum thresholds based on actual document length
+    if (textLength > 5000) {
+        timeSaved = Math.max(12, timeSaved); // Large documents: minimum 12 minutes
+    } else if (textLength > 3000) {
+        timeSaved = Math.max(8, timeSaved); // Substantial documents: minimum 8 minutes
+    } else if (textLength > 1500) {
+        timeSaved = Math.max(5, timeSaved); // Medium documents: minimum 5 minutes
+    } else if (textLength > 800) {
+        timeSaved = Math.max(3, timeSaved); // Short documents: minimum 3 minutes
     } else {
-        timeSaved = Math.max(2, timeSaved); // At least 2 minutes for short documents
+        timeSaved = Math.max(2, timeSaved); // Very short: minimum 2 minutes
     }
     
     return timeSaved;
