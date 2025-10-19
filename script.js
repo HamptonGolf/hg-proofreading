@@ -20,26 +20,52 @@ let characterCount = 0;
 
 // Calculate estimated time saved by AI proofreading
 function calculateTimeSaved(textLength, errorCount) {
-    // Average human proofreading speed: 250-300 words per minute
-    // We'll use 275 words/min as average
-    // Average word length: 5 characters + 1 space = 6 characters per word
-    const wordsPerMinute = 275;
-    const charsPerWord = 6;
-    const estimatedWords = textLength / charsPerWord;
+    // Human proofreading is NOT just reading - it's careful analysis
+    // Professional proofreading speed: 8-10 pages per hour (2000-2500 words per hour)
+    // That's roughly 40-50 words per minute when proofreading carefully
     
-    // Base reading/proofreading time
+    const wordsPerMinute = 45; // Careful proofreading speed (not reading speed!)
+    const charsPerWord = 5; // Average word length
+    const estimatedWords = Math.ceil(textLength / charsPerWord);
+    
+    // Base proofreading time (careful, methodical review)
     let humanMinutes = estimatedWords / wordsPerMinute;
     
-    // Add time for each error found (human would need to stop, think, correct)
-    // Estimate: 30 seconds per error for human to identify and correct
-    const minutesPerError = 0.5;
+    // Multiple review passes that humans typically need:
+    // - Initial scan: 50% of base time
+    // - Detailed review: 100% of base time (already calculated above)
+    // - Final verification: 30% of base time
+    const multiplePassMultiplier = 1.8; // Total: 180% of base time
+    humanMinutes *= multiplePassMultiplier;
+    
+    // Additional time for each error found and corrected
+    // Human needs to: identify, research/verify, decide on correction, make change
+    // Realistic estimate: 1-2 minutes per error
+    const minutesPerError = 1.5;
     humanMinutes += (errorCount * minutesPerError);
     
-    // AI analysis time (roughly 10-30 seconds depending on length)
-    const aiMinutes = Math.max(0.2, Math.min(0.5, textLength / 10000));
+    // For documents with many line items (menus, lists, etc.), add extra time
+    // These require careful line-by-line verification
+    const lineCount = (textLength.match(/\n/g) || []).length || Math.ceil(textLength / 80);
+    if (lineCount > 20) {
+        // Add 15 seconds per line item for careful verification
+        humanMinutes += (lineCount * 0.25);
+    }
     
-    // Calculate time saved (minimum 1 minute to show value)
-    const timeSaved = Math.max(1, Math.round(humanMinutes - aiMinutes));
+    // AI analysis time (10-45 seconds depending on length and complexity)
+    const aiMinutes = Math.max(0.17, Math.min(0.75, textLength / 8000));
+    
+    // Calculate time saved
+    let timeSaved = Math.round(humanMinutes - aiMinutes);
+    
+    // Minimum thresholds based on content length
+    if (textLength > 3000) {
+        timeSaved = Math.max(5, timeSaved); // At least 5 minutes for substantial documents
+    } else if (textLength > 1000) {
+        timeSaved = Math.max(3, timeSaved); // At least 3 minutes for medium documents
+    } else {
+        timeSaved = Math.max(2, timeSaved); // At least 2 minutes for short documents
+    }
     
     return timeSaved;
 }
