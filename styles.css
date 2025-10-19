@@ -2653,6 +2653,19 @@ body {
     box-shadow: 0 4px 20px rgba(220, 53, 69, 0.3);
 }
 
+/* Reanalyze Button Specific Styling */
+.reanalyze-btn {
+    background: rgba(255, 193, 7, 0.1) !important;
+    border-color: rgba(255, 193, 7, 0.3) !important;
+    color: #ffc107 !important;
+}
+
+.reanalyze-btn:hover {
+    background: rgba(255, 193, 7, 0.2) !important;
+    border-color: rgba(255, 193, 7, 0.5) !important;
+    box-shadow: 0 4px 20px rgba(255, 193, 7, 0.3);
+}
+
 /* Error Detail Modal Styles */
 .error-modal {
     position: fixed;
