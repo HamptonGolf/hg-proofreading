@@ -1626,19 +1626,19 @@ function clearResults() {
     const fileInput = document.getElementById('file-input');
     const fileInfo = document.getElementById('file-info');
     
-    // Reset context fields
+    // Reset context fields (but keep year as 2025)
     const projectTypeSelect = document.getElementById('project-type');
     const yearInput = document.getElementById('year-input');
     const additionalContext = document.getElementById('additional-context');
-    
+
     if (projectTypeSelect) {
         projectTypeSelect.value = '';
     }
-    
+
     if (yearInput) {
-        yearInput.value = '';
+        yearInput.value = '2025'; // Keep default year instead of clearing
     }
-    
+
     if (additionalContext) {
         additionalContext.value = '';
         additionalContext.removeAttribute('required');
