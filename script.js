@@ -46,10 +46,11 @@ function calculateTimeSaved(textLength, errorCount) {
     
     // For documents with many line items (menus, lists, etc.), add extra time
     // These require careful line-by-line verification
-    const lineCount = (textLength.match(/\n/g) || []).length || Math.ceil(textLength / 80);
-    if (lineCount > 20) {
+    // textLength is a number, so we estimate lines based on average line length
+    const estimatedLines = Math.ceil(textLength / 80); // ~80 chars per line average
+    if (estimatedLines > 20) {
         // Add 15 seconds per line item for careful verification
-        humanMinutes += (lineCount * 0.25);
+        humanMinutes += (estimatedLines * 0.25);
     }
     
     // AI analysis time (10-45 seconds depending on length and complexity)
