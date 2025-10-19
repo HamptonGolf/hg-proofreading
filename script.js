@@ -18,70 +18,122 @@ let isProcessing = false;
 let currentResults = null;
 let characterCount = 0;
 
-// Calculate estimated time saved by AI proofreading
-function calculateTimeSaved(textLength, errorCount) {
-    // Reality check: Professional proofreading is SLOW and methodical
-    // Industry standard: 8-10 manuscript pages per hour = 2000-2500 words per hour
-    // That's only 35-42 words per minute for careful proofreading
+// Calculate estimated time saved by AI proofreading based on project type
+function calculateTimeSaved(textLength, errorCount, projectType) {
+    let timeSaved = 0;
     
-    const wordsPerMinute = 35; // Conservative, realistic proofreading speed
-    const charsPerWord = 5; // Average word length
-    const estimatedWords = Math.ceil(textLength / charsPerWord);
+    // Get project type from the dropdown
+    const projectTypeValue = projectType || document.getElementById('project-type')?.value || 'other';
     
-    // Base proofreading time (first careful pass)
-    let humanMinutes = estimatedWords / wordsPerMinute;
-    
-    // Humans need multiple passes for quality work:
-    // Pass 1: Initial scan and familiarization (60% speed) = 40% extra time
-    // Pass 2: Detailed review (100% - already calculated)
-    // Pass 3: Final verification pass (80% speed) = 25% extra time
-    // Pass 4: Cross-checking repeated terms, formatting = 20% extra time
-    const multiplePassMultiplier = 1.85; // Total: 185% of base time
-    humanMinutes *= multiplePassMultiplier;
-    
-    // Document complexity factors
-    const estimatedLines = Math.ceil(textLength / 75); // ~75 chars per line average
-    
-    // Menu-specific time additions (line items need individual attention)
-    if (estimatedLines > 15) {
-        // Menus have many small items that each need careful review
-        // Each line item (menu item, description, price) needs ~20-30 seconds
-        const lineItemTime = 0.35; // 21 seconds per line item
-        humanMinutes += (estimatedLines * lineItemTime);
+    // Calculate time saved based on project type and character count
+    switch (projectTypeValue) {
+        case 'flyer':
+            // Flyer: 1-3 minutes
+            if (textLength <= 500) {
+                timeSaved = 1;
+            } else if (textLength <= 1500) {
+                timeSaved = 2;
+            } else {
+                timeSaved = 3;
+            }
+            break;
+            
+        case 'menu':
+            // Menu: 5-10 minutes
+            if (textLength <= 1000) {
+                timeSaved = 5;
+            } else if (textLength <= 2000) {
+                timeSaved = 6;
+            } else if (textLength <= 3000) {
+                timeSaved = 7;
+            } else if (textLength <= 4000) {
+                timeSaved = 8;
+            } else if (textLength <= 5000) {
+                timeSaved = 9;
+            } else {
+                timeSaved = 10;
+            }
+            break;
+            
+        case 'collateral':
+            // Collateral Booklet: 10-15 minutes
+            if (textLength <= 2000) {
+                timeSaved = 10;
+            } else if (textLength <= 4000) {
+                timeSaved = 11;
+            } else if (textLength <= 6000) {
+                timeSaved = 12;
+            } else if (textLength <= 8000) {
+                timeSaved = 13;
+            } else if (textLength <= 10000) {
+                timeSaved = 14;
+            } else {
+                timeSaved = 15;
+            }
+            break;
+            
+        case 'calendar':
+            // Calendar: 3-5 minutes
+            if (textLength <= 1000) {
+                timeSaved = 3;
+            } else if (textLength <= 2500) {
+                timeSaved = 4;
+            } else {
+                timeSaved = 5;
+            }
+            break;
+            
+        case 'newsletter':
+            // Newsletter: 5-10 minutes
+            if (textLength <= 1500) {
+                timeSaved = 5;
+            } else if (textLength <= 3000) {
+                timeSaved = 6;
+            } else if (textLength <= 4500) {
+                timeSaved = 7;
+            } else if (textLength <= 6000) {
+                timeSaved = 8;
+            } else if (textLength <= 7500) {
+                timeSaved = 9;
+            } else {
+                timeSaved = 10;
+            }
+            break;
+            
+        case 'other':
+        default:
+            // Other: 1-5 minutes
+            if (textLength <= 500) {
+                timeSaved = 1;
+            } else if (textLength <= 1500) {
+                timeSaved = 2;
+            } else if (textLength <= 3000) {
+                timeSaved = 3;
+            } else if (textLength <= 5000) {
+                timeSaved = 4;
+            } else {
+                timeSaved = 5;
+            }
+            break;
     }
     
-    // Additional time for each error found and corrected
-    // Human process: spot error → verify it's wrong → research correct form → 
-    // decide on fix → make correction → re-read for context
-    // Realistic: 1.5-2.5 minutes per error depending on complexity
-    const minutesPerError = 2;
-    humanMinutes += (errorCount * minutesPerError);
+    // Add bonus time for errors found (30 seconds per error)
+    // This represents the time saved not having to find and fix each error manually
+    const errorBonus = Math.floor(errorCount * 0.5);
+    timeSaved += errorBonus;
     
-    // Additional time for specialized content
-    // Menus have prices, accents, culinary terms that need extra verification
-    if (textLength > 1500) {
-        // Add 30% more time for specialized terminology verification
-        humanMinutes *= 1.3;
-    }
+    // Cap the maximum based on project type to keep it realistic
+    const maxTimes = {
+        'flyer': 4,
+        'menu': 12,
+        'collateral': 18,
+        'calendar': 6,
+        'newsletter': 12,
+        'other': 6
+    };
     
-    // AI analysis time is much faster (typically 15-60 seconds total)
-    const aiMinutes = Math.max(0.25, Math.min(1, textLength / 7000));
-    
-    // Calculate time saved
-    let timeSaved = Math.round(humanMinutes - aiMinutes);
-    
-    // Realistic minimum thresholds based on actual document length
-    if (textLength > 5000) {
-        timeSaved = Math.max(12, timeSaved); // Large documents: minimum 12 minutes
-    } else if (textLength > 3000) {
-        timeSaved = Math.max(8, timeSaved); // Substantial documents: minimum 8 minutes
-    } else if (textLength > 1500) {
-        timeSaved = Math.max(5, timeSaved); // Medium documents: minimum 5 minutes
-    } else if (textLength > 800) {
-        timeSaved = Math.max(3, timeSaved); // Short documents: minimum 3 minutes
-    } else {
-        timeSaved = Math.max(2, timeSaved); // Very short: minimum 2 minutes
-    }
+    const maxTime = maxTimes[projectTypeValue] || 6;
+    timeSaved = Math.min(timeSaved, maxTime);
     
     return timeSaved;
 }
@@ -1301,7 +1353,8 @@ async function proofreadWithClaude(text) {
     // Calculate and display time saved
     const textInput = document.getElementById('text-input');
     const textLength = textInput && textInput.value ? textInput.value.length : characterCount;
-    const timeSaved = calculateTimeSaved(textLength, errors.length);
+    const projectType = document.getElementById('project-type')?.value || 'other';
+    const timeSaved = calculateTimeSaved(textLength, errors.length, projectType);
     updateTimeSaved(timeSaved);
     
     if (errors.length === 0) {
