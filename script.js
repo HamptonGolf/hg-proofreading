@@ -142,6 +142,7 @@ function calculateTimeSaved(textLength, errorCount, projectType) {
 function updateTimeSaved(minutes) {
     const timeSavedBadge = document.getElementById('time-saved-badge');
     const timeSavedValue = document.getElementById('time-saved-value');
+    const timeSavedLabel = document.querySelector('.time-label');
     
     if (timeSavedValue) {
         // Animate the number counting up
@@ -152,6 +153,11 @@ function updateTimeSaved(minutes) {
             if (currentValue >= minutes) {
                 currentValue = minutes;
                 clearInterval(interval);
+                
+                // Update label with correct singular/plural
+                if (timeSavedLabel) {
+                    timeSavedLabel.textContent = minutes === 1 ? 'Minute Saved' : 'Minutes Saved';
+                }
             }
             timeSavedValue.textContent = currentValue;
         }, 30);
