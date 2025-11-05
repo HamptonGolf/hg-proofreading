@@ -1081,7 +1081,7 @@ body::after {
 
 .error-item {
     padding: 24px;
-    padding-right: 180px;
+    padding-right: 24px;
     margin-bottom: 20px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 180, 81, 0.2);
@@ -3002,7 +3002,7 @@ body {
 .error-item::after {
     content: 'Error Analysis';
     position: absolute;
-    right: 20px;
+    right: 70px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--hg-secondary-green);
@@ -3022,5 +3022,5 @@ body {
 
 .error-item:hover::after {
     opacity: 1;
-    right: 20px;
+    right: 70px;
 }
