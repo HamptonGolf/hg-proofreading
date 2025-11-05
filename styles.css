@@ -1149,7 +1149,6 @@ body::after {
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
-    padding-right: 0;
 }
 
 /* Loading State */
@@ -2241,6 +2240,7 @@ body {
 
 .error-content {
     padding-left: 50px;
+    padding-right: 180px;
     flex: 1;
 }
 
@@ -3002,7 +3002,7 @@ body {
 .error-item::after {
     content: 'Error Analysis';
     position: absolute;
-    right: 70px;
+    right: 80px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--hg-secondary-green);
@@ -3022,5 +3022,5 @@ body {
 
 .error-item:hover::after {
     opacity: 1;
-    right: 70px;
+    right: 80px;
 }
