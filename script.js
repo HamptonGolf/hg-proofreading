@@ -1247,18 +1247,22 @@ async function proofreadWithClaude(text) {
             `;
             errorCount.className = 'error-count no-errors';
             
-            // Update results footer for no errors (hide copy, show clear)
-            if (resultsFooter) {
-                resultsFooter.innerHTML = `
-                    <div class="export-options">
-                        <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
-                            <span class="export-icon">🔄</span>
-                            <span>Clear & Start Over</span>
-                        </button>
-                    </div>
-                `;
-                resultsFooter.style.display = 'block';
-            }
+            // Update results footer for no errors (show reanalyze and clear)
+                if (resultsFooter) {
+                    resultsFooter.innerHTML = `
+                        <div class="export-options">
+                            <button class="export-btn reanalyze-btn" onclick="reanalyze()" aria-label="Reanalyze with more scrutiny">
+                                <span class="export-icon">🔍</span>
+                                <span>Reanalyze</span>
+                            </button>
+                            <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                                <span class="export-icon">🔄</span>
+                                <span>Clear & Start Over</span>
+                            </button>
+                        </div>
+                    `;
+                    resultsFooter.style.display = 'block';
+                }
             
             showNotification('Document analysis complete - Perfect score!', 'success');
         } else {
@@ -1299,10 +1303,14 @@ async function proofreadWithClaude(text) {
                 `;
                 errorCount.className = 'error-count no-errors';
                 
-                // Update results footer for no errors (hide copy, show clear)
+                // Update results footer for no errors (show reanalyze and clear)
                 if (resultsFooter) {
                     resultsFooter.innerHTML = `
                         <div class="export-options">
+                            <button class="export-btn reanalyze-btn" onclick="reanalyze()" aria-label="Reanalyze with more scrutiny">
+                                <span class="export-icon">🔍</span>
+                                <span>Reanalyze</span>
+                            </button>
                             <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
                                 <span class="export-icon">🔄</span>
                                 <span>Clear & Start Over</span>
@@ -1421,18 +1429,22 @@ async function proofreadWithClaude(text) {
         `;
         errorCount.className = 'error-count no-errors';
         
-        // Update results footer for no errors (hide copy, show clear)
-        if (resultsFooter) {
-            resultsFooter.innerHTML = `
-                <div class="export-options">
-                    <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
-                        <span class="export-icon">🔄</span>
-                        <span>Clear & Start Over</span>
-                    </button>
-                </div>
-            `;
-            resultsFooter.style.display = 'block';
-        }
+        // Update results footer for no errors (show reanalyze and clear)
+                if (resultsFooter) {
+                    resultsFooter.innerHTML = `
+                        <div class="export-options">
+                            <button class="export-btn reanalyze-btn" onclick="reanalyze()" aria-label="Reanalyze with more scrutiny">
+                                <span class="export-icon">🔍</span>
+                                <span>Reanalyze</span>
+                            </button>
+                            <button class="export-btn clear-btn" onclick="clearResults()" aria-label="Clear results and start over">
+                                <span class="export-icon">🔄</span>
+                                <span>Clear & Start Over</span>
+                            </button>
+                        </div>
+                    `;
+                    resultsFooter.style.display = 'block';
+                }
         
         showNotification('Document analysis complete - Perfect score!', 'success');
     } else {
