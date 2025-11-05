@@ -1246,9 +1246,8 @@ body::after {
 }
 
 .error-item {
-    padding: 24px;
-    padding-right: 24px;
-    margin-bottom: 20px;
+    padding: 28px 24px;  /* Increased from 24px */
+    margin-bottom: 24px;  /* Increased from 20px */
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 180, 81, 0.2);
     border-left: 4px solid var(--hg-secondary-green);
@@ -1309,7 +1308,7 @@ body::after {
 
 .error-description {
     color: rgba(255, 255, 255, 0.9);
-    line-height: 1.7;
+    line-height: 2;  /* Increased from 1.7 */
     font-size: 16px;
     font-family: 'Inter', sans-serif;
     word-wrap: break-word;
@@ -1771,17 +1770,19 @@ body::after {
     }
     
     .error-item {
-        padding: 20px;
+        padding: 24px 20px;  /* More padding */
+        margin-bottom: 20px;
     }
 
     .error-description {
-        font-size: 15px;
-        line-height: 1.8;
+        font-size: 16px;  /* Larger text */
+        line-height: 2.2;  /* Much more spacing between lines */
+        margin-bottom: 0;
     }
 
     .error-location {
-        font-size: 13px;
-        margin-bottom: 12px;
+        font-size: 14px;  /* Slightly larger */
+        margin-bottom: 16px;  /* More space below location */
     }
     
     .no-errors-message {
@@ -3221,6 +3222,25 @@ body {
         width: 100%;
         justify-content: center;
         padding: 14px 24px;
+    }
+
+    .error-item {
+        padding: 26px 22px;
+        margin-bottom: 22px;
+    }
+
+    .error-description {
+        font-size: 16px;
+        line-height: 2.1;
+    }
+
+    .error-location {
+        font-size: 14px;
+        margin-bottom: 14px;
+    }
+
+    .error-list {
+        margin-top: 20px;
     }
 }
 
