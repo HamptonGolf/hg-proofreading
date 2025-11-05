@@ -1081,7 +1081,7 @@ body::after {
 
 .error-item {
     padding: 24px;
-    padding-right: 80px;
+    padding-right: 180px;
     margin-bottom: 20px;
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(0, 180, 81, 0.2);
@@ -1147,7 +1147,9 @@ body::after {
     font-size: 16px;
     font-family: 'Inter', sans-serif;
     word-wrap: break-word;
-    padding-right: 60px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    padding-right: 0;
 }
 
 /* Loading State */
@@ -3000,7 +3002,7 @@ body {
 .error-item::after {
     content: 'Error Analysis';
     position: absolute;
-    right: 80px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--hg-secondary-green);
@@ -3020,5 +3022,5 @@ body {
 
 .error-item:hover::after {
     opacity: 1;
-    right: 80px;
+    right: 20px;
 }
