@@ -36,6 +36,30 @@ function throttle(func, limit) {
     };
 }
 
+// Haptic feedback for mobile interactions
+function triggerHapticFeedback(type = 'light') {
+    // Check if the device supports haptic feedback
+    if (navigator.vibrate) {
+        switch(type) {
+            case 'light':
+                navigator.vibrate(10);
+                break;
+            case 'medium':
+                navigator.vibrate(20);
+                break;
+            case 'heavy':
+                navigator.vibrate(30);
+                break;
+            case 'success':
+                navigator.vibrate([10, 50, 10]);
+                break;
+            case 'error':
+                navigator.vibrate([30, 50, 30]);
+                break;
+        }
+    }
+}
+
 // Global variables
 let selectedFile = null;
 let apiKey = null;
@@ -340,10 +364,13 @@ function setupEventListeners() {
         });
     }
     
-    // Proofread button
+    // Proofread button with haptic feedback
     const proofreadBtn = document.getElementById('proofread-btn');
     if (proofreadBtn) {
-        proofreadBtn.addEventListener('click', startProofreading);
+        proofreadBtn.addEventListener('click', () => {
+            triggerHapticFeedback('medium');
+            startProofreading();
+        });
         
         // Add hover effect
         proofreadBtn.addEventListener('mouseenter', () => {
@@ -1887,6 +1914,13 @@ function showLoading(show, type = 'document') {
 }
 
 function showNotification(message, type = 'info', duration = 3000) {
+    // Trigger haptic feedback for mobile
+    if (type === 'success') {
+        triggerHapticFeedback('success');
+    } else if (type === 'error') {
+        triggerHapticFeedback('error');
+    }
+    
     // Remove existing notifications
     hideAllNotifications();
     
