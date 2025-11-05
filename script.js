@@ -11,6 +11,31 @@ const CONFIG = {
     AUTO_SAVE_DELAY: 1000
 };
 
+// Debounce helper for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Throttle helper for scroll events
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
 // Global variables
 let selectedFile = null;
 let apiKey = null;
@@ -332,13 +357,14 @@ function setupEventListeners() {
         });
     }
     
-    // Text input character counter
+    // Text input with debounced character count for performance
     const textInput = document.getElementById('text-input');
     if (textInput) {
-        textInput.addEventListener('input', (e) => {
+        const debouncedUpdate = debounce((e) => {
             updateCharacterCount(e.target.value.length);
-            autoSaveContent(e.target.value);
-        });
+        }, 200);
+        
+        textInput.addEventListener('input', debouncedUpdate);
         
         // Load auto-saved content
         const savedContent = localStorage.getItem('draft_content');
@@ -402,10 +428,10 @@ if (projectTypeSelect) {
     });
 }
 
-// Additional context input handler for validation styling
+// Additional context input handler for validation styling with debouncing
 const additionalContextField = document.getElementById('additional-context');
 if (additionalContextField) {
-    additionalContextField.addEventListener('input', (e) => {
+    const debouncedValidation = debounce((e) => {
         const projectType = document.getElementById('project-type').value;
         
         if (projectType === 'other') {
@@ -417,7 +443,9 @@ if (additionalContextField) {
                 e.target.style.borderColor = 'rgba(220, 53, 69, 0.4)';
             }
         }
-    });
+    }, 200);
+    
+    additionalContextField.addEventListener('input', debouncedValidation);
 }
 
 // UI Enhancement Functions
@@ -434,8 +462,8 @@ function initializeUIEnhancements() {
     updateTimestamp();
 }
 
-// Character counter
-function updateCharacterCount(count) {
+// Character counter with debouncing
+const updateCharacterCount = debounce((count) => {
     characterCount = count;
     const charCountElement = document.getElementById('char-count');
     if (charCountElement) {
@@ -448,17 +476,13 @@ function updateCharacterCount(count) {
             charCountElement.style.color = '';
         }
     }
-}
+}, 150);
 
-// Auto-save functionality
-let autoSaveTimer;
-function autoSaveContent(content) {
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(() => {
-        localStorage.setItem('draft_content', content);
-        showNotification('Draft saved', 'success', 1500);
-    }, CONFIG.AUTO_SAVE_DELAY);
-}
+// Auto-save functionality with debouncing
+const autoSaveContent = debounce((content) => {
+    localStorage.setItem('draft_content', content);
+    showNotification('Draft saved', 'success', 1500);
+}, CONFIG.AUTO_SAVE_DELAY);
 
 // System status indicator
 function updateSystemStatus() {
@@ -805,19 +829,19 @@ async function extractTextFromPDF(file) {
     });
 }
 
-// Loading Progress Management
-function updateLoadingProgress(percentage, message) {
+// Debounced loading progress updates for smoother performance
+const updateLoadingProgress = debounce((percent, message) => {
     const progressFill = document.querySelector('.progress-fill');
     const progressText = document.querySelector('.progress-text');
     
     if (progressFill) {
-        progressFill.style.width = `${percentage}%`;
+        progressFill.style.width = `${percent}%`;
     }
     
     if (progressText && message) {
         progressText.textContent = message;
     }
-}
+}, 50);
 
 // Rule-based error detection
 function runRulesEngine(text) {
@@ -1450,6 +1474,9 @@ async function proofreadWithClaude(text) {
     } else {
         errorList.innerHTML = '';
         
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
+        
         errors.forEach((error, index) => {
             const li = document.createElement('li');
             li.className = 'error-item';
@@ -1492,8 +1519,11 @@ async function proofreadWithClaude(text) {
                 }
             });
             
-            errorList.appendChild(li);
+            fragment.appendChild(li);
         });
+        
+        // Append all at once for better performance
+        errorList.appendChild(fragment);
         
         errorCount.innerHTML = `
             <span class="count-number">${errors.length}</span>
@@ -1893,14 +1923,15 @@ function showNotification(message, type = 'info', duration = 3000) {
     }
 }
 
-// Smooth scroll function
-function smoothScrollTo(targetPosition, duration) {
+// Optimized smooth scroll function with reduced motion support
+function smoothScrollTo(targetPosition, duration = 1000) {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
-    if (isIOS) {
+    if (isIOS || prefersReducedMotion) {
         window.scrollTo({
             top: targetPosition,
-            behavior: 'smooth'
+            behavior: prefersReducedMotion ? 'auto' : 'smooth'
         });
         return;
     }
@@ -1912,19 +1943,17 @@ function smoothScrollTo(targetPosition, duration) {
     function animation(currentTime) {
         if (startTime === null) startTime = currentTime;
         const timeElapsed = currentTime - startTime;
-        const run = ease(timeElapsed, startPosition, distance, duration);
-        window.scrollTo(0, run);
-        if (timeElapsed < duration) requestAnimationFrame(animation);
+        const progress = Math.min(timeElapsed / duration, 1);
+        
+        const ease = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        
+        window.scrollTo(0, startPosition + (distance * ease(progress)));
+        
+        if (timeElapsed < duration) {
+            requestAnimationFrame(animation);
+        }
     }
-
-    // Smooth ease-in-out for gentle acceleration and deceleration
-    function ease(t, b, c, d) {
-        t /= d / 2;
-        if (t < 1) return c / 2 * t * t * t + b;
-        t -= 2;
-        return c / 2 * (t * t * t + 2) + b;
-    }
-
+    
     requestAnimationFrame(animation);
 }
 
@@ -1973,30 +2002,42 @@ function updateTimestamp() {
 }
 
 function initializeTooltips() {
-    document.querySelectorAll('[title]').forEach(element => {
-        element.addEventListener('mouseenter', (e) => {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.textContent = e.target.title;
-            document.body.appendChild(tooltip);
-            
-            const rect = e.target.getBoundingClientRect();
-            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-            tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
-            
-            e.target.dataset.originalTitle = e.target.title;
-            e.target.title = '';
-            
-            setTimeout(() => tooltip.classList.add('show'), 10);
-        });
+    // Use event delegation for better performance
+    let activeTooltip = null;
+    
+    document.body.addEventListener('mouseenter', (e) => {
+        const element = e.target.closest('[title]');
+        if (!element) return;
         
-        element.addEventListener('mouseleave', (e) => {
-            document.querySelectorAll('.tooltip').forEach(t => t.remove());
-            if (e.target.dataset.originalTitle) {
-                e.target.title = e.target.dataset.originalTitle;
-            }
-        });
-    });
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = element.title;
+        document.body.appendChild(tooltip);
+        
+        const rect = element.getBoundingClientRect();
+        tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+        tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
+        
+        element.dataset.originalTitle = element.title;
+        element.title = '';
+        
+        requestAnimationFrame(() => tooltip.classList.add('show'));
+        activeTooltip = { tooltip, element };
+    }, true);
+    
+    document.body.addEventListener('mouseleave', (e) => {
+        const element = e.target.closest('[title], [data-original-title]');
+        if (!element || !activeTooltip) return;
+        
+        if (activeTooltip.tooltip && activeTooltip.tooltip.parentNode) {
+            activeTooltip.tooltip.remove();
+        }
+        if (element.dataset.originalTitle) {
+            element.title = element.dataset.originalTitle;
+            delete element.dataset.originalTitle;
+        }
+        activeTooltip = null;
+    }, true);
 }
 
 function createCSVFromResults(results) {
