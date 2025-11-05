@@ -33,6 +33,64 @@
     --shadow-glow: 0 0 80px rgba(0, 180, 81, 0.3);
 }
 
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration for frequently animated elements */
+.orb,
+.spinner,
+.spinner-ring,
+.loading-content,
+.error-item,
+.glass-card,
+.proofread-btn,
+.error-modal-content,
+.btn-bg,
+.logo {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Reduce animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .orb {
+        animation: none;
+        opacity: 0.2;
+    }
+}
+
+/* Optimize will-change for hover states only */
+.error-item:hover,
+.glass-card:hover,
+.proofread-btn:hover,
+.export-btn:hover,
+.tab-btn:hover {
+    will-change: transform;
+}
+
+.error-item:not(:hover),
+.glass-card:not(:hover),
+.proofread-btn:not(:hover),
+.export-btn:not(:hover),
+.tab-btn:not(:hover) {
+    will-change: auto;
+}
+
+/* Contain layout shifts */
+.results-section,
+.loading,
+.error-list {
+    contain: layout style;
+}
+
 /* Base Body Styling with Premium Dark Theme */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -75,7 +133,7 @@ body::after {
     opacity: 0.5;
 }
 
-/* Animated Gradient Orbs */
+/* Optimized Animated Gradient Orbs with GPU acceleration */
 .orb {
     position: fixed;
     border-radius: 50%;
@@ -84,6 +142,7 @@ body::after {
     animation: floatOrb 25s infinite ease-in-out;
     z-index: -1;
     pointer-events: none;
+    will-change: transform;
 }
 
 .orb1 {
@@ -115,16 +174,16 @@ body::after {
 
 @keyframes floatOrb {
     0%, 100% { 
-        transform: translate(0, 0) scale(1) rotate(0deg); 
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
     }
     25% { 
-        transform: translate(50px, -50px) scale(1.1) rotate(90deg); 
+        transform: translate3d(50px, -50px, 0) scale(1.1) rotate(90deg);
     }
     50% { 
-        transform: translate(-30px, 30px) scale(0.95) rotate(180deg); 
+        transform: translate3d(-30px, 30px, 0) scale(0.95) rotate(180deg);
     }
     75% { 
-        transform: translate(-50px, -20px) scale(1.05) rotate(270deg); 
+        transform: translate3d(-50px, -20px, 0) scale(1.05) rotate(270deg);
     }
 }
 
@@ -1208,10 +1267,10 @@ body::after {
 
 @keyframes spin {
     from {
-        transform: rotate(0deg);
+        transform: rotate3d(0, 0, 1, 0deg);
     }
     to {
-        transform: rotate(360deg);
+        transform: rotate3d(0, 0, 1, 360deg);
     }
 }
 
