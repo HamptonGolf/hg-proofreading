@@ -91,6 +91,51 @@
     contain: layout style;
 }
 
+/* Prevent text selection on interactive elements for better mobile UX */
+button,
+.tab-btn,
+.error-item,
+.export-btn,
+.proofread-btn,
+.api-key-save,
+.error-action {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Optimize touch targets for mobile */
+@media (max-width: 768px) {
+    .tab-btn,
+    .proofread-btn,
+    .export-btn,
+    .error-action,
+    .api-key-save,
+    button {
+        min-height: 44px; /* iOS recommended touch target */
+        min-width: 44px;
+    }
+    
+    .error-item {
+        padding: 20px 16px;
+        padding-right: 70px;
+        margin-bottom: 16px;
+    }
+    
+    /* Make error items easier to tap */
+    .error-item::after {
+        display: none; /* Hide "Error Analysis" badge on mobile */
+    }
+    
+    /* Larger tap target for copy button */
+    .error-action {
+        right: 12px;
+        padding: 10px 14px;
+    }
+}
+
 /* Base Body Styling with Premium Dark Theme */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -131,6 +176,23 @@ body::after {
         repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(0, 102, 0, 0.03) 35px, rgba(0, 102, 0, 0.03) 70px);
     z-index: -1;
     opacity: 0.5;
+}
+
+/* Mobile viewport height fix for address bar */
+@supports (-webkit-touch-callout: none) {
+    body {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Prevent zoom on input focus for iOS */
+@media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
 }
 
 /* Optimized Animated Gradient Orbs with GPU acceleration */
@@ -187,6 +249,24 @@ body::after {
     }
 }
 
+/* Reduce animations on mobile for better performance */
+@media (max-width: 768px) {
+    .orb {
+        animation-duration: 40s; /* Slower = less resource intensive */
+        filter: blur(80px); /* Less blur = better performance */
+        opacity: 0.3;
+    }
+    
+    .orb3 {
+        display: none; /* Hide third orb on mobile */
+    }
+    
+    /* Simplify background effects */
+    body::after {
+        opacity: 0.3;
+    }
+}
+
 /* Premium Header with Glass Effect */
 .header {
     background: rgba(0, 0, 0, 0.4);
@@ -223,6 +303,33 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+/* Safe area support for notched devices */
+@supports (padding: max(0px)) {
+    .header {
+        padding-top: max(24px, env(safe-area-inset-top));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+    
+    .container {
+        padding-left: max(40px, calc(40px + env(safe-area-inset-left)));
+        padding-right: max(40px, calc(40px + env(safe-area-inset-right)));
+    }
+    
+    .footer {
+        padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+}
+
+@media (max-width: 768px) {
+    @supports (padding: max(0px)) {
+        .container {
+            padding-left: max(20px, calc(20px + env(safe-area-inset-left)));
+            padding-right: max(20px, calc(20px + env(safe-area-inset-right)));
+        }
+    }
 }
 
 /* Logo Styling - Matching Brand Guidelines */
@@ -2169,6 +2276,21 @@ body {
     animation: spin 1.5s linear reverse infinite;
 }
 
+@media (max-width: 768px) {
+    .spinner {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .loading-text {
+        font-size: 16px;
+    }
+    
+    .loading {
+        padding: 40px 20px;
+    }
+}
+
 .loading-progress {
     margin-top: 30px;
 }
@@ -3018,37 +3140,80 @@ body {
     background: rgba(255, 255, 255, 0.15);
 }
 
-/* Responsive Modal */
+/* Responsive Modal - Optimized for mobile */
 @media (max-width: 768px) {
     .error-modal {
-        padding: 10px;
+        padding: 0;
+        align-items: flex-end; /* Slide up from bottom */
     }
     
     .error-modal-content {
-        max-height: 90vh;
-        border-radius: 16px;
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 100%;
     }
     
     .error-modal-header {
-        padding: 20px 24px;
+        padding: 20px;
+        position: sticky;
+        top: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(20px);
+        z-index: 10;
     }
     
     .error-modal-title {
-        font-size: 22px;
+        font-size: 20px;
     }
     
     .error-modal-body {
-        padding: 24px;
+        padding: 20px;
+        max-height: calc(85vh - 160px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .error-modal-footer {
-        padding: 20px 24px;
+        padding: 16px 20px;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
         flex-direction: column;
+        gap: 10px;
+        position: sticky;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(20px);
     }
     
     .modal-action-btn {
         width: 100%;
         justify-content: center;
+        padding: 14px 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .file-upload-area {
+        min-height: 200px;
+        padding: 30px 20px;
+    }
+    
+    .upload-icon {
+        font-size: 48px;
+    }
+    
+    .upload-title {
+        font-size: 18px;
+    }
+    
+    .upload-subtitle {
+        font-size: 14px;
+    }
+    
+    /* Optimize for touch */
+    .file-input {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
     }
 }
 
