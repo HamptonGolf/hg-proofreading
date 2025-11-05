@@ -1745,6 +1745,34 @@ body::after {
         width: 300px;
         height: 300px;
     }
+
+    .error-content {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    .error-action {
+        display: none;
+    }
+    
+    .error-number {
+        display: none;
+    }
+    
+    .error-item {
+        padding: 26px 22px;
+        margin-bottom: 22px;
+    }
+    
+    .error-description {
+        font-size: 16px;
+        line-height: 2.1;
+    }
+    
+    .error-location {
+        font-size: 14px;
+        margin-bottom: 14px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1783,6 +1811,19 @@ body::after {
     .error-location {
         font-size: 14px;  /* Slightly larger */
         margin-bottom: 16px;  /* More space below location */
+    }
+
+    .error-content {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    .error-action {
+        display: none;
+    }
+    
+    .error-number {
+        display: none;
     }
     
     .no-errors-message {
