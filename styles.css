@@ -2806,7 +2806,7 @@ body {
 .notification {
     position: fixed;
     top: 24px;
-    right: -600px;
+    right: 24px;
     padding: 16px 28px;
     border-radius: 12px;
     display: flex;
@@ -2831,7 +2831,6 @@ body {
 }
 
 .notification.show {
-    right: 24px;
     opacity: 1;
     transform: translate3d(0, 0, 0);
 }
