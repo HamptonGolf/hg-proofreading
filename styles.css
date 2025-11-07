@@ -48,6 +48,19 @@
 .logo {
     transform: translateZ(0);
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+}
+
+/* Force hardware acceleration on mobile */
+@media (max-width: 768px) {
+    .orb,
+    .glass-card,
+    .header,
+    .proofread-btn {
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+    }
 }
 
 /* Reduce animations for users who prefer reduced motion */
@@ -249,45 +262,57 @@ body::after {
     }
 }
 
-/* Smoother animations on mobile with better performance */
+/* ULTRA SMOOTH mobile animations */
 @media (max-width: 768px) {
     .orb {
-        animation: floatOrbMobile 35s infinite cubic-bezier(0.4, 0, 0.2, 1);
-        filter: blur(60px);
-        opacity: 0.25;
+        animation: floatOrbMobile 40s infinite linear;
+        filter: blur(50px);
+        opacity: 0.2;
         will-change: transform;
-        transform: translateZ(0);
+        transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        perspective: 1000px;
+        -webkit-perspective: 1000px;
+        transform-style: preserve-3d;
     }
     
     .orb1 {
-        width: 280px;
-        height: 280px;
-        top: -140px;
-        right: -100px;
+        width: 250px;
+        height: 250px;
+        top: -125px;
+        right: -80px;
+        animation-delay: 0s;
     }
     
     .orb2 {
-        width: 250px;
-        height: 250px;
-        bottom: -125px;
-        left: -100px;
+        width: 220px;
+        height: 220px;
+        bottom: -110px;
+        left: -80px;
+        animation-delay: 13s;
     }
     
     .orb3 {
-        display: none; /* Hide third orb on mobile for performance */
+        display: none;
     }
     
-    /* Simplified mobile animation with fewer transform changes */
+    /* Ultra smooth animation - only translate, no scale or rotate */
     @keyframes floatOrbMobile {
-        0%, 100% { 
-            transform: translate3d(0, 0, 0) scale(1);
+        0% { 
+            transform: translate3d(0, 0, 0);
         }
-        33% { 
-            transform: translate3d(20px, -20px, 0) scale(1.05);
+        25% { 
+            transform: translate3d(15px, -15px, 0);
         }
-        66% { 
-            transform: translate3d(-15px, 15px, 0) scale(0.95);
+        50% { 
+            transform: translate3d(0, -25px, 0);
+        }
+        75% { 
+            transform: translate3d(-15px, -15px, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
         }
     }
     
@@ -333,6 +358,12 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 20px;
+    }
 }
 
 /* Safe area support for notched devices */
@@ -462,6 +493,13 @@ body::after {
     margin: 60px auto;
     padding: 0 40px;
     animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+        margin: 40px auto;
+    }
 }
 
 @keyframes fadeInUp {
