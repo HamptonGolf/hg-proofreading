@@ -1979,6 +1979,24 @@ body {
     }
 }
 
+/* Mobile-specific status indicator sizing */
+@media (max-width: 768px) {
+    .status-indicator {
+        padding: 6px 12px;
+        gap: 6px;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .status-text {
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+}
+
 /* Missing Hero Section Styles */
 .hero-section {
     text-align: center;
