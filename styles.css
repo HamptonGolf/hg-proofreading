@@ -262,7 +262,7 @@ body::after {
     }
 }
 
-/* ULTRA SMOOTH mobile animations */
+/* ULTRA SMOOTH mobile animations - NO LEFT EDGE TOUCHING */
 @media (max-width: 768px) {
     .orb {
         animation: floatOrbMobile 40s infinite linear;
@@ -281,7 +281,8 @@ body::after {
         width: 250px;
         height: 250px;
         top: -125px;
-        right: -80px;
+        right: -50px;
+        left: auto;
         animation-delay: 0s;
     }
     
@@ -289,7 +290,8 @@ body::after {
         width: 220px;
         height: 220px;
         bottom: -110px;
-        left: -80px;
+        left: auto;
+        right: -50px;
         animation-delay: 13s;
     }
     
@@ -297,19 +299,19 @@ body::after {
         display: none;
     }
     
-    /* Ultra smooth animation - only translate, no scale or rotate */
+    /* Constrained animation - only moves RIGHT and UP/DOWN, never left */
     @keyframes floatOrbMobile {
         0% { 
             transform: translate3d(0, 0, 0);
         }
         25% { 
-            transform: translate3d(15px, -15px, 0);
+            transform: translate3d(20px, -15px, 0);
         }
         50% { 
-            transform: translate3d(0, -25px, 0);
+            transform: translate3d(10px, -25px, 0);
         }
         75% { 
-            transform: translate3d(-15px, -15px, 0);
+            transform: translate3d(25px, -10px, 0);
         }
         100% {
             transform: translate3d(0, 0, 0);
