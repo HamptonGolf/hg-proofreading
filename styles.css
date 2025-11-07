@@ -2955,14 +2955,15 @@ body {
 @media (max-width: 768px) {
     .notification {
         min-width: auto;
+        width: calc(100% - 40px);
         max-width: calc(100% - 40px);
-        right: -600px;
-        left: 20px;
+        right: -100%;
+        left: auto;
     }
     
     .notification.show {
         right: 20px;
-        left: 20px;
+        left: auto;
     }
     
     .notification-message {
