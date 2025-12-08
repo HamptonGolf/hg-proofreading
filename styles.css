@@ -1926,6 +1926,13 @@ body::after {
         font-size: 60px;
     }
     
+    .no-errors-message .check-icon span {
+        color: var(--hg-secondary-green) !important;
+        -webkit-text-fill-color: var(--hg-secondary-green) !important;
+        text-shadow: 0 0 40px rgba(0, 180, 81, 0.6);
+        filter: drop-shadow(0 0 20px rgba(0, 180, 81, 0.8));
+    }
+    
     .no-errors-message h3 {
         font-size: 28px;
     }
