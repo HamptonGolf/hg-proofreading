@@ -1600,7 +1600,7 @@ setTimeout(() => {
         offset = window.innerHeight > 900 ? 300 : 250;
     } else if (errors.length === 2) {
         // Two errors - moderate offset
-        offset = window.innerHeight > 900 ? 250 : 200;
+        offset = window.innerHeight > 900 ? 250 : 50;
     } else {
         // Many errors - normal scroll
         offset = window.innerHeight > 900 ? 150 : 30;
