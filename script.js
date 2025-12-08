@@ -2049,8 +2049,10 @@ function initializeTooltips() {
         document.body.appendChild(tooltip);
         
         const rect = element.getBoundingClientRect();
-        tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-        tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        tooltip.style.left = rect.left + scrollLeft + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+        tooltip.style.top = rect.top + scrollTop - tooltip.offsetHeight - 5 + 'px';
         
         element.dataset.originalTitle = element.title;
         element.title = '';
