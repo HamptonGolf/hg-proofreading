@@ -1594,16 +1594,16 @@ setTimeout(() => {
     let offset;
     if (errors.length === 0) {
         // No errors - scroll normally to show success message
-        offset = 150;  // Back to standard offset
+        offset = window.innerHeight > 900 ? 150 : 120;
     } else if (errors.length === 1) {
         // Single error - stop a bit earlier to avoid slam
-        offset = 300;  
+        offset = window.innerHeight > 900 ? 300 : 250;
     } else if (errors.length === 2) {
         // Two errors - moderate offset
-        offset = 250;
+        offset = window.innerHeight > 900 ? 250 : 200;
     } else {
         // Many errors - normal scroll
-        offset = 150;  // Standard offset
+        offset = window.innerHeight > 900 ? 150 : 120;
     }
     
     const targetPosition = scrollTop + rect.top - offset;
