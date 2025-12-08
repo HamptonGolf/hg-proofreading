@@ -1093,7 +1093,7 @@ async function startProofreading() {
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 450 : 350);
+            const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 400 : 350);
             smoothScrollTo(targetPosition, 1500);
         }
         
@@ -1113,7 +1113,7 @@ async function startProofreading() {
             if (loadingSection) {
                 const rect = loadingSection.getBoundingClientRect();
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 450 : 350);
+                const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 400 : 350);
                 smoothScrollTo(targetPosition, 1500);
             }
             
@@ -1859,7 +1859,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     if (loadingSection) {
         const rect = loadingSection.getBoundingClientRect();
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 450 : 350);
+        const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 400 : 350);
         smoothScrollTo(targetPosition, 1500);
     }
     
@@ -2257,6 +2257,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
