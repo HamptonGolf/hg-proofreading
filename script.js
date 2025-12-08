@@ -2043,6 +2043,11 @@ function initializeTooltips() {
         const element = e.target.closest('[title]');
         if (!element) return;
         
+        // Remove any existing tooltip first
+        if (activeTooltip && activeTooltip.tooltip) {
+            activeTooltip.tooltip.remove();
+        }
+        
         const tooltip = document.createElement('div');
         tooltip.className = 'tooltip';
         tooltip.textContent = element.title;
@@ -2052,7 +2057,7 @@ function initializeTooltips() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
         tooltip.style.left = rect.left + scrollLeft + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-        tooltip.style.top = rect.top + scrollTop - tooltip.offsetHeight - 5 + 'px';
+        tooltip.style.top = rect.top + scrollTop - tooltip.offsetHeight - 10 + 'px';
         
         element.dataset.originalTitle = element.title;
         element.title = '';
@@ -2065,14 +2070,17 @@ function initializeTooltips() {
         const element = e.target.closest('[title], [data-original-title]');
         if (!element || !activeTooltip) return;
         
-        if (activeTooltip.tooltip && activeTooltip.tooltip.parentNode) {
-            activeTooltip.tooltip.remove();
+        // Check if we're actually leaving the element
+        if (activeTooltip.element === element) {
+            if (activeTooltip.tooltip && activeTooltip.tooltip.parentNode) {
+                activeTooltip.tooltip.remove();
+            }
+            if (element.dataset.originalTitle) {
+                element.title = element.dataset.originalTitle;
+                delete element.dataset.originalTitle;
+            }
+            activeTooltip = null;
         }
-        if (element.dataset.originalTitle) {
-            element.title = element.dataset.originalTitle;
-            delete element.dataset.originalTitle;
-        }
-        activeTooltip = null;
     }, true);
 }
 
