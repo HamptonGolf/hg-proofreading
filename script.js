@@ -36,6 +36,33 @@ function throttle(func, limit) {
     };
 }
 
+// Helper function to get adaptive scroll offset based on screen size
+function getAdaptiveScrollOffset(baseOffset = 280) {
+    const screenHeight = window.innerHeight;
+    const screenWidth = window.innerWidth;
+    
+    // Phone (portrait)
+    if (screenWidth < 768) {
+        return screenHeight > 700 ? 180 : 150;
+    }
+    // Tablet (portrait/landscape)
+    else if (screenWidth < 1024) {
+        return screenHeight > 900 ? 220 : 180;
+    }
+    // Small laptop
+    else if (screenHeight < 800) {
+        return 200;
+    }
+    // Standard laptop/desktop
+    else if (screenHeight < 1000) {
+        return 250;
+    }
+    // Large desktop
+    else {
+        return baseOffset;
+    }
+}
+
 // Haptic feedback for mobile interactions
 function triggerHapticFeedback(type = 'light') {
     // Check if the device supports haptic feedback
@@ -1089,13 +1116,17 @@ async function startProofreading() {
         showLoading(true, 'text');
         localStorage.removeItem('draft_content');
         
-        const loadingSection = document.getElementById('loading');
-        if (loadingSection) {
-            const rect = loadingSection.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const targetPosition = scrollTop + rect.top - 450;
-            smoothScrollTo(targetPosition, 1500);
-        }
+        // Smooth scroll to loading section - adaptive offset for different screen sizes
+        setTimeout(() => {
+            const loadingSection = document.getElementById('loading');
+            if (loadingSection) {
+                const rect = loadingSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const adaptiveOffset = getAdaptiveScrollOffset(280);
+                const targetPosition = scrollTop + rect.top - adaptiveOffset;
+                smoothScrollTo(targetPosition, 1500);
+            }
+        }, 100);
         
     } else if (activeTab.id === 'file-tab') {
         if (!selectedFile) {
@@ -1109,13 +1140,17 @@ async function startProofreading() {
             showLoading(true, 'document');
             updateLoadingProgress(0, 'Starting PDF analysis...');
             
-            const loadingSection = document.getElementById('loading');
-            if (loadingSection) {
-                const rect = loadingSection.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const targetPosition = scrollTop + rect.top - 450;
-                smoothScrollTo(targetPosition, 1500);
-            }
+            // Smooth scroll to loading section - adaptive offset for different screen sizes
+            setTimeout(() => {
+                const loadingSection = document.getElementById('loading');
+                if (loadingSection) {
+                    const rect = loadingSection.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const adaptiveOffset = getAdaptiveScrollOffset(280);
+                    const targetPosition = scrollTop + rect.top - adaptiveOffset;
+                    smoothScrollTo(targetPosition, 1500);
+                }
+            }, 100);
             
             textToProofread = await extractTextFromPDF(selectedFile);
         } catch (error) {
@@ -1590,20 +1625,23 @@ setTimeout(() => {
     const rect = resultsSection.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
+    // Get adaptive base offset for screen size
+    const baseOffset = getAdaptiveScrollOffset(280);
+    
     // Adjust scroll position based on number of errors
     let offset;
     if (errors.length === 0) {
-        // No errors - scroll normally to show success message
-        offset = 150;  // Back to standard offset
+        // No errors - use adaptive offset
+        offset = baseOffset - 80;  // Slightly less for success message
     } else if (errors.length === 1) {
         // Single error - stop a bit earlier to avoid slam
-        offset = 300;  
+        offset = baseOffset + 20;  
     } else if (errors.length === 2) {
         // Two errors - moderate offset
-        offset = 250;
+        offset = baseOffset - 30;
     } else {
-        // Many errors - normal scroll
-        offset = 150;  // Standard offset
+        // Many errors - use adaptive offset
+        offset = baseOffset - 80;
     }
     
     const targetPosition = scrollTop + rect.top - offset;
@@ -1855,13 +1893,17 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     isProcessing = true;
     showLoading(true, 'document');
     
-    const loadingSection = document.getElementById('loading');
-    if (loadingSection) {
-        const rect = loadingSection.getBoundingClientRect();
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const targetPosition = scrollTop + rect.top - 450;
-        smoothScrollTo(targetPosition, 1500);
-    }
+    // Smooth scroll to loading section - adaptive offset for different screen sizes
+    setTimeout(() => {
+        const loadingSection = document.getElementById('loading');
+        if (loadingSection) {
+            const rect = loadingSection.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const adaptiveOffset = getAdaptiveScrollOffset(280);
+            const targetPosition = scrollTop + rect.top - adaptiveOffset;
+            smoothScrollTo(targetPosition, 1500);
+        }
+    }, 100);
     
     hideAllNotifications();
     
