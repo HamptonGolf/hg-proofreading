@@ -1628,20 +1628,18 @@ setTimeout(() => {
     // Get adaptive base offset for screen size
     const baseOffset = getAdaptiveScrollOffset(280);
     
-    // Adjust scroll position based on number of errors
+    // Adjust scroll position based on screen size and number of errors
+    const adaptiveOffset = window.innerHeight > 900 ? 280 : 250;
+    
     let offset;
     if (errors.length === 0) {
-        // No errors - use adaptive offset
-        offset = baseOffset - 80;  // Slightly less for success message
+        offset = adaptiveOffset - 80;
     } else if (errors.length === 1) {
-        // Single error - stop a bit earlier to avoid slam
-        offset = baseOffset + 20;  
+        offset = adaptiveOffset + 20;  // ← ADJUST THIS NUMBER to make it softer/harder
     } else if (errors.length === 2) {
-        // Two errors - moderate offset
-        offset = baseOffset - 30;
+        offset = adaptiveOffset - 30;
     } else {
-        // Many errors - use adaptive offset
-        offset = baseOffset - 80;
+        offset = adaptiveOffset - 80;
     }
     
     const targetPosition = scrollTop + rect.top - offset;
