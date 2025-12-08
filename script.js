@@ -1284,7 +1284,7 @@ async function proofreadWithClaude(text) {
                 errorList.innerHTML = `
                     <div class="no-errors-message">
                         <div class="success-animation">
-                            <div class="check-icon"><span>&#x2713;</span></div>
+                            <div class="check-icon"></div>
                         </div>
                         <h3>Perfect Score!</h3>
                         <p>Your document meets all Hampton Golf excellence standards</p>
@@ -1340,7 +1340,7 @@ async function proofreadWithClaude(text) {
                     errorList.innerHTML = `
                         <div class="no-errors-message">
                             <div class="success-animation">
-                                <div class="check-icon"><span>&#x2713;</span></div>
+                                <div class="check-icon"></div>
                             </div>
                             <h3>Perfect Score!</h3>
                             <p>Your document meets all Hampton Golf excellence standards</p>
@@ -1466,7 +1466,7 @@ async function proofreadWithClaude(text) {
             errorList.innerHTML = `
                 <div class="no-errors-message">
                     <div class="success-animation">
-                        <div class="check-icon"><span>&#x2713;</span></div>
+                        <div class="check-icon"></div>
                     </div>
                     <h3>Perfect Score!</h3>
                     <p>Your document meets all Hampton Golf excellence standards</p>
