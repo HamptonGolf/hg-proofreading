@@ -1897,7 +1897,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
         if (loadingSection) {
             const rect = loadingSection.getBoundingClientRect();
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const adaptiveOffset = getAdaptiveScrollOffset(200);
+            const adaptiveOffset = getAdaptiveScrollOffset(50);
             const targetPosition = scrollTop + rect.top - adaptiveOffset;
             smoothScrollTo(targetPosition, 1500);
         }
