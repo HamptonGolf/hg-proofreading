@@ -2039,17 +2039,23 @@ function initializeTooltips() {
     // Use event delegation for better performance
     let activeTooltip = null;
     
-    document.body.addEventListener('mouseenter', (e) => {
+    document.body.addEventListener('mouseover', (e) => {
         const element = e.target.closest('[title]');
-        if (!element) return;
+        if (!element || element === activeTooltip?.element) return;
         
         // Remove any existing tooltip first
-        if (activeTooltip && activeTooltip.tooltip) {
-            activeTooltip.tooltip.remove();
+        if (activeTooltip) {
+            if (activeTooltip.tooltip && activeTooltip.tooltip.parentNode) {
+                activeTooltip.tooltip.remove();
+            }
+            if (activeTooltip.element && activeTooltip.element.dataset.originalTitle) {
+                activeTooltip.element.title = activeTooltip.element.dataset.originalTitle;
+                delete activeTooltip.element.dataset.originalTitle;
+            }
         }
         
         const tooltip = document.createElement('div');
-        tooltip.className = 'tooltip';
+        tooltip.className = 'tooltip show';
         tooltip.textContent = element.title;
         document.body.appendChild(tooltip);
         
@@ -2062,16 +2068,15 @@ function initializeTooltips() {
         element.dataset.originalTitle = element.title;
         element.title = '';
         
-        requestAnimationFrame(() => tooltip.classList.add('show'));
         activeTooltip = { tooltip, element };
-    }, true);
+    });
     
-    document.body.addEventListener('mouseleave', (e) => {
+    document.body.addEventListener('mouseout', (e) => {
         const element = e.target.closest('[title], [data-original-title]');
-        if (!element || !activeTooltip) return;
+        if (!element || !activeTooltip || activeTooltip.element !== element) return;
         
-        // Check if we're actually leaving the element
-        if (activeTooltip.element === element) {
+        // Only remove if we're actually leaving the element (not entering a child)
+        if (!element.contains(e.relatedTarget)) {
             if (activeTooltip.tooltip && activeTooltip.tooltip.parentNode) {
                 activeTooltip.tooltip.remove();
             }
@@ -2081,7 +2086,7 @@ function initializeTooltips() {
             }
             activeTooltip = null;
         }
-    }, true);
+    });
 }
 
 function createCSVFromResults(results) {
