@@ -1594,7 +1594,7 @@ setTimeout(() => {
     let offset;
     if (errors.length === 0) {
         // No errors - scroll normally to show success message
-        offset = window.innerHeight > 900 ? 150 : 120;
+        offset = window.innerHeight > 900 ? 150 : 50;
     } else if (errors.length === 1) {
         // Single error - stop a bit earlier to avoid slam
         offset = window.innerHeight > 900 ? 300 : 250;
