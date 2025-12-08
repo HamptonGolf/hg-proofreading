@@ -1603,7 +1603,7 @@ setTimeout(() => {
         offset = window.innerHeight > 900 ? 250 : 200;
     } else {
         // Many errors - normal scroll
-        offset = window.innerHeight > 900 ? 150 : 120;
+        offset = window.innerHeight > 900 ? 150 : 80;
     }
     
     const targetPosition = scrollTop + rect.top - offset;
