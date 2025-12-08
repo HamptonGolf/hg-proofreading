@@ -1899,7 +1899,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const adaptiveOffset = getAdaptiveScrollOffset(50);
             const targetPosition = scrollTop + rect.top - adaptiveOffset;
-            smoothScrollTo(targetPosition, 1500);
+            smoothScrollTo(targetPosition, 1000);
         }
     }, 100);
     
