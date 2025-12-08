@@ -3019,12 +3019,14 @@ body {
     font-size: 12px;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateY(5px);
     z-index: 10000;
 }
 
 .tooltip.show {
     opacity: 1;
+    transform: translateY(0);
 }
 
 /* Clear Button Specific Styling */
