@@ -1685,6 +1685,9 @@ body::after {
     text-shadow: 0 0 40px rgba(0, 180, 81, 0.6);
     animation: successPulse 2s ease-in-out infinite;
     display: inline-block;
+    /* Force color on iOS */
+    -webkit-text-fill-color: var(--hg-secondary-green);
+    filter: drop-shadow(0 0 20px rgba(0, 180, 81, 0.8));
 }
 
 @keyframes successPulse {
