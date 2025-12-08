@@ -1597,7 +1597,7 @@ setTimeout(() => {
         offset = window.innerHeight > 900 ? 150 : 30;
     } else if (errors.length === 1) {
         // Single error - stop a bit earlier to avoid slam
-        offset = window.innerHeight > 900 ? 300 : 250;
+        offset = window.innerHeight > 900 ? 300 : 50;
     } else if (errors.length === 2) {
         // Two errors - moderate offset
         offset = window.innerHeight > 900 ? 250 : 50;
