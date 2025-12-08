@@ -1597,7 +1597,7 @@ setTimeout(() => {
         offset = window.innerHeight > 900 ? 150 : 30;
     } else if (errors.length === 1) {
         // Single error - stop a bit earlier to avoid slam
-        offset = window.innerHeight > 900 ? 300 : 100;
+        offset = window.innerHeight > 900 ? 350 : 100;
     } else if (errors.length === 2) {
         // Two errors - moderate offset
         offset = window.innerHeight > 900 ? 250 : 50;
@@ -2257,6 +2257,7 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
 
 
 
