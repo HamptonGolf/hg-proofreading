@@ -1685,10 +1685,14 @@ body::after {
     display: inline-block;
 }
 
-.no-errors-message .check-icon span {
-    color: var(--hg-secondary-green) !important;
-    -webkit-text-fill-color: var(--hg-secondary-green) !important;
-    text-shadow: 0 0 40px rgba(0, 180, 81, 0.6);
+.no-errors-message .check-icon::after {
+    content: '';
+    display: block;
+    width: 35px;
+    height: 70px;
+    border: solid var(--hg-secondary-green);
+    border-width: 0 8px 8px 0;
+    transform: rotate(45deg);
     filter: drop-shadow(0 0 20px rgba(0, 180, 81, 0.8));
 }
 
@@ -1926,11 +1930,10 @@ body::after {
         font-size: 60px;
     }
     
-    .no-errors-message .check-icon span {
-        color: var(--hg-secondary-green) !important;
-        -webkit-text-fill-color: var(--hg-secondary-green) !important;
-        text-shadow: 0 0 40px rgba(0, 180, 81, 0.6);
-        filter: drop-shadow(0 0 20px rgba(0, 180, 81, 0.8));
+    .no-errors-message .check-icon::after {
+        width: 25px;
+        height: 50px;
+        border-width: 0 6px 6px 0;
     }
     
     .no-errors-message h3 {
