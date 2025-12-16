@@ -258,8 +258,9 @@ WHAT TO CHECK:
 DO NOT FLAG:
 - Time format variations like "7 p.m." vs "7pm" (system handles this)
 - Date/day validation like "Wednesday, December 31" (system handles this)
-- Suspected OCR errors (Pric e, l/I, 0/O) unless obviously wrong in context. When in doubt, output an error.
 - Stylistic preferences, word choice suggestions, or formatting in titles/headers
+
+IMPORTANT: When in doubt, output the error. I'd rather it be incorrectly flagged than not flagged at all.
 
 FORMAT (REQUIRED):
 - [Specific location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
