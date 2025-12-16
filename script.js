@@ -959,15 +959,17 @@ function validateDates(text) {
         const matches = [...text.matchAll(pattern)];
         
         matches.forEach(match => {
-            // Skip if this is part of a date range like "Saturday & Sunday, May 16"
-            // The "&" or "and" before the day name indicates it's the second day in a range
-            const fullMatch = match[0];
             const matchIndex = match.index;
-            const textBefore = text.substring(Math.max(0, matchIndex - 15), matchIndex);
+            // Look back up to 50 characters to handle multi-line date ranges
+            const textBefore = text.substring(Math.max(0, matchIndex - 50), matchIndex);
             
-            // Check if there's an "&" or "and" right before this day name
-            if (/(&|and)\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s*$/i.test(textBefore)) {
-                return; // Skip this match - it's the second day in a range
+            // Skip if we see another day name connected by "&", "and", or "-" before this match
+            // This catches patterns like:
+            // - "SATURDAY & SUNDAY, MAY 16-17"
+            // - "FRIDAY - SUNDAY, JULY 10-12"
+            // - "SATURDAY AND SUNDAY, MAY 16-17"
+            if (/(?:&|and|-)\s*(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(textBefore)) {
+                return; // Skip - this is the second day in a multi-day range
             }
             
             let dayName, month, day;
