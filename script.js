@@ -960,16 +960,20 @@ function validateDates(text) {
         
         matches.forEach(match => {
             const matchIndex = match.index;
-            // Look back up to 50 characters to handle multi-line date ranges
             const textBefore = text.substring(Math.max(0, matchIndex - 50), matchIndex);
             
+            // DEBUG: Log for "Sunday, May 16" specifically
+            if (match[0].includes('MAY') && match[0].includes('16')) {
+                console.log('🔍 Checking MAY 16 match:');
+                console.log('   Full match:', match[0]);
+                console.log('   Text before (50 chars):', JSON.stringify(textBefore));
+                console.log('   Has & pattern?', /(?:&|and|-)\s*(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(textBefore));
+            }
+            
             // Skip if we see another day name connected by "&", "and", or "-" before this match
-            // This catches patterns like:
-            // - "SATURDAY & SUNDAY, MAY 16-17"
-            // - "FRIDAY - SUNDAY, JULY 10-12"
-            // - "SATURDAY AND SUNDAY, MAY 16-17"
             if (/(?:&|and|-)\s*(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(textBefore)) {
-                return; // Skip - this is the second day in a multi-day range
+                console.log('⏭️ SKIPPING:', match[0]);
+                return;
             }
             
             let dayName, month, day;
