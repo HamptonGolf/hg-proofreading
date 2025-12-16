@@ -290,8 +290,6 @@ Document context provided above. Re-analyze this text:
 
 `;
 
-const fullPrompt = promptToUse + text;
-
 // Initialize application
 function initializeApp() {
     console.log('🏌️ Hampton Golf AI Proofreader Initializing...');
