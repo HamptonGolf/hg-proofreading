@@ -254,7 +254,7 @@ WHAT TO CHECK:
 3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.)
 4. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 5. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
-6. Time format consistency - if the document uses multiple different time formats (e.g., "7 p.m." and "7pm" and "7:00 PM"), flag each inconsistent usage and suggest matching the dominant format used in the document
+6. General format inconsistency - if the document uses multiple different formats for the same type of information (e.g., "7 p.m." and "7pm" and "7:00 PM"), flag each inconsistent usage and suggest matching the dominant format used in the document
 7. Proper nouns - verify correct spelling and punctuation (no incorrect apostrophes in event/brand names)
 
 DO NOT FLAG:
