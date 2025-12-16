@@ -959,6 +959,17 @@ function validateDates(text) {
         const matches = [...text.matchAll(pattern)];
         
         matches.forEach(match => {
+            // Skip if this is part of a date range like "Saturday & Sunday, May 16"
+            // The "&" or "and" before the day name indicates it's the second day in a range
+            const fullMatch = match[0];
+            const matchIndex = match.index;
+            const textBefore = text.substring(Math.max(0, matchIndex - 15), matchIndex);
+            
+            // Check if there's an "&" or "and" right before this day name
+            if (/(&|and)\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s*$/i.test(textBefore)) {
+                return; // Skip this match - it's the second day in a range
+            }
+            
             let dayName, month, day;
             
             // Parse based on pattern type
@@ -1025,13 +1036,19 @@ function validateDates(text) {
                     // Preserve original case for error display
                     const originalDayName = dayName.charAt(0).toUpperCase() + dayName.slice(1).toLowerCase();
                     
-                    errors.push({
-                        location: 'Date validation',
-                        error: `${originalDayName}, ${displayMonth} ${day}`,
-                        correction: `${actualDayName}, ${displayMonth} ${day}`,
-                        type: 'date',
-                        explanation: `In ${startYear}${endYear !== startYear ? `-${endYear}` : ''}, ${displayMonth} ${day} falls on ${actualDayName}, not ${originalDayName}.`
-                    });
+                    // Check if this error already exists to prevent duplicates
+                    const errorKey = `${originalDayName}, ${displayMonth} ${day}`;
+                    const isDuplicate = errors.some(e => e.error === errorKey);
+                    
+                    if (!isDuplicate) {
+                        errors.push({
+                            location: 'Date validation',
+                            error: `${originalDayName}, ${displayMonth} ${day}`,
+                            correction: `${actualDayName}, ${displayMonth} ${day}`,
+                            type: 'date',
+                            explanation: `In ${startYear}${endYear !== startYear ? `-${endYear}` : ''}, ${displayMonth} ${day} falls on ${actualDayName}, not ${originalDayName}.`
+                        });
+                    }
                 }
             }
         });
