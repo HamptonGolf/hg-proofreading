@@ -1319,7 +1319,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
 async function proofreadWithClaude(text) {
     // Use thorough prompt if this is a reanalysis
     const promptToUse = isReanalyzing ? PROOFREADING_PROMPT_THOROUGH : PROOFREADING_PROMPT;
-    const fullPrompt = promptToUse + text + PROOFREADING_PROMPT_SUFFIX;
+    const fullPrompt = promptToUse + text;
     
     console.log(isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     
