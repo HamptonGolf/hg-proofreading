@@ -1296,6 +1296,34 @@ body::after {
     letter-spacing: 2px;
 }
 
+/* 60fps GPU-Accelerated Clear Animation - MOBILE ONLY */
+@media (max-width: 768px) {
+    .results-section.clearing {
+        overflow: hidden;
+        will-change: transform, opacity;
+    }
+
+    .results-section.clearing-active {
+        animation: clearResultsSmooth 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+    }
+
+    @keyframes clearResultsSmooth {
+        0% {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+            max-height: 5000px;
+        }
+        100% {
+            opacity: 0;
+            transform: translate3d(0, 30px, 0);
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+    }
+}
+
 .error-count {
     padding: 10px 24px;
     border-radius: 100px;
