@@ -246,70 +246,51 @@ function waitForPDFjs(timeout = 5000) {
     });
 }
 
-// Hampton Golf Proofreading Guidelines (formatted for Claude)
-const PROOFREADING_PROMPT = `You are proofreading a Hampton Golf document. The document type and year information has been provided for context.
+const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf documents. Follow AP Style guidelines.
 
-Proofread for spelling, grammar, punctuation, and formatting consistency only. Skip any capitalization checks for: member, guest, neighbor, resident, homeowner, team member (handled separately).
+WHAT TO CHECK:
+1. Spelling errors
+2. Grammar errors (except in titles)
+3. Punctuation following AP Style (missing periods, wrong apostrophes, comma splices, etc.)
+4. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
+5. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
 
-Find actual mistakes:
-- Spelling errors and typos - check every word carefully
-- Grammar errors
-- Capitalization errors (proper nouns, sentence starts, titles)
-- Punctuation errors
-- Inconsistent time formatting (e.g., "7AM" in one place, "8 AM" elsewhere - only flag if inconsistent within same document)
-- Missing accent marks (e.g., "Remoulade" should be "Rémoulade")
+DO NOT FLAG:
+- Time format variations like "7 p.m." vs "7pm" (system handles this)
+- Date/day validation like "Wednesday, December 31" (system handles this)
+- Suspected OCR errors (Pric e, l/I, 0/O) unless obviously wrong in context. When in doubt, output an error.
+- Stylistic preferences, word choice suggestions, or formatting in titles/headers
 
-Rules:
-- Each error gets ONE bullet point only
-- Do not suggest word additions unless they fix grammar/spelling
-- Ignore spacing in headers - only flag header misspellings/punctuation
-- Consider the document type when evaluating formatting consistency
+FORMAT (REQUIRED):
+- [Specific location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
 
-Text:
-`;
-
-const PROOFREADING_PROMPT_THOROUGH = `You are proofreading a Hampton Golf document for the SECOND TIME. This is a thorough re-analysis, so be EXTRA meticulous and catch errors that might have been missed in the first pass.
-
-The document type and year information has been provided for context.
-
-IMPORTANT: This is a second review, so look even more carefully for:
-- Subtle spelling errors and typos - scrutinize EVERY single word
-- Minor grammar issues that are easy to overlook
-- Capitalization inconsistencies (proper nouns, sentence starts, titles)
-- Punctuation errors, especially subtle ones (comma splices, missing commas, etc.)
-- Formatting inconsistencies throughout the entire document
-- Missing or incorrect accent marks (e.g., "Remoulade" should be "Rémoulade", "Sauvignon" needs proper accents)
-- Number/date formatting inconsistencies
-- Spacing issues between words or punctuation
-- Hyphenation errors
-- Commonly confused words (its/it's, your/you're, their/there/they're)
-
-Skip any capitalization checks for: member, guest, neighbor, resident, homeowner, team member (handled separately).
-
-Rules:
-- Each error gets ONE bullet point only
-- Do not suggest word additions unless they fix grammar/spelling
-- Ignore spacing in headers - only flag header misspellings/punctuation
-- Consider the document type when evaluating formatting consistency
-- Be MORE thorough than a typical first pass - this is a second review
-
-Text:
-`;
-
-const PROOFREADING_PROMPT_SUFFIX = `
-
-For each error found, format your response EXACTLY as follows:
-- [Specific location] > "[exact error text]" should be "[exact correction]" | EXPLAIN: [One sentence explaining why]
-
-Example format:
-- Page 2, paragraph 3 > "recieve" should be "receive" | EXPLAIN: Common spelling error - "i before e except after c" rule applies here.
-- Header section > "it's" should be "its" | EXPLAIN: Possessive form doesn't use an apostrophe; "it's" means "it is."
+Examples:
+- Page 2, Paragraph 3 > "recieve" should be "receive" | EXPLAIN: Correct spelling is "receive"
+- Menu, Entrees > "Remoulade" should be "Rémoulade" | EXPLAIN: French term requires accent
+- Paragraph 1 > "it's menu" should be "its menu" | EXPLAIN: Possessive form, no apostrophe
 
 If no errors: "No errors found."
 
-Remember: Do NOT flag member, guest, neighbor, resident, homeowner, or team member for capitalization.
+Document context provided above. Analyze this text:
 
-Important: Each error MUST include the " | EXPLAIN: " section with a brief, specific explanation.`;
+`;
+
+const PROOFREADING_PROMPT_THOROUGH = `You are conducting a SECOND, more thorough proofread of a Hampton Golf document. Be extra meticulous and catch subtle errors missed in the first pass.
+
+Follow the same guidelines as the first review, but scrutinize every word more carefully.
+
+Do NOT flag: member, guest, neighbor, resident, homeowner, team member capitalization, time formats, or date validation (system handles these).
+
+FORMAT (REQUIRED):
+- [Specific location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
+
+If no errors: "No errors found."
+
+Document context provided above. Re-analyze this text:
+
+`;
+
+const fullPrompt = promptToUse + text;
 
 // Initialize application
 function initializeApp() {
@@ -870,120 +851,294 @@ const updateLoadingProgress = debounce((percent, message) => {
     }
 }, 50);
 
-// Rule-based error detection
+// Enhanced Rule-based error detection with better accuracy
 function runRulesEngine(text) {
     const errors = [];
     
-    // Capitalization rules
+    // Capitalization rules for Hampton Golf brand terms
     const capitalizeWords = [
-        { pattern: /\bmembers?\b/gi, correct: 'Member(s)' },
-        { pattern: /\bguests?\b/gi, correct: 'Guest(s)' },
-        { pattern: /\bneighbors?\b/gi, correct: 'Neighbor(s)' },
-        { pattern: /\bresidents?\b/gi, correct: 'Resident(s)' },
-        { pattern: /\bhomeowners?\b/gi, correct: 'Homeowner(s)' },
-        { pattern: /\bteam\b/gi, correct: 'Team' },
-        { pattern: /\bteam members?\b/gi, correct: 'Team Member(s)' }
+        { pattern: /\bmembers?\b/gi, correct: 'Member(s)', term: 'Member' },
+        { pattern: /\bguests?\b/gi, correct: 'Guest(s)', term: 'Guest' },
+        { pattern: /\bneighbors?\b/gi, correct: 'Neighbor(s)', term: 'Neighbor' },
+        { pattern: /\bresidents?\b/gi, correct: 'Resident(s)', term: 'Resident' },
+        { pattern: /\bhomeowners?\b/gi, correct: 'Homeowner(s)', term: 'Homeowner' },
+        { pattern: /\bteam members?\b/gi, correct: 'Team Member(s)', term: 'Team Member' }
     ];
     
     capitalizeWords.forEach(rule => {
-        let match;
-        const regex = new RegExp(rule.pattern);
         const lines = text.split('\n');
         
         lines.forEach((line, lineIndex) => {
             let searchRegex = new RegExp(rule.pattern.source, rule.pattern.flags);
+            let match;
+            
             while ((match = searchRegex.exec(line)) !== null) {
                 const found = match[0];
                 const firstChar = found.charAt(0);
                 
+                // Only flag if it starts with lowercase
                 if (firstChar !== firstChar.toUpperCase()) {
-                    const start = Math.max(0, match.index - 10);
-                    const end = Math.min(line.length, match.index + found.length + 10);
-                    const context = line.substring(start, end).trim();
+                    const correctedForm = rule.correct.replace('(s)', found.endsWith('s') || found.endsWith('S') ? 's' : '');
                     
                     errors.push({
                         location: `Line ${lineIndex + 1}`,
-                        error: `"${found}" in "${context}"`,
-                        correction: `"${found.charAt(0).toUpperCase() + found.slice(1)}"`,
+                        error: found,
+                        correction: correctedForm,
                         type: 'capitalization',
-                        explanation: `Hampton Golf brand standards require that "${found.charAt(0).toUpperCase() + found.slice(1)}" is always capitalized to maintain consistency and reinforce the premium nature of our community.`
+                        explanation: `Hampton Golf brand standards require "${rule.term}" to always be capitalized.`
                     });
                 }
             }
         });
     });
     
-    // Get year from context selection
-    const yearInput = document.getElementById('year-input').value.trim();
-    let startYear, endYear;
+    // Enhanced date validation with multiple format support
+    const dateErrors = validateDates(text);
+    errors.push(...dateErrors);
     
-    if (yearInput.includes('-')) {
-        // Year range
-        const years = yearInput.split('-');
-        startYear = parseInt(years[0]);
-        endYear = parseInt(years[1]);
-    } else {
-        // Single year
-        startYear = parseInt(yearInput);
-        endYear = parseInt(yearInput);
-    }
-    
-    // Date validation using context year
-    const datePattern = /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+([A-Z][a-z]+)\s+(\d{1,2})/gi;
-    let dateMatch;
-    
-    while ((dateMatch = datePattern.exec(text)) !== null) {
-        const dayName = dateMatch[1];
-        const month = dateMatch[2];
-        const day = parseInt(dateMatch[3]);
-        
-        const monthMap = {
-            'January': 0, 'February': 1, 'March': 2, 'April': 3,
-            'May': 4, 'June': 5, 'July': 6, 'August': 7,
-            'September': 8, 'October': 9, 'November': 10, 'December': 11
-        };
-        
-        if (monthMap.hasOwnProperty(month)) {
-            const monthNum = monthMap[month];
-            
-            let correctYear = null;
-            let actualDayName = null;
-            
-            for (let year = startYear; year <= endYear; year++) {
-                const date = new Date(year, monthNum, day);
-                const testDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-                
-                if (testDayName === dayName) {
-                    correctYear = year;
-                    actualDayName = testDayName;
-                    break;
-                }
-            }
-            
-            if (!correctYear) {
-                const date = new Date(startYear, monthNum, day);
-                actualDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
-                
-                errors.push({
-                    location: 'Date check',
-                    error: `${dayName}, ${month} ${day}`,
-                    correction: `${actualDayName}, ${month} ${day}`,
-                    type: 'date',
-                    explanation: `The date ${dayName}, ${month} ${day} is incorrect for ${startYear}${endYear !== startYear ? `-${endYear}` : ''}. The correct day of the week is ${actualDayName}. This was verified against the calendar for the year(s) you specified.`
-                });
-            }
-        }
-    }
-    
-    // Staff → Team Member
+    // Staff → Team Member check
     const staffPattern = /\bstaff\b/gi;
-    if (staffPattern.test(text)) {
+    const staffMatches = [...text.matchAll(staffPattern)];
+    
+    if (staffMatches.length > 0) {
         errors.push({
             location: 'Style check',
             error: '"staff"',
             correction: '"Team Member(s)"',
             type: 'style',
-            explanation: 'Hampton Golf uses "Team Member(s)" instead of "staff" in all communications. This terminology better reflects our culture of service excellence and the collaborative nature of our organization.'
+            explanation: 'Hampton Golf uses "Team Member(s)" instead of "staff" in all communications.'
+        });
+    }
+    
+    // Time format consistency check
+    const timeErrors = checkTimeFormatConsistency(text);
+    errors.push(...timeErrors);
+    
+    // Accent mark check for known words
+    const accentErrors = checkMissingAccents(text);
+    errors.push(...accentErrors);
+    
+    return errors;
+}
+
+// Enhanced date validation function with multiple format support
+function validateDates(text) {
+    const errors = [];
+    const yearInput = document.getElementById('year-input')?.value?.trim() || '2025';
+    
+    let startYear, endYear;
+    if (yearInput.includes('-')) {
+        const years = yearInput.split('-').map(y => parseInt(y.trim()));
+        startYear = years[0];
+        endYear = years[1];
+    } else {
+        startYear = endYear = parseInt(yearInput);
+    }
+    
+    // Multiple date format patterns
+    const datePatterns = [
+        // "Monday, December 31" or "Monday December 31"
+        /\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?\b/gi,
+        // "December 31, Monday" or "December 31 Monday"  
+        /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/gi,
+        // "Dec 31, Monday" or "Dec. 31, Monday"
+        /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/gi,
+        // "Monday, Dec 31" or "Monday Dec. 31"
+        /\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b/gi
+    ];
+    
+    const monthMap = {
+        'January': 0, 'February': 1, 'March': 2, 'April': 3,
+        'May': 4, 'June': 5, 'July': 6, 'August': 7,
+        'September': 8, 'October': 9, 'November': 10, 'December': 11,
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Sept': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+    };
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    // Process each pattern type
+    datePatterns.forEach((pattern, patternIndex) => {
+        const matches = [...text.matchAll(pattern)];
+        
+        matches.forEach(match => {
+            let dayName, month, day;
+            
+            // Parse based on pattern type
+            if (patternIndex === 0) {
+                // "Monday, December 31"
+                dayName = match[1];
+                month = match[2];
+                day = parseInt(match[3]);
+            } else if (patternIndex === 1) {
+                // "December 31, Monday"
+                month = match[1];
+                day = parseInt(match[2]);
+                dayName = match[3];
+            } else if (patternIndex === 2) {
+                // "Dec 31, Monday"
+                month = match[1];
+                day = parseInt(match[2]);
+                dayName = match[3];
+            } else if (patternIndex === 3) {
+                // "Monday, Dec 31"
+                dayName = match[1];
+                month = match[2];
+                day = parseInt(match[3]);
+            }
+            
+            const monthNum = monthMap[month];
+            
+            if (monthNum !== undefined && day >= 1 && day <= 31) {
+                let correctYear = null;
+                let actualDayName = null;
+                
+                // Check if the day/date combination is correct for any year in range
+                for (let year = startYear; year <= endYear; year++) {
+                    const date = new Date(year, monthNum, day);
+                    const testDayName = dayNames[date.getDay()];
+                    
+                    if (testDayName === dayName) {
+                        correctYear = year;
+                        actualDayName = testDayName;
+                        break;
+                    }
+                }
+                
+                // If no match found in year range, calculate correct day
+                if (!correctYear) {
+                    const date = new Date(startYear, monthNum, day);
+                    actualDayName = dayNames[date.getDay()];
+                    
+                    // Get full month name for display
+                    const fullMonthNames = {
+                        'Jan': 'January', 'Feb': 'February', 'Mar': 'March', 'Apr': 'April',
+                        'May': 'May', 'Jun': 'June', 'Jul': 'July', 'Aug': 'August',
+                        'Sep': 'September', 'Sept': 'September', 'Oct': 'October', 
+                        'Nov': 'November', 'Dec': 'December'
+                    };
+                    const displayMonth = fullMonthNames[month] || month;
+                    
+                    errors.push({
+                        location: 'Date validation',
+                        error: `${dayName}, ${displayMonth} ${day}`,
+                        correction: `${actualDayName}, ${displayMonth} ${day}`,
+                        type: 'date',
+                        explanation: `In ${startYear}${endYear !== startYear ? `-${endYear}` : ''}, ${displayMonth} ${day} falls on ${actualDayName}, not ${dayName}.`
+                    });
+                }
+            }
+        });
+    });
+    
+    return errors;
+}
+
+// Check for time format consistency
+function checkTimeFormatConsistency(text) {
+    const errors = [];
+    
+    // Find all time instances
+    const withSpacePattern = /\b(\d{1,2})\s+([ap]\.?m\.?)\b/gi;
+    const withoutSpacePattern = /\b(\d{1,2})([ap]m)\b/gi;
+    const withColonPattern = /\b(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)\b/gi;
+    
+    const withSpaceMatches = [...text.matchAll(withSpacePattern)];
+    const withoutSpaceMatches = [...text.matchAll(withoutSpacePattern)];
+    const withColonMatches = [...text.matchAll(withColonPattern)];
+    
+    const withSpaceCount = withSpaceMatches.length;
+    const withoutSpaceCount = withoutSpaceMatches.length;
+    const withColonCount = withColonMatches.length;
+    
+    // Count how many different formats are used
+    let formatTypes = 0;
+    if (withSpaceCount > 0) formatTypes++;
+    if (withoutSpaceCount > 0) formatTypes++;
+    if (withColonCount > 0) formatTypes++;
+    
+    // If multiple different formats exist, flag inconsistency
+    if (formatTypes > 1) {
+        // Determine dominant format
+        let dominantFormat = '"7 p.m."';
+        let maxCount = withSpaceCount;
+        
+        if (withoutSpaceCount > maxCount) {
+            maxCount = withoutSpaceCount;
+            dominantFormat = '"7pm"';
+        }
+        if (withColonCount > maxCount) {
+            dominantFormat = '"7:00 p.m."';
+        }
+        
+        errors.push({
+            location: 'Time formatting',
+            error: 'Inconsistent time formats throughout document',
+            correction: `Use consistent format: ${dominantFormat}`,
+            type: 'consistency',
+            explanation: `Document uses ${formatTypes} different time formats. Consistent formatting improves readability.`
+        });
+    }
+    
+    return errors;
+}
+
+// Check for missing accent marks on known words
+function checkMissingAccents(text) {
+    const errors = [];
+    
+    // Database of words that require accents
+    const accentWords = {
+        'resume': { correct: 'résumé', context: 'CV' },
+        'cafe': { correct: 'café' },
+        'saute': { correct: 'sauté' },
+        'sauteed': { correct: 'sautéed' },
+        'remoulade': { correct: 'rémoulade' },
+        'aioli': { correct: 'aïoli' },
+        'creme': { correct: 'crème' },
+        'puree': { correct: 'purée' },
+        'purees': { correct: 'purées' },
+        'pureed': { correct: 'puréed' },
+        'aperitif': { correct: 'apéritif' },
+        'consomme': { correct: 'consommé' },
+        'pate': { correct: 'pâté' },
+        'frappe': { correct: 'frappé' },
+        'rose': { correct: 'rosé', context: 'wine' },
+        'fiance': { correct: 'fiancé' },
+        'fiancee': { correct: 'fiancée' },
+        'entree': { correct: 'entrée' },
+        'entrees': { correct: 'entrées' },
+        'naivete': { correct: 'naïveté' }
+    };
+    
+    // Check each word in our database
+    const wordList = Object.keys(accentWords);
+    
+    for (let i = 0; i < wordList.length; i++) {
+        const word = wordList[i];
+        const data = accentWords[word];
+        
+        // Create case-insensitive pattern that matches whole words
+        const pattern = new RegExp('\\b' + word + '\\b', 'gi');
+        const matches = [...text.matchAll(pattern)];
+        
+        matches.forEach(match => {
+            const found = match[0];
+            // Preserve original capitalization
+            const isCapitalized = found.charAt(0) === found.charAt(0).toUpperCase();
+            const corrected = isCapitalized 
+                ? data.correct.charAt(0).toUpperCase() + data.correct.slice(1)
+                : data.correct;
+            
+            errors.push({
+                location: 'Accent check',
+                error: found,
+                correction: corrected,
+                type: 'accent',
+                explanation: data.context 
+                    ? `"${data.correct}" requires accent marks (${data.context} context).`
+                    : `"${data.correct}" requires accent marks.`
+            });
         });
     }
     
@@ -1136,6 +1291,13 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     
     hideAllNotifications();
 
+    // Check for potential OCR errors
+    const ocrAnalysis = analyzeForOCRErrors(textToProofread);
+    if (ocrAnalysis.shouldWarn) {
+        showNotification(ocrAnalysis.message, 'warning', 5000);
+        console.warn('OCR Analysis:', ocrAnalysis);
+    }
+
     // Store the text for potential reanalysis
     lastAnalyzedText = textToProofread;
 
@@ -1198,51 +1360,13 @@ async function proofreadWithClaude(text) {
         
         const resultText = data.content[0].text;
         
+        // Check for "no errors found" response
         if (resultText.toLowerCase().includes('no errors found')) {
             return [];
         }
         
-        const lines = resultText.split('\n');
-        const errors = [];
-        
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith('-')) {
-                const content = trimmedLine.substring(1).trim();
-                
-                // Split by " | EXPLAIN: " to separate error info from explanation
-                const parts = content.split(' | EXPLAIN: ');
-                const errorInfo = parts[0];
-                const explanation = parts[1] || '';
-                
-                // Split by '>' to get location and correction
-                const infoParts = errorInfo.split('>');
-                
-                if (infoParts.length >= 2) {
-                    const location = infoParts[0].trim();
-                    let correctionPart = infoParts.slice(1).join('>').trim();
-                    
-                    // Remove quotes if present
-                    correctionPart = correctionPart.replace(/^["']|["']$/g, '');
-                    
-                    // Extract the actual error and correction from "X should be Y" format
-                    const match = correctionPart.match(/(.+?)\s+should be\s+(.+)/);
-                    
-                    if (match) {
-                        const errorText = match[1].replace(/^["']|["']$/g, '').trim();
-                        const correctionText = match[2].replace(/^["']|["']$/g, '').trim();
-                        
-                        errors.push({
-                            location: location,
-                            error: errorText,
-                            correction: correctionText,
-                            type: 'claude',
-                            explanation: explanation.trim()
-                        });
-                    }
-                }
-            }
-        }
+        // Parse Claude's response with multiple format support
+        const errors = parseClaudeErrors(resultText);
         
         return errors;
         
@@ -1251,6 +1375,255 @@ async function proofreadWithClaude(text) {
         showNotification(`Error: ${error.message}`, 'error', 5000);
         return [];
     }
+}
+
+// Enhanced error parsing with support for multiple Claude response formats
+function parseClaudeErrors(resultText) {
+    const errors = [];
+    const lines = resultText.split('\n');
+    
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+        
+        // Only process lines that start with bullet point
+        if (!trimmedLine.startsWith('-')) {
+            continue;
+        }
+        
+        const content = trimmedLine.substring(1).trim();
+        
+        // Try multiple parsing strategies
+        let parsed = null;
+        
+        // Strategy 1: Standard format with EXPLAIN
+        // Format: [location] > "error" should be "correction" | EXPLAIN: explanation
+        parsed = parseFormat1(content);
+        
+        // Strategy 2: Without EXPLAIN section
+        // Format: [location] > "error" should be "correction"
+        if (!parsed) {
+            parsed = parseFormat2(content);
+        }
+        
+        // Strategy 3: Arrow format
+        // Format: [location] > "error" → "correction"
+        if (!parsed) {
+            parsed = parseFormat3(content);
+        }
+        
+        // Strategy 4: Change format
+        // Format: [location] > Change "error" to "correction"
+        if (!parsed) {
+            parsed = parseFormat4(content);
+        }
+        
+        if (parsed) {
+            errors.push({
+                location: parsed.location,
+                error: parsed.error,
+                correction: parsed.correction,
+                type: 'claude',
+                explanation: parsed.explanation || ''
+            });
+        } else {
+            // Log unparseable lines for debugging
+            console.warn('Could not parse error line:', content);
+        }
+    }
+    
+    return errors;
+}
+
+// Parse format: [location] > "error" should be "correction" | EXPLAIN: explanation
+function parseFormat1(content) {
+    const explainSplit = content.split(' | EXPLAIN: ');
+    if (explainSplit.length < 2) {
+        return null;
+    }
+    
+    const errorInfo = explainSplit[0];
+    const explanation = explainSplit[1];
+    
+    const parts = errorInfo.split('>');
+    if (parts.length < 2) {
+        return null;
+    }
+    
+    const location = parts[0].trim();
+    const correctionPart = parts.slice(1).join('>').trim();
+    
+    // Match "X should be Y" pattern
+    const match = correctionPart.match(/"([^"]+)"\s+should\s+be\s+"([^"]+)"/);
+    if (!match) {
+        // Try without quotes
+        const match2 = correctionPart.match(/(.+?)\s+should\s+be\s+(.+)/);
+        if (!match2) {
+            return null;
+        }
+        
+        return {
+            location: location,
+            error: match2[1].replace(/^["']|["']$/g, '').trim(),
+            correction: match2[2].replace(/^["']|["']$/g, '').trim(),
+            explanation: explanation.trim()
+        };
+    }
+    
+    return {
+        location: location,
+        error: match[1].trim(),
+        correction: match[2].trim(),
+        explanation: explanation.trim()
+    };
+}
+
+// Parse format: [location] > "error" should be "correction" (no EXPLAIN)
+function parseFormat2(content) {
+    const parts = content.split('>');
+    if (parts.length < 2) {
+        return null;
+    }
+    
+    const location = parts[0].trim();
+    const correctionPart = parts.slice(1).join('>').trim();
+    
+    // Match "X should be Y" pattern
+    const match = correctionPart.match(/"([^"]+)"\s+should\s+be\s+"([^"]+)"/);
+    if (!match) {
+        // Try without quotes
+        const match2 = correctionPart.match(/(.+?)\s+should\s+be\s+(.+)/);
+        if (!match2) {
+            return null;
+        }
+        
+        return {
+            location: location,
+            error: match2[1].replace(/^["']|["']$/g, '').trim(),
+            correction: match2[2].replace(/^["']|["']$/g, '').trim(),
+            explanation: ''
+        };
+    }
+    
+    return {
+        location: location,
+        error: match[1].trim(),
+        correction: match[2].trim(),
+        explanation: ''
+    };
+}
+
+// Parse format: [location] > "error" → "correction"
+function parseFormat3(content) {
+    const parts = content.split('>');
+    if (parts.length < 2) {
+        return null;
+    }
+    
+    const location = parts[0].trim();
+    const correctionPart = parts.slice(1).join('>').trim();
+    
+    // Match arrow format
+    const match = correctionPart.match(/"([^"]+)"\s*[→–-]\s*"([^"]+)"/);
+    if (!match) {
+        return null;
+    }
+    
+    return {
+        location: location,
+        error: match[1].trim(),
+        correction: match[2].trim(),
+        explanation: ''
+    };
+}
+
+// Parse format: [location] > Change "error" to "correction"
+function parseFormat4(content) {
+    const parts = content.split('>');
+    if (parts.length < 2) {
+        return null;
+    }
+    
+    const location = parts[0].trim();
+    const correctionPart = parts.slice(1).join('>').trim();
+    
+    // Match "Change X to Y" pattern
+    const match = correctionPart.match(/[Cc]hange\s+"([^"]+)"\s+to\s+"([^"]+)"/);
+    if (!match) {
+        return null;
+    }
+    
+    return {
+        location: location,
+        error: match[1].trim(),
+        correction: match[2].trim(),
+        explanation: ''
+    };
+}
+
+// Analyze text for potential OCR errors and calculate confidence score
+function analyzeForOCRErrors(text) {
+    let ocrScore = 100; // Start at 100, deduct points for suspicious patterns
+    const suspiciousPatterns = [];
+    
+    // Pattern 1: "rn" that might be "m"
+    const rnPattern = /\brn\b/gi;
+    const rnMatches = [...text.matchAll(rnPattern)];
+    if (rnMatches.length > 0) {
+        ocrScore -= Math.min(rnMatches.length * 5, 15);
+        suspiciousPatterns.push(`"rn" patterns detected (${rnMatches.length})`);
+    }
+    
+    // Pattern 2: lowercase "l" before uppercase letter (might be "I")
+    const lBeforeCaps = /\bl(?=[A-Z])/g;
+    const lMatches = [...text.matchAll(lBeforeCaps)];
+    if (lMatches.length > 2) {
+        ocrScore -= Math.min(lMatches.length * 3, 10);
+        suspiciousPatterns.push(`"l" before capitals (${lMatches.length})`);
+    }
+    
+    // Pattern 3: "0" (zero) in the middle of words
+    const zeroInWord = /\b\w*0\w+\b/g;
+    const zeroMatches = [...text.matchAll(zeroInWord)];
+    if (zeroMatches.length > 0) {
+        ocrScore -= Math.min(zeroMatches.length * 5, 15);
+        suspiciousPatterns.push(`Zero in words (${zeroMatches.length})`);
+    }
+    
+    // Pattern 4: Multiple spaces (common in OCR)
+    const multiSpace = /\s{3,}/g;
+    const spaceMatches = [...text.matchAll(multiSpace)];
+    if (spaceMatches.length > 5) {
+        ocrScore -= 10;
+        suspiciousPatterns.push(`Multiple spaces (${spaceMatches.length})`);
+    }
+    
+    // Pattern 5: Strange punctuation combinations
+    const strangePunct = /[.,;]{2,}/g;
+    const punctMatches = [...text.matchAll(strangePunct)];
+    if (punctMatches.length > 0) {
+        ocrScore -= Math.min(punctMatches.length * 5, 10);
+        suspiciousPatterns.push(`Repeated punctuation (${punctMatches.length})`);
+    }
+    
+    // Pattern 6: Very short "words" that might be OCR fragments
+    const words = text.split(/\s+/);
+    const singleCharWords = words.filter(w => w.length === 1 && /[a-z]/i.test(w));
+    if (singleCharWords.length > 10) {
+        ocrScore -= 10;
+        suspiciousPatterns.push(`Many single characters (${singleCharWords.length})`);
+    }
+    
+    // Ensure score doesn't go below 0
+    ocrScore = Math.max(0, ocrScore);
+    
+    return {
+        confidence: ocrScore,
+        shouldWarn: ocrScore < 70,
+        patterns: suspiciousPatterns,
+        message: ocrScore < 70 
+            ? `This text may contain OCR errors (confidence: ${ocrScore}%). Please verify the source document is clear.`
+            : null
+    };
 }
 
     // Enhanced Results Display
@@ -1503,6 +1876,22 @@ async function proofreadWithClaude(text) {
         
         // Use DocumentFragment for better performance
         const fragment = document.createDocumentFragment();
+
+        // Sort errors by priority: date > capitalization > accent > style > claude > consistency
+        const typePriority = {
+            'date': 1,
+            'capitalization': 2,
+            'accent': 3,
+            'style': 4,
+            'claude': 5,
+            'consistency': 6
+        };
+        
+        errors.sort((a, b) => {
+            const priorityA = typePriority[a.type] || 99;
+            const priorityB = typePriority[b.type] || 99;
+            return priorityA - priorityB;
+        });
         
         errors.forEach((error, index) => {
             const li = document.createElement('li');
