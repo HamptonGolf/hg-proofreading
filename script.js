@@ -1722,58 +1722,126 @@ function clearResults() {
         }
     }
     
-    // First, capture current height for smooth animation
-    if (resultsSection && resultsSection.classList.contains('show')) {
-        const currentHeight = resultsSection.offsetHeight;
-        
-        // Set explicit height to enable transition
-        resultsSection.style.height = currentHeight + 'px';
-        resultsSection.style.overflow = 'hidden';
-        
-        // Force reflow
-        resultsSection.offsetHeight;
-        
-        // Now animate to zero height with smoother, longer animation
-        resultsSection.style.transition = 'height 0.8s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out';
-        resultsSection.style.height = '0px';
-        resultsSection.style.opacity = '0';
-        resultsSection.style.transform = 'translateY(30px)';
-        resultsSection.style.marginBottom = '0';
-        resultsSection.style.paddingTop = '0';
-        resultsSection.style.paddingBottom = '0';
-    }
+    // Check if mobile device
+    const isMobile = window.innerWidth <= 768;
     
-    // After animation completes, wait longer then scroll
-    setTimeout(() => {
-        // Hide results section
-        if (resultsSection) {
-            resultsSection.classList.remove('show');
-            resultsSection.setAttribute('aria-hidden', 'true');
-            resultsSection.style.height = '';
-            resultsSection.style.opacity = '';
-            resultsSection.style.transform = '';
-            resultsSection.style.transition = '';
-            resultsSection.style.overflow = '';
-            resultsSection.style.marginBottom = '';
-            resultsSection.style.paddingTop = '';
-            resultsSection.style.paddingBottom = '';
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        if (isMobile) {
+            // MOBILE: Use GPU-accelerated animation for 60fps
+            resultsSection.classList.add('clearing');
+            
+            // Use RAF to ensure smooth animation
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    resultsSection.classList.add('clearing-active');
+                });
+            });
+            
+            // Clean up after animation completes
+            setTimeout(() => {
+                resultsSection.classList.remove('show', 'clearing', 'clearing-active');
+                resultsSection.setAttribute('aria-hidden', 'true');
+                
+                if (errorList) {
+                    errorList.innerHTML = '';
+                }
+                
+                currentResults = null;
+                
+                if (textInput) {
+                    textInput.value = '';
+                    updateCharacterCount(0);
+                }
+                
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                if (fileInfo) {
+                    fileInfo.classList.remove('show');
+                }
+                selectedFile = null;
+                
+                localStorage.removeItem('draft_content');
+                
+                requestAnimationFrame(() => {
+                    smoothScrollTo(0, 800);
+                    
+                    setTimeout(() => {
+                        showNotification('Results cleared - Ready for new analysis', 'info');
+                    }, 200);
+                });
+                
+            }, 600); // Match CSS animation duration
+            
+        } else {
+            // DESKTOP: Keep original animation (it works fine)
+            const currentHeight = resultsSection.offsetHeight;
+            
+            resultsSection.style.height = currentHeight + 'px';
+            resultsSection.style.overflow = 'hidden';
+            
+            // Force reflow
+            resultsSection.offsetHeight;
+            
+            // Animate to zero height
+            resultsSection.style.transition = 'height 0.8s ease-out, opacity 0.6s ease-out, transform 0.6s ease-out';
+            resultsSection.style.height = '0px';
+            resultsSection.style.opacity = '0';
+            resultsSection.style.transform = 'translateY(30px)';
+            resultsSection.style.marginBottom = '0';
+            resultsSection.style.paddingTop = '0';
+            resultsSection.style.paddingBottom = '0';
+            
+            setTimeout(() => {
+                resultsSection.classList.remove('show');
+                resultsSection.setAttribute('aria-hidden', 'true');
+                resultsSection.style.height = '';
+                resultsSection.style.opacity = '';
+                resultsSection.style.transform = '';
+                resultsSection.style.transition = '';
+                resultsSection.style.overflow = '';
+                resultsSection.style.marginBottom = '';
+                resultsSection.style.paddingTop = '';
+                resultsSection.style.paddingBottom = '';
+                
+                if (errorList) {
+                    errorList.innerHTML = '';
+                }
+                
+                currentResults = null;
+                
+                if (textInput) {
+                    textInput.value = '';
+                    updateCharacterCount(0);
+                }
+                
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+                if (fileInfo) {
+                    fileInfo.classList.remove('show');
+                }
+                selectedFile = null;
+                
+                localStorage.removeItem('draft_content');
+                
+                setTimeout(() => {
+                    smoothScrollTo(0, 1000);
+                    
+                    setTimeout(() => {
+                        showNotification('Results cleared - Ready for new analysis', 'info');
+                    }, 300);
+                }, 200);
+                
+            }, 800);
         }
-        
-        // Clear error list
-        if (errorList) {
-            errorList.innerHTML = '';
-        }
-        
-        // Clear current results
+    } else {
+        // If results aren't showing, just clear everything immediately
         currentResults = null;
-        
-        // Clear text input
         if (textInput) {
             textInput.value = '';
             updateCharacterCount(0);
         }
-        
-        // Clear file input and info
         if (fileInput) {
             fileInput.value = '';
         }
@@ -1781,21 +1849,9 @@ function clearResults() {
             fileInfo.classList.remove('show');
         }
         selectedFile = null;
-        
-        // Clear draft content from localStorage
         localStorage.removeItem('draft_content');
-        
-        // Wait a bit longer before scrolling for smoother experience
-        setTimeout(() => {
-            smoothScrollTo(0, 1000);
-            
-            // Show notification after scroll starts
-            setTimeout(() => {
-                showNotification('Results cleared - Ready for new analysis', 'info');
-            }, 300);
-        }, 200); // Additional delay before scroll
-        
-    }, 800); // Increased to match the height animation duration
+        showNotification('Ready for new analysis', 'info');
+    }
 }
 
 // Reanalyze the last document/text with more thorough checking
