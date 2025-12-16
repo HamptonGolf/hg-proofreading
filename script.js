@@ -916,6 +916,10 @@ function runRulesEngine(text) {
     const accentErrors = checkMissingAccents(text);
     errors.push(...accentErrors);
     
+    // Date range comma consistency check
+    const dateRangeCommaErrors = checkDateRangeCommas(text);
+    errors.push(...dateRangeCommaErrors);
+    
     return errors;
 }
 
@@ -1115,6 +1119,54 @@ function checkMissingAccents(text) {
                     : `"${data.correct}" requires accent marks.`
             });
         });
+    }
+    
+    return errors;
+}
+
+// Check for comma consistency in date ranges
+function checkDateRangeCommas(text) {
+    const errors = [];
+    
+    // Find all date ranges with day-of-week patterns (case-insensitive)
+    // Pattern 1: "DayOfWeek - DayOfWeek, MonthName DateRange" (with comma)
+    const withCommaPattern = /(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s*-\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday),\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}-\d{1,2}/gi;
+    
+    // Pattern 2: "DayOfWeek - DayOfWeek MonthName DateRange" (without comma)
+    const withoutCommaPattern = /(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s*-\s*(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}-\d{1,2}/gi;
+    
+    const withCommaMatches = [...text.matchAll(withCommaPattern)];
+    const withoutCommaMatches = [...text.matchAll(withoutCommaPattern)];
+    
+    // Only flag if there's inconsistency (some have commas, some don't)
+    if (withCommaMatches.length > 0 && withoutCommaMatches.length > 0) {
+        // Determine the dominant style
+        const dominantStyle = withCommaMatches.length >= withoutCommaMatches.length ? 'with' : 'without';
+        
+        if (dominantStyle === 'with') {
+            // Flag the ones without commas
+            withoutCommaMatches.forEach(match => {
+                const corrected = match[0].replace(/(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\s+(january|february|march|april|may|june|july|august|september|october|november|december)/i, '$1, $2');
+                errors.push({
+                    location: 'Date range formatting',
+                    error: match[0],
+                    correction: corrected,
+                    type: 'consistency',
+                    explanation: 'Add comma for consistency with other date ranges in document.'
+                });
+            });
+        } else {
+            // Flag the ones with commas
+            withCommaMatches.forEach(match => {
+                errors.push({
+                    location: 'Date range formatting',
+                    error: match[0],
+                    correction: match[0].replace(/,\s+/, ' '),
+                    type: 'consistency',
+                    explanation: 'Remove comma for consistency with other date ranges in document.'
+                });
+            });
+        }
     }
     
     return errors;
