@@ -254,9 +254,9 @@ WHAT TO CHECK:
 3. Punctuation following AP Style (missing periods, wrong apostrophes, comma splices, etc.)
 4. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 5. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
+6. Time format consistency - if the document uses multiple different time formats (e.g., "7 p.m." and "7pm" and "7:00 PM"), flag each inconsistent usage and suggest matching the dominant format used in the document
 
 DO NOT FLAG:
-- Time format variations like "7 p.m." vs "7pm" (system handles this)
 - Date/day validation like "Wednesday, December 31" (system handles this)
 - Stylistic preferences, word choice suggestions, or formatting in titles/headers
 
@@ -269,6 +269,7 @@ Examples:
 - Page 2, Paragraph 3 > "recieve" should be "receive" | EXPLAIN: Correct spelling is "receive"
 - Menu, Entrees > "Remoulade" should be "Rémoulade" | EXPLAIN: French term requires accent
 - Paragraph 1 > "it's menu" should be "its menu" | EXPLAIN: Possessive form, no apostrophe
+- Event listing > "7pm" should be "7 p.m." | EXPLAIN: Document uses "7 p.m." format throughout; maintain consistency
 
 If no errors: "No errors found."
 
@@ -909,10 +910,6 @@ function runRulesEngine(text) {
         });
     }
     
-    // Time format consistency check
-    const timeErrors = checkTimeFormatConsistency(text);
-    errors.push(...timeErrors);
-    
     // Accent mark check for known words
     const accentErrors = checkMissingAccents(text);
     errors.push(...accentErrors);
@@ -946,12 +943,13 @@ function validateDates(text) {
         /\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b/gi
     ];
     
+    // Use lowercase keys for case-insensitive matching
     const monthMap = {
-        'January': 0, 'February': 1, 'March': 2, 'April': 3,
-        'May': 4, 'June': 5, 'July': 6, 'August': 7,
-        'September': 8, 'October': 9, 'November': 10, 'December': 11,
-        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'Jun': 5,
-        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Sept': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        'january': 0, 'february': 1, 'march': 2, 'april': 3,
+        'may': 4, 'june': 5, 'july': 6, 'august': 7,
+        'september': 8, 'october': 9, 'november': 10, 'december': 11,
+        'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'jun': 5,
+        'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8, 'oct': 9, 'nov': 10, 'dec': 11
     };
     
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -986,7 +984,8 @@ function validateDates(text) {
                 day = parseInt(match[3]);
             }
             
-            const monthNum = monthMap[month];
+            // Case-insensitive lookup
+            const monthNum = monthMap[month.toLowerCase()];
             
             if (monthNum !== undefined && day >= 1 && day <= 31) {
                 let correctYear = null;
@@ -997,7 +996,8 @@ function validateDates(text) {
                     const date = new Date(year, monthNum, day);
                     const testDayName = dayNames[date.getDay()];
                     
-                    if (testDayName === dayName) {
+                    // Case-insensitive comparison
+                    if (testDayName.toLowerCase() === dayName.toLowerCase()) {
                         correctYear = year;
                         actualDayName = testDayName;
                         break;
@@ -1009,75 +1009,33 @@ function validateDates(text) {
                     const date = new Date(startYear, monthNum, day);
                     actualDayName = dayNames[date.getDay()];
                     
-                    // Get full month name for display
+                    // Get full month name for display - case-insensitive lookup
                     const fullMonthNames = {
-                        'Jan': 'January', 'Feb': 'February', 'Mar': 'March', 'Apr': 'April',
-                        'May': 'May', 'Jun': 'June', 'Jul': 'July', 'Aug': 'August',
-                        'Sep': 'September', 'Sept': 'September', 'Oct': 'October', 
-                        'Nov': 'November', 'Dec': 'December'
+                        'jan': 'January', 'feb': 'February', 'mar': 'March', 'apr': 'April',
+                        'may': 'May', 'jun': 'June', 'jul': 'July', 'aug': 'August',
+                        'sep': 'September', 'sept': 'September', 'oct': 'October', 
+                        'nov': 'November', 'dec': 'December',
+                        'january': 'January', 'february': 'February', 'march': 'March', 
+                        'april': 'April', 'june': 'June', 'july': 'July', 'august': 'August',
+                        'september': 'September', 'october': 'October', 'november': 'November', 
+                        'december': 'December'
                     };
-                    const displayMonth = fullMonthNames[month] || month;
+                    const displayMonth = fullMonthNames[month.toLowerCase()] || month;
+                    
+                    // Preserve original case for error display
+                    const originalDayName = dayName.charAt(0).toUpperCase() + dayName.slice(1).toLowerCase();
                     
                     errors.push({
                         location: 'Date validation',
-                        error: `${dayName}, ${displayMonth} ${day}`,
+                        error: `${originalDayName}, ${displayMonth} ${day}`,
                         correction: `${actualDayName}, ${displayMonth} ${day}`,
                         type: 'date',
-                        explanation: `In ${startYear}${endYear !== startYear ? `-${endYear}` : ''}, ${displayMonth} ${day} falls on ${actualDayName}, not ${dayName}.`
+                        explanation: `In ${startYear}${endYear !== startYear ? `-${endYear}` : ''}, ${displayMonth} ${day} falls on ${actualDayName}, not ${originalDayName}.`
                     });
                 }
             }
         });
     });
-    
-    return errors;
-}
-
-// Check for time format consistency
-function checkTimeFormatConsistency(text) {
-    const errors = [];
-    
-    // Find all time instances
-    const withSpacePattern = /\b(\d{1,2})\s+([ap]\.?m\.?)\b/gi;
-    const withoutSpacePattern = /\b(\d{1,2})([ap]m)\b/gi;
-    const withColonPattern = /\b(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)\b/gi;
-    
-    const withSpaceMatches = [...text.matchAll(withSpacePattern)];
-    const withoutSpaceMatches = [...text.matchAll(withoutSpacePattern)];
-    const withColonMatches = [...text.matchAll(withColonPattern)];
-    
-    const withSpaceCount = withSpaceMatches.length;
-    const withoutSpaceCount = withoutSpaceMatches.length;
-    const withColonCount = withColonMatches.length;
-    
-    // Count how many different formats are used
-    let formatTypes = 0;
-    if (withSpaceCount > 0) formatTypes++;
-    if (withoutSpaceCount > 0) formatTypes++;
-    if (withColonCount > 0) formatTypes++;
-    
-    // If multiple different formats exist, flag inconsistency
-    if (formatTypes > 1) {
-        // Determine dominant format
-        let dominantFormat = '"7 p.m."';
-        let maxCount = withSpaceCount;
-        
-        if (withoutSpaceCount > maxCount) {
-            maxCount = withoutSpaceCount;
-            dominantFormat = '"7pm"';
-        }
-        if (withColonCount > maxCount) {
-            dominantFormat = '"7:00 p.m."';
-        }
-        
-        errors.push({
-            location: 'Time formatting',
-            error: 'Inconsistent time formats throughout document',
-            correction: `Use consistent format: ${dominantFormat}`,
-            type: 'consistency',
-            explanation: `Document uses ${formatTypes} different time formats. Consistent formatting improves readability.`
-        });
-    }
     
     return errors;
 }
