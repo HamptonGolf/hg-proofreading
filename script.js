@@ -962,18 +962,11 @@ function validateDates(text) {
             const matchIndex = match.index;
             const textBefore = text.substring(Math.max(0, matchIndex - 50), matchIndex);
             
-            // DEBUG: Log for "Sunday, May 16" specifically
-            if (match[0].includes('MAY') && match[0].includes('16')) {
-                console.log('🔍 Checking MAY 16 match:');
-                console.log('   Full match:', match[0]);
-                console.log('   Text before (50 chars):', JSON.stringify(textBefore));
-                console.log('   Has & pattern?', /(?:&|and|-)\s*(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(textBefore));
-            }
-            
-            // Skip if we see another day name connected by "&", "and", or "-" before this match
-            if (/(?:&|and|-)\s*(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i.test(textBefore)) {
-                console.log('⏭️ SKIPPING:', match[0]);
-                return;
+            // Skip if we see a day name followed by "&", "and", or "-" right before this match
+            // This catches patterns like "SATURDAY & SUNDAY, MAY 16"
+            // where SUNDAY appears after the connector
+            if (/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s*(?:&|and|-)\s*$/i.test(textBefore)) {
+                return; // Skip - this is the second day in a multi-day range
             }
             
             let dayName, month, day;
