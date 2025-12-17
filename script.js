@@ -254,13 +254,14 @@ WHAT TO CHECK:
 3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.) - however, for time punctuation, only output an error if there is inconsitency 
 4. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 5. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
-6. Format inconsistency - compare ALL instances of repeated patterns (time formats, date ranges with hyphens, etc.) and flag any that don't match the majority format. Examples: if 5 date ranges have commas and 1 doesn't, flag the outlier; if most times use "7 p.m." and one uses "7pm", flag the inconsistent one
+6. Format inconsistency - compare ALL instances of repeated patterns (time formats, date ranges with hyphens, etc.) and flag any that don't match the majority format. Examples: if 5 date ranges have commas and 1 doesn't, flag the outlier; if most times use "7 p.m." and only one uses "7pm", flag the inconsistent one
 7. Proper nouns - verify correct spelling and punctuation (no incorrect apostrophes in event/brand names)
 
 DO NOT FLAG:
 - Date/day validation like "Wednesday, December 31" (system handles this)
 - Word choice suggestions or subjective style preferences (tone, voice, etc.) 
 - Formatting in titles/headers, unless related to consistency
+- Time punctuation unless it is inconsistent
 
 IMPORTANT: When in doubt, output the error. I'd rather it be incorrectly flagged than not flagged at all.
 
