@@ -251,7 +251,7 @@ const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf
 WHAT TO CHECK:
 1. Spelling errors
 2. Grammar errors (except in titles)
-3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.)
+3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.) - however, for time punctuation, only output an error if there is inconsitency 
 4. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 5. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
 6. Format inconsistency - compare ALL instances of repeated patterns (time formats, date ranges with hyphens, etc.) and flag any that don't match the majority format. Examples: if 5 date ranges have commas and 1 doesn't, flag the outlier; if most times use "7 p.m." and one uses "7pm", flag the inconsistent one
