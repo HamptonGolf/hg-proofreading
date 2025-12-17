@@ -1074,7 +1074,6 @@ function checkMissingAccents(text) {
         'saute': { correct: 'sauté' },
         'sauteed': { correct: 'sautéed' },
         'remoulade': { correct: 'rémoulade' },
-        'aioli': { correct: 'aïoli' },
         'creme': { correct: 'crème' },
         'puree': { correct: 'purée' },
         'purees': { correct: 'purées' },
@@ -1197,7 +1196,7 @@ async function startProofreading() {
     // Validate year format
     const yearPattern = /^\d{4}(-\d{4})?$/;
     if (!yearPattern.test(yearInput)) {
-        showNotification('Please enter a valid year (e.g., 2025) or year range (e.g., 2025-2026)', 'error');
+        showNotification('Please enter a valid year (e.g., 2026) or year range (e.g., 2026-2027)', 'error');
         shakeElement(document.getElementById('year-input'));
         document.getElementById('year-input').focus();
         return;
@@ -2112,7 +2111,7 @@ function clearResults() {
     const fileInput = document.getElementById('file-input');
     const fileInfo = document.getElementById('file-info');
     
-    // Reset context fields (but keep year as 2025)
+    // Reset context fields (but keep year as 2026)
     const projectTypeSelect = document.getElementById('project-type');
     const yearInput = document.getElementById('year-input');
     const additionalContext = document.getElementById('additional-context');
@@ -2122,7 +2121,7 @@ function clearResults() {
     }
 
     if (yearInput) {
-        yearInput.value = '2025'; // Keep default year instead of clearing
+        yearInput.value = '2026'; // Keep default year instead of clearing
     }
 
     if (additionalContext) {
