@@ -716,7 +716,7 @@ async function processFile(file) {
     }
 
     if (yearInput) {
-        yearInput.value = '2025'; // Keep default year instead of clearing
+        yearInput.value = '2026'; // Keep default year instead of clearing
     }
 
     if (additionalContext) {
@@ -927,7 +927,7 @@ function runRulesEngine(text) {
 // Enhanced date validation function with multiple format support
 function validateDates(text) {
     const errors = [];
-    const yearInput = document.getElementById('year-input')?.value?.trim() || '2025';
+    const yearInput = document.getElementById('year-input')?.value?.trim() || '2026';
     
     let startYear, endYear;
     if (yearInput.includes('-')) {
@@ -2745,3 +2745,6 @@ if (document.readyState === 'loading') {
 } else {
     initializeApp();
 }
+
+// Set current year in footer
+document.getElementById('current-year').textContent = new Date().getFullYear();
