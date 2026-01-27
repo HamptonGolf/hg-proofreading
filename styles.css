@@ -212,7 +212,6 @@ body::after {
 .orb {
     position: fixed;
     border-radius: 50%;
-    filter: blur(60px);
     opacity: 0.4;
     animation: floatOrb 25s infinite ease-in-out;
     z-index: -1;
@@ -3525,4 +3524,5 @@ body {
     opacity: 1;
     right: 80px;
 }
+
 
