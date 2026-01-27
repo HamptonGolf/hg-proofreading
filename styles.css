@@ -258,7 +258,7 @@ body::after {
 
 /* Premium Header with Glass Effect */
 .header {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
     border-bottom: 1px solid rgba(0, 180, 81, 0.2);
     padding: 24px 0;
     position: relative;
@@ -268,7 +268,7 @@ body::after {
 }
 
 .header:hover {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     border-bottom-color: rgba(0, 180, 81, 0.4);
 }
 
@@ -564,7 +564,7 @@ body::after {
 
 /* API Key Section */
 .api-key-section {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
     border-radius: 16px;
     padding: 24px;
     margin-bottom: 32px;
@@ -700,7 +700,7 @@ body::after {
     display: flex;
     gap: 2px;
     margin-bottom: 32px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     padding: 4px;
     border-radius: 12px;
     border: 1px solid rgba(0, 180, 81, 0.2);
@@ -779,7 +779,7 @@ body::after {
     width: 100%;
     min-height: 400px;
     padding: 24px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     border: 2px solid rgba(0, 180, 81, 0.2);
     border-radius: 12px;
     font-size: 16px;
@@ -1176,7 +1176,7 @@ body::after {
 
 /* Results Section */
 .results-section {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
     border-radius: 20px;
     padding: 36px;
     box-shadow: var(--shadow-premium);
@@ -1315,7 +1315,7 @@ body::after {
 
 .error-item:hover {
     transform: translateX(10px);
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     border-color: rgba(0, 180, 81, 0.4);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -1363,7 +1363,7 @@ body::after {
     display: none;
     text-align: center;
     padding: 60px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
     border-radius: 20px;
     border: 1px solid rgba(0, 180, 81, 0.2);
 }
@@ -1896,7 +1896,7 @@ body::after {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
     border-radius: 6px;
 }
 
@@ -1915,7 +1915,7 @@ body::after {
 }
 
 ::-webkit-scrollbar-corner {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
 }
 
 /* Selection Styling */
@@ -2728,7 +2728,7 @@ body {
     margin-top: 60px;
     padding: 30px 0;
     border-top: 1px solid rgba(0, 180, 81, 0.2);
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 1);
 }
 
 .footer-content {
@@ -3205,7 +3205,7 @@ body {
 }
 
 .error-modal-value {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
     border: 1px solid rgba(0, 180, 81, 0.2);
     border-radius: 10px;
     padding: 16px 20px;
@@ -3228,7 +3228,7 @@ body {
 }
 
 .error-modal-explanation {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.98);
     border: 1px solid rgba(0, 180, 81, 0.2);
     border-radius: 10px;
     padding: 20px;
@@ -3347,7 +3347,7 @@ body {
         gap: 10px;
         position: sticky;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 1);
     }
     
     .modal-action-btn {
