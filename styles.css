@@ -296,12 +296,11 @@ body::after {
 
 /* Premium Header with Glass Effect */
 .header {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(0, 0, 0, 0.95);
     border-bottom: 1px solid rgba(0, 180, 81, 0.2);
     padding: 24px 0;
     position: relative;
+    top: 0;
     z-index: 1000;
     animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     transition: all 0.3s ease;
@@ -557,8 +556,6 @@ body::after {
         rgba(0, 102, 0, 0.08) 0%,
         rgba(0, 180, 81, 0.05) 100%
     );
-    backdrop-filter: blur(10px) saturate(150%);
-    -webkit-backdrop-filter: blur(10px) saturate(150%);
     border: 1px solid rgba(0, 180, 81, 0.2);
     border-radius: 20px;
     padding: 32px;
@@ -611,8 +608,6 @@ body::after {
     padding: 24px;
     margin-bottom: 32px;
     border: 1px solid rgba(0, 180, 81, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 .api-key-container {
@@ -737,8 +732,6 @@ body::after {
     box-shadow: var(--shadow-premium);
     margin-bottom: 32px;
     border: 1px solid rgba(0, 180, 81, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 /* Premium Tab Design */
@@ -1228,8 +1221,6 @@ body::after {
     box-shadow: var(--shadow-premium);
     display: none;
     border: 1px solid rgba(0, 180, 81, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 .results-section.show {
@@ -1413,8 +1404,6 @@ body::after {
     padding: 60px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(0, 180, 81, 0.2);
 }
 
@@ -2825,8 +2814,6 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
     z-index: 10000;
     transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.6s ease;
     box-shadow: 
@@ -2978,8 +2965,6 @@ body {
         left: auto;
         transform: translate3d(calc(100% + 40px), 0, 0);
         transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease;
-        backdrop-filter: blur(15px) saturate(160%);
-        -webkit-backdrop-filter: blur(15px) saturate(160%);
     }
     
     .notification.show {
@@ -3088,8 +3073,6 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     cursor: pointer;
 }
 
@@ -3100,8 +3083,6 @@ body {
         rgba(0, 102, 0, 0.12) 0%,
         rgba(0, 180, 81, 0.08) 100%
     );
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(0, 180, 81, 0.3);
     border-radius: 20px;
     padding: 0;
@@ -3360,8 +3341,6 @@ body {
         border-radius: 20px 20px 0 0;
         width: 100%;
         max-width: 100%;
-        backdrop-filter: blur(10px) saturate(150%);
-        -webkit-backdrop-filter: blur(10px) saturate(150%);
     }
     
     .error-modal-header {
@@ -3369,8 +3348,6 @@ body {
         position: sticky;
         top: 0;
         background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
         z-index: 10;
     }
     
@@ -3410,7 +3387,6 @@ body {
         position: sticky;
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(20px);
     }
     
     .modal-action-btn {
