@@ -3608,3 +3608,39 @@ body {
 .loading {
     contain: layout style paint !important;
 }
+
+/* ============================================================
+   SCROLL PERFORMANCE OPTIMIZATION
+   Works with JavaScript scrolling class
+   ============================================================ */
+
+/* Disable expensive effects during scroll */
+body.scrolling .glass-card,
+body.scrolling .header,
+body.scrolling .api-key-section {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Simplify shadows during scroll */
+body.scrolling .glass-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Pause animations during scroll */
+body.scrolling .orb {
+    animation-play-state: paused !important;
+}
+
+/* Disable pointer events during scroll to prevent hover calculations */
+body.scrolling * {
+    pointer-events: none !important;
+}
+
+/* Re-enable for interactive elements */
+body.scrolling a,
+body.scrolling button,
+body.scrolling input,
+body.scrolling textarea {
+    pointer-events: auto !important;
+}
