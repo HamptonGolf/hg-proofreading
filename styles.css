@@ -1,3 +1,110 @@
+/* ================================================================
+   ULTIMATE PERFORMANCE OPTIMIZATION
+   Add this to the TOP of your styles.css file
+   ================================================================ */
+
+/* 1. CRITICAL: Disable backdrop-filter during scroll */
+body.scrolling .glass-card,
+body.scrolling .header,
+body.scrolling .api-key-section,
+body.scrolling .input-section,
+body.scrolling .error-modal-content {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* 2. Use content-visibility for offscreen rendering optimization */
+.error-item,
+.glass-card,
+.context-field,
+.tab-content {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 200px;
+}
+
+/* 3. Force GPU layer for main container */
+.container {
+    transform: translate3d(0, 0, 0);
+    will-change: contents;
+}
+
+/* 4. Optimize hover states - only create layers when needed */
+.error-item,
+.glass-card,
+.proofread-btn,
+.export-btn {
+    will-change: auto;
+}
+
+.error-item:hover,
+.glass-card:hover,
+.proofread-btn:hover,
+.export-btn:hover {
+    will-change: transform;
+}
+
+/* 5. Reduce repaints during scroll */
+body.scrolling * {
+    pointer-events: none !important;
+}
+
+body.scrolling a,
+body.scrolling button,
+body.scrolling input,
+body.scrolling textarea {
+    pointer-events: auto !important;
+}
+
+/* 6. Simplify shadows during scroll */
+body.scrolling .glass-card,
+body.scrolling .error-item,
+body.scrolling .proofread-btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 7. Optimize text rendering */
+body {
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 8. Reduce orb complexity on any device showing signs of slowness */
+@media (hover: none) {
+    .orb {
+        filter: blur(40px) !important;
+        opacity: 0.25 !important;
+    }
+}
+
+/* 9. Better paint containment */
+.results-section,
+.loading,
+.error-list,
+.export-options {
+    contain: layout style paint;
+}
+
+/* 10. Optimize animations during scroll */
+body.scrolling .orb {
+    animation-play-state: paused !important;
+}
+
+/* ================================================================
+   JAVASCRIPT SCROLL OPTIMIZATION (Add to script.js)
+   ================================================================ 
+   
+   Add this code at the very top of your script.js file:
+   
+   let scrollTimeout;
+   window.addEventListener('scroll', () => {
+       document.body.classList.add('scrolling');
+       clearTimeout(scrollTimeout);
+       scrollTimeout = setTimeout(() => {
+           document.body.classList.remove('scrolling');
+       }, 150);
+   }, { passive: true });
+   
+   ================================================================ */
 /* Hampton Golf AI Proofreader - Premium Enhanced Stylesheet with Brand Guidelines */
 
 /* Import Fonts - Using closest Google Fonts to match brand typefaces */
