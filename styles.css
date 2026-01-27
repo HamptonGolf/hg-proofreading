@@ -36,7 +36,6 @@
 /* ===== PERFORMANCE OPTIMIZATIONS ===== */
 
 /* GPU acceleration for frequently animated elements */
-.orb,
 .spinner,
 .spinner-ring,
 .loading-content,
@@ -54,7 +53,6 @@
 
 /* Force hardware acceleration on mobile */
 @media (max-width: 768px) {
-    .orb,
     .glass-card,
     .header,
     .proofread-btn {
@@ -74,8 +72,6 @@
         scroll-behavior: auto !important;
     }
     
-    .orb {
-        animation: none;
         opacity: 0.2;
     }
 }
@@ -208,19 +204,14 @@ body::after {
     }
 }
 
-/* Optimized Animated Gradient Orbs with GPU acceleration */
-.orb {
-    position: fixed;
     border-radius: 50%;
+    filter: blur(120px);
     opacity: 0.4;
-    animation: floatOrb 25s infinite ease-in-out;
     z-index: -1;
     pointer-events: none;
     will-change: transform;
 }
 
-.orb1 {
-    width: 500px;
     height: 500px;
     background: radial-gradient(circle, var(--hg-secondary-green) 0%, transparent 70%);
     top: -250px;
@@ -228,8 +219,6 @@ body::after {
     animation-delay: 0s;
 }
 
-.orb2 {
-    width: 400px;
     height: 400px;
     background: radial-gradient(circle, var(--hg-primary-green) 0%, transparent 70%);
     bottom: -200px;
@@ -237,8 +226,6 @@ body::after {
     animation-delay: 8s;
 }
 
-.orb3 {
-    width: 350px;
     height: 350px;
     background: radial-gradient(circle, var(--hg-secondary-green) 0%, transparent 60%);
     top: 40%;
@@ -246,10 +233,6 @@ body::after {
     animation-delay: 16s;
 }
 
-@keyframes floatOrb {
-    0%, 100% { 
-        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-    }
     25% { 
         transform: translate3d(50px, -50px, 0) scale(1.1) rotate(90deg);
     }
@@ -263,8 +246,6 @@ body::after {
 
 /* ULTRA SMOOTH mobile animations - NO LEFT EDGE TOUCHING */
 @media (max-width: 768px) {
-    .orb {
-        animation: floatOrbMobile 40s infinite linear;
         filter: blur(50px);
         opacity: 0.2;
         will-change: transform;
@@ -276,8 +257,6 @@ body::after {
         transform-style: preserve-3d;
     }
     
-    .orb1 {
-        width: 250px;
         height: 250px;
         top: -125px;
         right: -50px;
@@ -285,8 +264,6 @@ body::after {
         animation-delay: 0s;
     }
     
-    .orb2 {
-        width: 220px;
         height: 220px;
         bottom: -110px;
         left: auto;
@@ -294,15 +271,9 @@ body::after {
         animation-delay: 13s;
     }
     
-    .orb3 {
-        display: none;
     }
     
     /* Constrained animation - only moves RIGHT and UP/DOWN, never left */
-    @keyframes floatOrbMobile {
-        0% { 
-            transform: translate3d(0, 0, 0);
-        }
         25% { 
             transform: translate3d(20px, -15px, 0);
         }
@@ -3524,5 +3495,3 @@ body {
     opacity: 1;
     right: 80px;
 }
-
-
