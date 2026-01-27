@@ -1,5 +1,51 @@
 // Hampton Golf AI Proofreader - Enhanced JavaScript with Premium Features
 
+// ===== CRITICAL PERFORMANCE OPTIMIZATIONS =====
+// These optimizations reduce DOM queries and enable 60fps scrolling
+
+// Cache DOM elements globally to avoid repeated querySelector calls
+const DOM = {};
+
+// Scroll optimization - temporarily disable expensive effects during scroll
+let isScrolling = false;
+let scrollTimeout;
+
+function handleScrollPerformance() {
+    if (!isScrolling) {
+        document.body.classList.add('scrolling');
+        isScrolling = true;
+    }
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+        document.body.classList.remove('scrolling');
+        isScrolling = false;
+    }, 150);
+}
+
+// Passive scroll listeners for better performance
+if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', handleScrollPerformance, { passive: true });
+    window.addEventListener('touchmove', handleScrollPerformance, { passive: true });
+}
+
+// Cache all DOM elements once on initialization
+function cacheDOMElements() {
+    DOM.textInput = document.getElementById('text-input');
+    DOM.fileInput = document.getElementById('file-input');
+    DOM.uploadArea = document.getElementById('upload-area');
+    DOM.proofreadBtn = document.getElementById('proofread-btn');
+    DOM.apiKeyInput = document.getElementById('api-key');
+    DOM.charCount = document.getElementById('char-count');
+    DOM.loading = document.getElementById('loading');
+    DOM.results = document.getElementById('results');
+    DOM.errorList = document.getElementById('error-list');
+    DOM.projectType = document.getElementById('project-type');
+    DOM.additionalContext = document.getElementById('additional-context');
+    DOM.fileInfo = document.getElementById('file-info');
+    DOM.errorModal = document.getElementById('error-modal');
+}
+
+
 // Configuration
 const CONFIG = {
     CLAUDE_API_URL: 'https://api.anthropic.com/v1/messages',
@@ -297,6 +343,8 @@ Document context provided above. Re-analyze this text:
 
 // Initialize application
 function initializeApp() {
+    // PERFORMANCE: Cache all DOM elements first
+    cacheDOMElements();
     console.log('🏌️ Hampton Golf AI Proofreader Initializing...');
 
     // Check PDF.js status
@@ -324,8 +372,8 @@ function initializeApp() {
 // Enhanced Event Listeners
 function setupEventListeners() {
     // File upload handlers
-    const fileInput = document.getElementById('file-input');
-    const uploadArea = document.getElementById('upload-area');
+    const fileInput = DOM["('file-input'"]);
+    const uploadArea = DOM["('upload-area'"]);
     
     if (fileInput) {
         fileInput.addEventListener('change', handleFileSelect);
@@ -349,27 +397,16 @@ function setupEventListeners() {
     }
     
     // Proofread button with haptic feedback
-    const proofreadBtn = document.getElementById('proofread-btn');
+    const proofreadBtn = DOM["('proofread-btn'"]);
     if (proofreadBtn) {
         proofreadBtn.addEventListener('click', () => {
             triggerHapticFeedback('medium');
             startProofreading();
         });
         
-        // Add hover effect
-        proofreadBtn.addEventListener('mouseenter', () => {
-            if (!isProcessing) {
-                proofreadBtn.classList.add('hover');
-            }
-        });
-        
-        proofreadBtn.addEventListener('mouseleave', () => {
-            proofreadBtn.classList.remove('hover');
-        });
-    }
     
     // Text input with debounced character count for performance
-    const textInput = document.getElementById('text-input');
+    const textInput = DOM["('text-input'"]);
     if (textInput) {
         const debouncedUpdate = debounce((e) => {
             updateCharacterCount(e.target.value.length);
@@ -386,7 +423,7 @@ function setupEventListeners() {
     }
     
     // API key input - Enter key support
-    const apiKeyInput = document.getElementById('api-key');
+    const apiKeyInput = DOM["('api-key'"]);
     if (apiKeyInput) {
         apiKeyInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -397,10 +434,10 @@ function setupEventListeners() {
 }
 
 // Project type change handler
-const projectTypeSelect = document.getElementById('project-type');
+const projectTypeSelect = DOM["('project-type'"]);
 if (projectTypeSelect) {
     projectTypeSelect.addEventListener('change', (e) => {
-        const additionalContextField = document.getElementById('additional-context');
+        const additionalContextField = DOM["('additional-context'"]);
         const additionalContextLabel = additionalContextField.closest('.context-field').querySelector('.context-label');
         
         if (e.target.value === 'other') {
@@ -440,10 +477,10 @@ if (projectTypeSelect) {
 }
 
 // Additional context input handler for validation styling with debouncing
-const additionalContextField = document.getElementById('additional-context');
+const additionalContextField = DOM["('additional-context'"]);
 if (additionalContextField) {
     const debouncedValidation = debounce((e) => {
-        const projectType = document.getElementById('project-type').value;
+        const projectType = DOM["('project-type'"]).value;
         
         if (projectType === 'other') {
             if (e.target.value.trim()) {
