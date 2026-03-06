@@ -4,7 +4,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { context: contextString, prompt, text, pdfBase64, apiKey, model } = JSON.parse(event.body);
+    const { contextStr, prompt, text, pdfBase64, apiKey, model } = JSON.parse(event.body);
     
     const modelToUse = model || 'claude-sonnet-4-6';
     
@@ -27,12 +27,12 @@ exports.handler = async (event, context) => {
         },
         {
           type: 'text',
-          text: contextString + prompt
+          text: contextStr + prompt
         }
       ];
     } else {
       // Text mode: send extracted/direct text as before
-      messageContent = contextString + prompt + text;
+      messageContent = contextStr + prompt + text;
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
