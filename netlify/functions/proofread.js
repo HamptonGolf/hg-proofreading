@@ -4,29 +4,52 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { text, apiKey, model } = JSON.parse(event.body);
+    const { context: contextString, prompt, text, pdfBase64, apiKey, model } = JSON.parse(event.body);
     
-    // Use the model from the request, or default to opus
     const modelToUse = model || 'claude-sonnet-4-6';
     
-    console.log('Using model:', modelToUse); // Debug log
-    
+    console.log('Using model:', modelToUse);
+    console.log('Input type:', pdfBase64 ? 'PDF (base64)' : 'text');
+
+    // Build the message content based on input type
+    let messageContent;
+
+    if (pdfBase64) {
+      // PDF mode: send document visually to Claude
+      messageContent = [
+        {
+          type: 'document',
+          source: {
+            type: 'base64',
+            media_type: 'application/pdf',
+            data: pdfBase64
+          }
+        },
+        {
+          type: 'text',
+          text: contextString + prompt
+        }
+      ];
+    } else {
+      // Text mode: send extracted/direct text as before
+      messageContent = contextString + prompt + text;
+    }
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'messages-2023-12-15'
+        'anthropic-version': '2023-06-01'
       },
-        body: JSON.stringify({
-        model: modelToUse,  // Use the variable here
+      body: JSON.stringify({
+        model: modelToUse,
         max_tokens: 4000,
         temperature: 0,
         system: "You are an experienced proofreader specializing in professional documents. Analyze only the specific text provided in this message following the instructions given. Do not reference any other documents or previous conversations.",
         messages: [{
           role: 'user',
-          content: text
+          content: messageContent
         }]
       })
     });
