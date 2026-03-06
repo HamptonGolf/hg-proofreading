@@ -868,13 +868,6 @@ function normalizePDFText(text) {
     // Fix spaced-out punctuation: "p . m ." → "p.m."
     normalized = normalized.replace(/([a-z])\s\.\s([a-z])\s?\./gi, '$1.$2.');
 
-    // Fix 1-2 character word splits: "L ABOR" → "LABOR", "BL ACK" → "BLACK"
-    // Safe because 1-2 uppercase chars followed by a space then more uppercase is never a real word boundary
-    normalized = normalized.replace(/\b([A-Z]{1,2})\s([A-Z]{2,})\b/g, '$1$2');
-
-    // Same pattern for lowercase: "l abor" → "labor" (less common but possible)
-    normalized = normalized.replace(/\b([a-z]{1})\s([a-z]{3,})\b/g, '$1$2');
-
     return normalized;
 }
 
