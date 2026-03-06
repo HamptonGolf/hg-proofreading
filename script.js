@@ -67,6 +67,8 @@ let isProcessing = false;
 let currentResults = null;
 let characterCount = 0;
 let lastAnalyzedText = null;
+let lastPdfBase64 = null;
+let pdfBase64 = null;
 let isReanalyzing = false;
 
 // Calculate estimated time saved by AI proofreading based on project type
@@ -803,17 +805,8 @@ async function extractTextFromPDF(file) {
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
                         const pageText = textContent.items
-                            .reduce((acc, item, i, arr) => {
-                                const str = item.str;
-                                if (i === 0) return str;
-                                const prev = arr[i - 1];
-                                const prevEnd = prev.transform[4] + prev.width;
-                                const currStart = item.transform[4];
-                                const gap = currStart - prevEnd;
-                                // Add space only if there's a meaningful gap between chunks
-                                const separator = gap > 1 ? ' ' : '';
-                                return acc + separator + str;
-                            }, '')
+                            .map(item => item.str)
+                            .join(' ')
                             .replace(/\s+/g, ' ')
                             .trim();
                         
@@ -881,6 +874,20 @@ function normalizePDFText(text) {
     normalized = normalized.replace(/(\d)\s+([AaPp])\s+([Mm])\b/g, '$1$2$3');
 
     return normalized;
+}
+
+// Convert file to base64 for sending to Claude
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            // Strip the data URL prefix, keep only the base64 string
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = () => reject(new Error('Failed to convert file to base64'));
+        reader.readAsDataURL(file);
+    });
 }
 
 // Debounced loading progress updates for smoother performance
@@ -1342,7 +1349,14 @@ async function startProofreading() {
                 smoothScrollTo(targetPosition, 1500);
             }
             
+            // Extract text for rules engine
+            updateLoadingProgress(10, 'Extracting text for style checks...');
             textToProofread = await extractTextFromPDF(selectedFile);
+            
+            // Convert PDF to base64 for Claude
+            updateLoadingProgress(20, 'Preparing document for AI analysis...');
+            pdfBase64 = await fileToBase64(selectedFile);
+            
         } catch (error) {
             showLoading(false);
             isProcessing = false;
@@ -1361,21 +1375,15 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     
     hideAllNotifications();
 
-    // Check for potential OCR errors
-    const ocrAnalysis = analyzeForOCRErrors(textToProofread);
-    if (ocrAnalysis.shouldWarn) {
-        showNotification(ocrAnalysis.message, 'warning', 5000);
-        console.warn('OCR Analysis:', ocrAnalysis);
-    }
-
     // Store the text for potential reanalysis
     lastAnalyzedText = textToProofread;
+    lastPdfBase64 = pdfBase64;
 
-    updateLoadingProgress(10, 'Running style checks...');
+    updateLoadingProgress(30, 'Running style checks...');
     const ruleErrors = runRulesEngine(textToProofread);
 
-    updateLoadingProgress(30, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
-    const claudeErrors = await proofreadWithClaude(contextString + textToProofread);
+    updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
+    const claudeErrors = await proofreadWithClaude(contextString, textToProofread, pdfBase64);
 
     const allErrors = [...ruleErrors, ...claudeErrors];
 
@@ -1384,14 +1392,13 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
         displayCombinedResults(allErrors);
         showLoading(false);
         isProcessing = false;
-        isReanalyzing = false; // Reset the flag after analysis
+        isReanalyzing = false;
+        pdfBase64 = null;
     }, 500);
 }
 
-async function proofreadWithClaude(text) {
-    // Use thorough prompt if this is a reanalysis
+async function proofreadWithClaude(contextString, extractedText, pdfBase64 = null) {
     const promptToUse = isReanalyzing ? PROOFREADING_PROMPT_THOROUGH : PROOFREADING_PROMPT;
-    const fullPrompt = promptToUse + text;
     
     console.log(isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     
@@ -1403,7 +1410,10 @@ async function proofreadWithClaude(text) {
                 'Cache-Control': 'no-cache',
             },
             body: JSON.stringify({
-                text: fullPrompt,
+                context: contextString,
+                prompt: promptToUse,
+                text: pdfBase64 ? null : extractedText,
+                pdfBase64: pdfBase64 || null,
                 apiKey: apiKey,
                 model: CONFIG.CLAUDE_MODEL
             })
@@ -2384,7 +2394,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     const ruleErrors = runRulesEngine(lastAnalyzedText);
     
     updateLoadingProgress(30, 'Re-analyzing with extra scrutiny...');
-    const claudeErrors = await proofreadWithClaude(contextString + lastAnalyzedText);
+    const claudeErrors = await proofreadWithClaude(contextString, lastAnalyzedText, lastPdfBase64);
     
     const allErrors = [...ruleErrors, ...claudeErrors];
     
