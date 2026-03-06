@@ -846,7 +846,7 @@ async function extractTextFromPDF(file) {
     });
 }
 
-// Normalize extracted PDF text to fix unambiguous extraction artifacts only
+/// Normalize extracted PDF text to fix unambiguous extraction artifacts only
 function normalizePDFText(text) {
     let normalized = text;
 
@@ -867,6 +867,9 @@ function normalizePDFText(text) {
 
     // Fix spaced-out punctuation: "p . m ." → "p.m."
     normalized = normalized.replace(/([a-z])\s\.\s([a-z])\s?\./gi, '$1.$2.');
+
+    // Fix split time suffixes: "2 P M" → "2PM", "10 A M" → "10AM"
+    normalized = normalized.replace(/(\d)\s+([AaPp])\s+([Mm])\b/g, '$1$2$3');
 
     return normalized;
 }
