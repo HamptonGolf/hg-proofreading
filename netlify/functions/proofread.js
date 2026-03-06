@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
     const { text, apiKey, model } = JSON.parse(event.body);
     
     // Use the model from the request, or default to opus
-    const modelToUse = model || 'claude-opus-4-1-20250805';
+    const modelToUse = model || 'claude-sonnet-4-6';
     
     console.log('Using model:', modelToUse); // Debug log
     
@@ -57,4 +57,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-
