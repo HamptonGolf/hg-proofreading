@@ -846,27 +846,11 @@ async function extractTextFromPDF(file) {
     });
 }
 
-// Normalize extracted PDF text to fix common extraction artifacts
+// Normalize extracted PDF text to fix unambiguous extraction artifacts only
 function normalizePDFText(text) {
     let normalized = text;
 
-    // Fix fragmented words: "Rese rvations" → "Reservations"
-    // Catches single or double character splits injected into the middle of words
-    normalized = normalized.replace(/([a-zA-Z]{2,})\s([a-zA-Z]{1,2})\s([a-zA-Z]{2,})/g, (match, a, b, c) => {
-        // Only collapse if the combined result looks like one word (no punctuation around it)
-        const combined = a + b + c;
-        if (combined.length <= 20) return combined;
-        return match;
-    });
-
-    // Fix single character orphans mid-word: "Reserv ations" → "Reservations"
-    normalized = normalized.replace(/([a-zA-Z]{3,})\s([a-zA-Z]{3,})/g, (match, a, b) => {
-        // Only collapse if neither part looks like a standalone word (heuristic: both are short fragments)
-        if (a.length <= 4 && b.length <= 4) return a + b;
-        return match;
-    });
-
-    // Fix ligature artifacts (common in InDesign PDFs)
+    // Fix ligature artifacts (common in InDesign/Illustrator PDFs)
     normalized = normalized.replace(/ﬁ/g, 'fi');
     normalized = normalized.replace(/ﬂ/g, 'fl');
     normalized = normalized.replace(/ﬀ/g, 'ff');
@@ -881,7 +865,7 @@ function normalizePDFText(text) {
     // Collapse excessive whitespace (3+ spaces → single space), preserve newlines
     normalized = normalized.replace(/[^\S\n]{3,}/g, ' ');
 
-    // Fix spaced-out characters that should be together: "p . m ." → "p.m."
+    // Fix spaced-out punctuation: "p . m ." → "p.m."
     normalized = normalized.replace(/([a-z])\s\.\s([a-z])\s?\./gi, '$1.$2.');
 
     return normalized;
