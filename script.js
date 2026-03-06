@@ -252,7 +252,7 @@ WHAT TO CHECK:
 1. Spelling errors
 2. Grammar errors (except in titles)
 3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.)
-4. Time formatting - ONLY flag a time format issue if there is clear inconsistency within the document itself (e.g., one instance uses "7 p.m." and another uses "7pm"). If only one time range is listed, assume the formatting is correct. Do NOT flag time formats simply for deviating from AP Style if the document uses that format consistently.
+4. Time formatting - ONLY flag a time format issue if there is clear inconsistency between multiple time listings in the document. Do NOT flag time formats simply for deviating from AP Style. Do NOT flag time ranges where the AM/PM suffix appears only at the end of the range (e.g., "5 - 7PM", "5:30 - 7PM") as this is intentional. When in doubt, do not flag it.
 5. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 6. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
 7. Format inconsistency - compare ALL instances of repeated patterns (date ranges with hyphens, price formats, etc.) and flag any that don't match the majority format. Example: if 5 date ranges have commas and 1 doesn't, flag the outlier.
