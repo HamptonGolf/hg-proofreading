@@ -803,8 +803,17 @@ async function extractTextFromPDF(file) {
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
                         const pageText = textContent.items
-                            .map(item => item.str)
-                            .join('')
+                            .reduce((acc, item, i, arr) => {
+                                const str = item.str;
+                                if (i === 0) return str;
+                                const prev = arr[i - 1];
+                                const prevEnd = prev.transform[4] + prev.width;
+                                const currStart = item.transform[4];
+                                const gap = currStart - prevEnd;
+                                // Add space only if there's a meaningful gap between chunks
+                                const separator = gap > 1 ? ' ' : '';
+                                return acc + separator + str;
+                            }, '')
                             .replace(/\s+/g, ' ')
                             .trim();
                         
