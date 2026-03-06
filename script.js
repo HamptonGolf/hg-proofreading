@@ -804,7 +804,7 @@ async function extractTextFromPDF(file) {
                         const textContent = await page.getTextContent();
                         const pageText = textContent.items
                             .map(item => item.str)
-                            .join(' ')
+                            .join('')
                             .replace(/\s+/g, ' ')
                             .trim();
                         
