@@ -1385,10 +1385,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     const claudeErrors = await proofreadWithClaude(contextString, textToProofread, pdfBase64);
 
-    updateLoadingProgress(80, 'Locating style errors...');
-    const enrichedRuleErrors = await enrichRuleErrors(ruleErrors, textToProofread, pdfBase64);
-
-    const allErrors = [...enrichedRuleErrors, ...claudeErrors];
+    const allErrors = [...ruleErrors, ...claudeErrors];
 
     updateLoadingProgress(100, 'Analysis complete!');
     setTimeout(() => {
@@ -1457,69 +1454,6 @@ async function proofreadWithClaude(contextString, extractedText, pdfBase64 = nul
         console.error('API error:', error);
         showNotification(`Error: ${error.message}`, 'error', 5000);
         return [];
-    }
-}
-
-async function enrichRuleErrors(ruleErrors, extractedText, pdfBase64 = null) {
-    if (ruleErrors.length === 0) return [];
-
-    const errorsFormatted = ruleErrors.map(e =>
-        `- Error: "${e.error}" should be "${e.correction}" (Type: ${e.type})`
-    ).join('\n');
-
-    const prompt = `The following errors were detected by an automated rules engine in the document provided. For each error, find its exact location in the document and return it in this exact format:
-
-- [Specific location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
-
-Errors to locate:
-${errorsFormatted}
-
-Rules:
-- Location should match the format used elsewhere (e.g. "Page 2, Paragraph 3", "Menu, Entrees section")
-- If the same error appears multiple times, list each occurrence separately with its own location
-- Return ONLY the formatted error lines, nothing else`;
-
-    let messageContent;
-    if (pdfBase64) {
-        messageContent = [
-            {
-                type: 'document',
-                source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 }
-            },
-            { type: 'text', text: prompt }
-        ];
-    } else {
-        messageContent = prompt + '\n\nDocument text:\n' + extractedText;
-    }
-
-    try {
-        const response = await fetch('/.netlify/functions/proofread', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-            contextStr: '',
-            prompt: prompt,
-            text: pdfBase64 ? null : extractedText,
-            pdfBase64: pdfBase64 || null,
-            apiKey: apiKey,
-            model: CONFIG.CLAUDE_MODEL
-        })
-        });
-
-        const data = await response.json();
-        if (!data.content?.[0]?.text) return ruleErrors; // fallback to original
-
-        const resultText = data.content[0].text;
-        const enriched = parseClaudeErrors(resultText);
-
-        // Preserve the original type so styling/modal still works
-        return enriched.map(e => ({ ...e, type: ruleErrors.find(r =>
-            e.error.includes(r.error) || r.error.includes(e.error)
-        )?.type || 'capitalization' }));
-
-    } catch (err) {
-        console.warn('Rule enrichment failed, using originals:', err);
-        return ruleErrors; // fallback gracefully
     }
 }
 
@@ -2023,16 +1957,21 @@ function analyzeForOCRErrors(text) {
         // Use DocumentFragment for better performance
         const fragment = document.createDocumentFragment();
 
-        // Sort errors chronologically by location
-        function getLocationOrder(location) {
-            const pageMatch = location.match(/page\s+(\d+)/i);
-            if (pageMatch) return parseInt(pageMatch[1]) * 10000;
-            const lineMatch = location.match(/line\s+(\d+)/i);
-            if (lineMatch) return parseInt(lineMatch[1]);
-            return 999999;
-        }
-
-        errors.sort((a, b) => getLocationOrder(a.location) - getLocationOrder(b.location));
+        // Sort errors by priority: date > capitalization > accent > style > claude > consistency
+        const typePriority = {
+            'date': 1,
+            'capitalization': 2,
+            'accent': 3,
+            'style': 4,
+            'claude': 5,
+            'consistency': 6
+        };
+        
+        errors.sort((a, b) => {
+            const priorityA = typePriority[a.type] || 99;
+            const priorityB = typePriority[b.type] || 99;
+            return priorityA - priorityB;
+        });
         
         errors.forEach((error, index) => {
             const li = document.createElement('li');
