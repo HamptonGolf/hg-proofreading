@@ -1,21 +1,22 @@
 exports.handler = async (event, context) => {
+  // Tell Netlify not to close the function early
+  context.callbackWaitsForEmptyEventLoop = false;
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   try {
     const { contextStr, prompt, text, pdfBase64, apiKey, model } = JSON.parse(event.body);
-    
+
     const modelToUse = model || 'claude-sonnet-4-6';
-    
     console.log('Using model:', modelToUse);
     console.log('Input type:', pdfBase64 ? 'PDF (base64)' : 'text');
+    console.log('PDF base64 size (chars):', pdfBase64 ? pdfBase64.length : 0);
 
-    // Build the message content based on input type
     let messageContent;
 
     if (pdfBase64) {
-      // PDF mode: send document visually to Claude
       messageContent = [
         {
           type: 'document',
@@ -27,15 +28,15 @@ exports.handler = async (event, context) => {
         },
         {
           type: 'text',
-          text: contextStr + prompt
+          text: (contextStr || '') + (prompt || '')
         }
       ];
     } else {
-      // Text mode: send extracted/direct text as before
-      messageContent = contextStr + prompt + text;
+      messageContent = (contextStr || '') + (prompt || '') + (text || '');
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Race the Claude call against a 24-second timeout
+    const claudeFetch = fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,35 +49,38 @@ exports.handler = async (event, context) => {
         max_tokens: 4000,
         temperature: 0,
         system: "You are an experienced proofreader specializing in professional documents. Analyze only the specific text provided in this message following the instructions given. Do not reference any other documents or previous conversations.",
-        messages: [{
-          role: 'user',
-          content: messageContent
-        }]
+        messages: [{ role: 'user', content: messageContent }]
       })
     });
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Claude API timeout after 24s')), 24000)
+    );
+
+    const response = await Promise.race([claudeFetch, timeoutPromise]);
     const data = await response.json();
-    
+
     if (!response.ok) {
       return {
         statusCode: response.status,
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           error: data.error?.message || 'Claude API error',
-          details: data 
+          details: data
         })
       };
     }
-    
+
     return {
       statusCode: 200,
       body: JSON.stringify(data)
     };
+
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         error: error.message,
-        type: 'function_error' 
+        type: 'function_error'
       })
     };
   }
