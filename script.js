@@ -1383,10 +1383,10 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     const ruleErrors = runRulesEngine(textToProofread);
 
     updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
-    const [claudeErrors, enrichedRuleErrors] = await Promise.all([
-        proofreadWithClaude(contextString, textToProofread, pdfBase64),
-        enrichRuleErrors(ruleErrors, textToProofread, pdfBase64)
-    ]);
+    const claudeErrors = await proofreadWithClaude(contextString, textToProofread, pdfBase64);
+
+    updateLoadingProgress(80, 'Locating style errors...');
+    const enrichedRuleErrors = await enrichRuleErrors(ruleErrors, textToProofread, pdfBase64);
 
     const allErrors = [...enrichedRuleErrors, ...claudeErrors];
 
@@ -1497,13 +1497,13 @@ Rules:
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contextStr: '',
-                prompt: '',
-                text: pdfBase64 ? null : (prompt + '\n\nDocument text:\n' + extractedText),
-                pdfBase64: pdfBase64 || null,
-                apiKey: apiKey,
-                model: CONFIG.CLAUDE_MODEL
-            })
+            contextStr: '',
+            prompt: prompt,
+            text: pdfBase64 ? null : extractedText,
+            pdfBase64: pdfBase64 || null,
+            apiKey: apiKey,
+            model: CONFIG.CLAUDE_MODEL
+        })
         });
 
         const data = await response.json();
