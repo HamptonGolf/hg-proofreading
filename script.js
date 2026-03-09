@@ -1410,7 +1410,7 @@ async function proofreadWithClaude(contextString, extractedText, pdfBase64 = nul
                 'Cache-Control': 'no-cache',
             },
             body: JSON.stringify({
-                context: contextString,
+                contextStr: contextString,
                 prompt: promptToUse,
                 text: pdfBase64 ? null : extractedText,
                 pdfBase64: pdfBase64 || null,
