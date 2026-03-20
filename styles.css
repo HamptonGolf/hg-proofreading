@@ -1131,11 +1131,6 @@ body::after {
     position: relative;
     width: 100%;
     user-select: none;
-    isolation: isolate;
-}
-
-.custom-select.open {
-    z-index: 9999;
 }
 
 .custom-select-trigger {
@@ -1151,6 +1146,8 @@ body::after {
     font-size: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
+    min-height: 49px;
+    box-sizing: border-box;
 }
 
 .custom-select-trigger:hover {
@@ -1177,21 +1174,20 @@ body::after {
     transform: rotate(180deg);
 }
 
+/* Dropdown is portaled to body — positioned via JS */
 .custom-select-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
+    position: fixed;
     background: #0a0f0a;
     border: 2px solid rgba(0, 180, 81, 0.3);
     border-radius: 10px;
     overflow: hidden;
-    z-index: 9999;
+    z-index: 99999;
     display: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 180, 81, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 180, 81, 0.15);
+    min-width: 200px;
 }
 
-.custom-select.open .custom-select-dropdown {
+.custom-select-dropdown.open {
     display: block;
     animation: dropdownFadeIn 0.2s ease;
 }
@@ -1214,10 +1210,6 @@ body::after {
     font-size: 15px;
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.custom-select-option:first-child {
-    color: rgba(255, 255, 255, 0.3);
 }
 
 .custom-select-option:hover {
