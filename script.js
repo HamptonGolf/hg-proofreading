@@ -1517,8 +1517,21 @@ function parseClaudeErrors(resultText) {
                 explanation: parsed.explanation || ''
             });
         } else {
-            // Log unparseable lines for debugging
-            console.warn('Could not parse error line:', content);
+            // Last resort: if the line contains " > " and "should be", try a loose parse
+            // This catches valid errors where Claude wrote a long explanation without clean | EXPLAIN: formatting
+            const looseMatch = content.match(/^(.+?)\s*>\s*"([^"]+)"\s+should\s+be\s+"([^"]+)"/);
+            if (looseMatch) {
+                errors.push({
+                    location: looseMatch[1].trim(),
+                    error: looseMatch[2].trim(),
+                    correction: looseMatch[3].trim(),
+                    type: 'claude',
+                    explanation: ''
+                });
+            } else {
+                // Log truly unparseable lines for debugging
+                console.warn('Could not parse error line:', content);
+            }
         }
     }
     
