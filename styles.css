@@ -1121,6 +1121,107 @@ body::after {
     color: white;
 }
 
+/* Custom Select Dropdown */
+.custom-select {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(0, 180, 81, 0.2);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.custom-select-trigger:hover {
+    border-color: rgba(0, 180, 81, 0.4);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.custom-select.open .custom-select-trigger {
+    border-color: var(--hg-secondary-green);
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 0 3px rgba(0, 180, 81, 0.1), 0 0 20px rgba(0, 180, 81, 0.2);
+}
+
+.custom-select.selected .custom-select-trigger {
+    color: white;
+}
+
+.custom-select-arrow {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.custom-select.open .custom-select-arrow {
+    transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #0a0f0a;
+    border: 2px solid rgba(0, 180, 81, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 180, 81, 0.1);
+}
+
+.custom-select.open .custom-select-dropdown {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-select-option {
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-select-option:first-child {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-select-option:hover {
+    background: rgba(0, 180, 81, 0.15);
+    color: white;
+    padding-left: 22px;
+}
+
+.custom-select-option.active {
+    background: rgba(0, 180, 81, 0.2);
+    color: var(--hg-secondary-green);
+    font-weight: 600;
+}
+
 .context-input::placeholder,
 .context-textarea::placeholder {
     color: rgba(255, 255, 255, 0.3);
