@@ -1139,7 +1139,7 @@ body::after {
     justify-content: space-between;
     padding: 12px 16px;
     background: rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(0, 180, 81, 0.2);
+    border: 2px solid rgba(220, 53, 69, 0.4);
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.3);
     font-family: 'Inter', sans-serif;
@@ -1150,9 +1150,9 @@ body::after {
     box-sizing: border-box;
 }
 
-.custom-select-trigger:hover {
-    border-color: rgba(0, 180, 81, 0.4);
-    background: rgba(0, 0, 0, 0.7);
+.custom-select.selected .custom-select-trigger {
+    color: white;
+    border-color: rgba(0, 180, 81, 0.3);
 }
 
 .custom-select.open .custom-select-trigger {
