@@ -462,6 +462,49 @@ if (additionalContextField) {
     additionalContextField.addEventListener('input', debouncedValidation);
 }
 
+// Custom select dropdown logic
+const customSelect = document.getElementById('project-type-select');
+if (customSelect) {
+    const trigger = customSelect.querySelector('.custom-select-trigger');
+    const valueDisplay = customSelect.querySelector('.custom-select-value');
+    const options = customSelect.querySelectorAll('.custom-select-option');
+    const hiddenInput = document.getElementById('project-type');
+
+    trigger.addEventListener('click', () => {
+        customSelect.classList.toggle('open');
+    });
+
+    options.forEach(option => {
+        option.addEventListener('click', () => {
+            const value = option.getAttribute('data-value');
+            const label = option.textContent;
+
+            // Update hidden input
+            hiddenInput.value = value;
+
+            // Update display
+            valueDisplay.textContent = label;
+            customSelect.classList.toggle('selected', value !== '');
+            customSelect.classList.remove('open');
+
+            // Mark active option
+            options.forEach(o => o.classList.remove('active'));
+            if (value !== '') option.classList.add('active');
+
+            // Manually fire the existing project type change logic
+            const changeEvent = new Event('change');
+            hiddenInput.dispatchEvent(changeEvent);
+        });
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!customSelect.contains(e.target)) {
+            customSelect.classList.remove('open');
+        }
+    });
+}
+
 // UI Enhancement Functions
 function initializeUIEnhancements() {
     // Add animation classes after page load
