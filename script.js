@@ -793,6 +793,14 @@ async function processFile(file) {
 
     if (projectTypeSelect) {
         projectTypeSelect.value = '';
+        const customSelectEl = document.getElementById('project-type-select');
+        if (customSelectEl) {
+            const valueDisplay = customSelectEl.querySelector('.custom-select-value');
+            if (valueDisplay) valueDisplay.textContent = 'Select Type...';
+            customSelectEl.classList.remove('selected');
+            const activeOption = document.querySelector('.custom-select-option.active');
+            if (activeOption) activeOption.classList.remove('active');
+        }
     }
 
     if (yearInput) {
@@ -2279,6 +2287,14 @@ function clearResults() {
 
     if (projectTypeSelect) {
         projectTypeSelect.value = '';
+        const customSelectEl = document.getElementById('project-type-select');
+        if (customSelectEl) {
+            const valueDisplay = customSelectEl.querySelector('.custom-select-value');
+            if (valueDisplay) valueDisplay.textContent = 'Select Type...';
+            customSelectEl.classList.remove('selected');
+            const activeOption = document.querySelector('.custom-select-option.active');
+            if (activeOption) activeOption.classList.remove('active');
+        }
     }
 
     if (yearInput) {
