@@ -462,16 +462,45 @@ if (additionalContextField) {
     additionalContextField.addEventListener('input', debouncedValidation);
 }
 
-// Custom select dropdown logic
+// Custom select dropdown logic — dropdown portaled to body to escape stacking context
 const customSelect = document.getElementById('project-type-select');
 if (customSelect) {
     const trigger = customSelect.querySelector('.custom-select-trigger');
     const valueDisplay = customSelect.querySelector('.custom-select-value');
+    const dropdown = customSelect.querySelector('.custom-select-dropdown');
     const options = customSelect.querySelectorAll('.custom-select-option');
     const hiddenInput = document.getElementById('project-type');
 
-    trigger.addEventListener('click', () => {
-        customSelect.classList.toggle('open');
+    // Move dropdown to body so it escapes backdrop-filter stacking context
+    document.body.appendChild(dropdown);
+
+    function positionDropdown() {
+        const rect = customSelect.getBoundingClientRect();
+        dropdown.style.top = (rect.bottom + 6) + 'px';
+        dropdown.style.left = rect.left + 'px';
+        dropdown.style.width = rect.width + 'px';
+    }
+
+    function openDropdown() {
+        positionDropdown();
+        dropdown.classList.add('open');
+        customSelect.querySelector('.custom-select-arrow').style.transform = 'rotate(180deg)';
+        customSelect.classList.add('open');
+    }
+
+    function closeDropdown() {
+        dropdown.classList.remove('open');
+        customSelect.querySelector('.custom-select-arrow').style.transform = '';
+        customSelect.classList.remove('open');
+    }
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (dropdown.classList.contains('open')) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
     });
 
     options.forEach(option => {
@@ -479,30 +508,35 @@ if (customSelect) {
             const value = option.getAttribute('data-value');
             const label = option.textContent;
 
-            // Update hidden input
             hiddenInput.value = value;
-
-            // Update display
             valueDisplay.textContent = label;
             customSelect.classList.toggle('selected', value !== '');
-            customSelect.classList.remove('open');
 
-            // Mark active option
             options.forEach(o => o.classList.remove('active'));
             if (value !== '') option.classList.add('active');
 
-            // Manually fire the existing project type change logic
+            closeDropdown();
+
             const changeEvent = new Event('change');
             hiddenInput.dispatchEvent(changeEvent);
         });
     });
 
-    // Close dropdown when clicking outside
+    // Close on outside click
     document.addEventListener('click', (e) => {
-        if (!customSelect.contains(e.target)) {
-            customSelect.classList.remove('open');
+        if (!customSelect.contains(e.target) && !dropdown.contains(e.target)) {
+            closeDropdown();
         }
     });
+
+    // Reposition on scroll or resize in case page moves
+    window.addEventListener('scroll', () => {
+        if (dropdown.classList.contains('open')) positionDropdown();
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+        if (dropdown.classList.contains('open')) positionDropdown();
+    }, { passive: true });
 }
 
 // UI Enhancement Functions
