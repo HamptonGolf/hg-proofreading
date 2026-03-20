@@ -1108,6 +1108,19 @@ body::after {
     color: white;
 }
 
+.context-select:focus {
+    background-color: #0a0f0a !important;
+}
+
+.context-select option:hover,
+.context-select option:focus,
+.context-select option:active,
+.context-select option:checked {
+    background: #0a0f0a;
+    background-color: #0a0f0a !important;
+    color: white;
+}
+
 .context-input::placeholder,
 .context-textarea::placeholder {
     color: rgba(255, 255, 255, 0.3);
