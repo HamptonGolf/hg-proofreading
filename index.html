@@ -174,19 +174,26 @@
                 <div class="context-grid">
                     <!-- Project Type Dropdown -->
                     <div class="context-field">
-                        <label for="project-type" class="context-label">
+                        <label class="context-label">
                             <span class="label-text">Project Type</span>
                             <span class="label-required">*</span>
                         </label>
-                        <select id="project-type" class="context-select" required>
-                            <option value="">Select Type...</option>
-                            <option value="flyer">Flyer</option>
-                            <option value="menu">Menu</option>
-                            <option value="collateral">Collateral Booklet</option>
-                            <option value="calendar">Calendar</option>
-                            <option value="newsletter">Newsletter</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <input type="hidden" id="project-type" value="">
+                        <div class="custom-select" id="project-type-select">
+                            <div class="custom-select-trigger">
+                                <span class="custom-select-value">Select Type...</span>
+                                <svg class="custom-select-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00B451" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </div>
+                            <div class="custom-select-dropdown">
+                                <div class="custom-select-option" data-value="">Select Type...</div>
+                                <div class="custom-select-option" data-value="flyer">Flyer</div>
+                                <div class="custom-select-option" data-value="menu">Menu</div>
+                                <div class="custom-select-option" data-value="collateral">Collateral Booklet</div>
+                                <div class="custom-select-option" data-value="calendar">Calendar</div>
+                                <div class="custom-select-option" data-value="newsletter">Newsletter</div>
+                                <div class="custom-select-option" data-value="other">Other</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Year Input -->
