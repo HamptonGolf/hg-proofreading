@@ -1396,7 +1396,11 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     const claudeErrors = await proofreadWithClaude(contextString, textToProofread, pdfBase64);
 
-    const allErrors = [...ruleErrors, ...claudeErrors];
+    // Deduplicate: remove rules engine errors that Claude already caught (Claude explanation takes priority)
+    const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+    const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
+    const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
+    const allErrors = [...dedupedRuleErrors, ...claudeErrors];
 
     updateLoadingProgress(100, 'Analysis complete!');
     setTimeout(() => {
@@ -2435,7 +2439,11 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     updateLoadingProgress(30, 'Re-analyzing with extra scrutiny...');
     const claudeErrors = await proofreadWithClaude(contextString, lastAnalyzedText, lastPdfBase64);
     
-    const allErrors = [...ruleErrors, ...claudeErrors];
+    // Deduplicate: remove rules engine errors that Claude already caught (Claude explanation takes priority)
+    const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+    const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
+    const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
+    const allErrors = [...dedupedRuleErrors, ...claudeErrors];
     
     updateLoadingProgress(100, 'Thorough re-analysis complete!');
     setTimeout(() => {
