@@ -1051,6 +1051,11 @@ body::after {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    overflow: visible;
+}
+
+.context-field {
+    overflow: visible;
 }
 
 .context-field {
@@ -1176,7 +1181,7 @@ body::after {
     border: 2px solid rgba(0, 180, 81, 0.3);
     border-radius: 10px;
     overflow: hidden;
-    z-index: 1000;
+    z-index: 9999;
     display: none;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 180, 81, 0.1);
 }
