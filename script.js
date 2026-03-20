@@ -1264,6 +1264,17 @@ async function startProofreading() {
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
     if (resultsSection && resultsSection.classList.contains('show')) {
+
+        // Blur any focused element inside results before hiding to prevent aria-hidden console errors
+        const focusedElement = resultsSection.querySelector(':focus');
+        if (focusedElement) {
+            focusedElement.blur();
+        }
+        const proofreadBtn = document.getElementById('proofread-btn');
+        if (proofreadBtn) {
+            proofreadBtn.focus({ preventScroll: true });
+        }
+
         resultsSection.style.opacity = '0';
         resultsSection.style.transform = 'translateY(30px)';
         resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
@@ -2359,6 +2370,18 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     const resultsSection = document.getElementById('results');
     const errorList = document.getElementById('error-list');
     if (resultsSection && resultsSection.classList.contains('show')) {
+
+        // Blur any focused element inside results before hiding to prevent aria-hidden console errors
+        const focusedElement = resultsSection.querySelector(':focus');
+        if (focusedElement) {
+            focusedElement.blur();
+        }
+        // Move focus to a safe anchor outside the results section
+        const proofreadBtn = document.getElementById('proofread-btn');
+        if (proofreadBtn) {
+            proofreadBtn.focus({ preventScroll: true });
+        }
+
         resultsSection.style.opacity = '0';
         resultsSection.style.transform = 'translateY(30px)';
         resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
