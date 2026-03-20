@@ -6,7 +6,7 @@ const CONFIG = {
     CLAUDE_MODEL: 'claude-sonnet-4-6',
     MAX_TOKENS: 4000,
     API_VERSION: '2023-06-01',
-    MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB - Netlify function payload limit
+    MAX_FILE_SIZE: 4 * 1024 * 1024, // 4MB - conservative limit to prevent payload failures
     ANIMATION_DURATION: 300,
     AUTO_SAVE_DELAY: 1000
 };
