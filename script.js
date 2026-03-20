@@ -1529,8 +1529,11 @@ function parseClaudeErrors(resultText) {
                     explanation: ''
                 });
             } else {
-                // Log truly unparseable lines for debugging
-                console.warn('Could not parse error line:', content);
+                // Only warn if the line looks like it was attempting the correct format
+                // Pure prose observations from Claude (no "should be" pattern) are silently skipped
+                if (content.includes('should be')) {
+                    console.warn('Could not parse error line:', content);
+                }
             }
         }
     }
