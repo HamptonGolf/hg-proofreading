@@ -1798,48 +1798,51 @@ body::after {
 .no-errors-message {
     text-align: center;
     padding: 80px 40px;
-    animation: successBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    animation: successFadeIn 0.6s ease both;
 }
 
-@keyframes successBounce {
-    0% {
-        transform: scale(0);
+@keyframes successFadeIn {
+    from {
         opacity: 0;
+        transform: translateY(16px);
     }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
+    to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
 .no-errors-message .check-icon {
-    font-size: 90px;
-    margin-bottom: 30px;
-    animation: successPulse 2s ease-in-out infinite;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 180, 81, 0.4);
+    margin-bottom: 28px;
+    animation: checkIn 0.5s ease 0.2s both;
+}
+
+@keyframes checkIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .no-errors-message .check-icon::after {
     content: '';
     display: block;
-    width: 35px;
-    height: 70px;
+    width: 18px;
+    height: 34px;
     border: solid var(--hg-secondary-green);
-    border-width: 0 8px 8px 0;
-    transform: rotate(45deg);
-    filter: drop-shadow(0 0 20px rgba(0, 180, 81, 0.8));
-}
-
-@keyframes successPulse {
-    0%, 100% {
-        transform: scale(1) rotate(0deg);
-    }
-    50% {
-        transform: scale(1.1) rotate(5deg);
-    }
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg) translate(-2px, -4px);
 }
 
 .no-errors-message h3 {
@@ -1847,14 +1850,14 @@ body::after {
     color: white;
     font-size: 36px;
     font-weight: 400;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 
 .no-errors-message p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 18px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
     font-family: 'Inter', sans-serif;
 }
 
@@ -2062,17 +2065,18 @@ body::after {
     .no-errors-message {
         padding: 60px 20px;
     }
-    
+
     .no-errors-message .check-icon {
-        font-size: 60px;
+        width: 60px;
+        height: 60px;
     }
-    
+
     .no-errors-message .check-icon::after {
-        width: 25px;
-        height: 50px;
-        border-width: 0 6px 6px 0;
+        width: 14px;
+        height: 28px;
+        border-width: 0 3px 3px 0;
     }
-    
+
     .no-errors-message h3 {
         font-size: 28px;
     }
