@@ -74,6 +74,13 @@ exports.handler = async (event, context) => {
       }
     }
 
+    if (!fullText) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Empty response received from Claude stream' })
+      };
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify({
