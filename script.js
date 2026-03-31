@@ -1518,23 +1518,23 @@ async function proofreadWithClaude(contextString, extractedText, pdfBase64 = nul
                 model: CONFIG.CLAUDE_MODEL
             })
         });
-        
-        const data = await response.json();
-        
+
         if (!response.ok) {
-            console.error('API Response Error:', data);
-            let errorMessage = data.error || 'API request failed';
-            
-            if (response.status === 401) {
-                errorMessage = 'Invalid API key. Please check your credentials.';
-            } else if (response.status === 429) {
-                errorMessage = 'Rate limit exceeded. Please try again in a moment.';
-            }
-            
+            let errorMessage = 'API request failed';
+            try {
+                const errData = await response.json();
+                errorMessage = errData.error || errorMessage;
+            } catch (_) {}
+            if (response.status === 401) errorMessage = 'Invalid API key. Please check your credentials.';
+            if (response.status === 429) errorMessage = 'Rate limit exceeded. Please try again in a moment.';
+            console.error('API Response Error:', response.status, errorMessage);
             throw new Error(errorMessage);
         }
+
+        const data = await response.json();
         
         if (!data.content || !data.content[0] || !data.content[0].text) {
+            console.error('Unexpected API response shape:', JSON.stringify(data));
             throw new Error('Invalid response format from API');
         }
         
