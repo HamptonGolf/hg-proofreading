@@ -911,8 +911,6 @@ async function extractTextFromPDF(file) {
                     console.log('✅ PDF text normalized, length:', normalizedText.length);
                     
                     resolve(normalizedText);
-                    
-                    resolve(fullText);
                 } catch (error) {
                     console.error('❌ PDF extraction error:', error);
                     reject(error);
@@ -1413,6 +1411,8 @@ async function startProofreading() {
             return;
         }
         
+        pdfBase64 = null;
+        lastPdfBase64 = null;
         isProcessing = true;
         showLoading(true, 'text');
         localStorage.removeItem('draft_content');
@@ -1454,6 +1454,8 @@ async function startProofreading() {
             pdfBase64 = await fileToBase64(selectedFile);
             
         } catch (error) {
+            pdfBase64 = null;
+            lastPdfBase64 = null;
             showLoading(false);
             isProcessing = false;
             showNotification(`Error reading PDF: ${error.message}`, 'error');
