@@ -652,6 +652,13 @@ function switchTab(tab) {
     const buttons = document.querySelectorAll('.tab-btn');
     const proofreadBtn = document.getElementById('proofread-btn');
     
+    // Clear stale PDF state when switching to text input
+    // Prevents lastPdfBase64 from being sent to Claude during reanalysis after a PDF session
+    if (tab === 'text') {
+        pdfBase64 = null;
+        lastPdfBase64 = null;
+    }
+    
     // Update button text based on active tab
     if (proofreadBtn) {
         const btnText = proofreadBtn.querySelector('.btn-text');
@@ -869,11 +876,13 @@ async function extractTextFromPDF(file) {
                     console.log('PDF file size:', typedarray.length, 'bytes');
                     
                     // Configure PDF.js to work properly
+                    // standardFontDataUrl removed — causes spurious resource load errors in the console
+                    // PDF.js falls back to built-in fonts cleanly for text extraction purposes
                     const loadingTask = pdfjsLib.getDocument({
                         data: typedarray,
                         cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
                         cMapPacked: true,
-                        standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/'
+                        useSystemFonts: true
                     });
                     
                     const pdf = await loadingTask.promise;
