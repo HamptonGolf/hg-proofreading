@@ -82,11 +82,17 @@ exports.handler = async (event, context) => {
     }
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
+    statusCode: 200,
+    headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+        'Netlify-CDN-Cache-Control': 'no-store',
+        'Netlify-Vary': 'query,body'
+    },
+    body: JSON.stringify({
         content: [{ type: 'text', text: fullText }]
-      })
-    };
+    })
+};
 
   } catch (error) {
     return {
