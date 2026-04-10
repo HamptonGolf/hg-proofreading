@@ -22,14 +22,19 @@ exports.handler = async (event, context) => {
       messageContent = (contextStr || '') + (prompt || '') + (text || '');
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
+    const headers = {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'pdfs-2024-09-25'
-      },
+        'anthropic-version': '2023-06-01'
+    };
+
+    if (pdfBase64) {
+        headers['anthropic-beta'] = 'pdfs-2024-09-25';
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers,
       body: JSON.stringify({
         model: modelToUse,
         max_tokens: 4000,
