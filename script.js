@@ -2475,6 +2475,12 @@ async function reanalyze() {
         return;
     }
     
+    // Determine whether this reanalysis should use PDF or text mode based on
+    // what is currently active — not what was stored from a previous session
+    const activeTab = document.querySelector('.tab-content.active');
+    const isTextTab = activeTab && activeTab.id === 'text-tab';
+    const pdfToUse = isTextTab ? null : lastPdfBase64;
+    
     // Set the reanalysis flag
     isReanalyzing = true;
     
@@ -2525,7 +2531,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     }
     
     isProcessing = true;
-    showLoading(true, 'document');
+    showLoading(true, isTextTab ? 'text' : 'document');
     
     const loadingSection = document.getElementById('loading');
     if (loadingSection) {
@@ -2541,7 +2547,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     const ruleErrors = runRulesEngine(lastAnalyzedText);
     
     updateLoadingProgress(30, 'Re-analyzing with extra scrutiny...');
-    const claudeErrors = await proofreadWithClaude(contextString, lastAnalyzedText, lastPdfBase64);
+    const claudeErrors = await proofreadWithClaude(contextString, lastAnalyzedText, pdfToUse);
     
     // Deduplicate: remove rules engine errors that Claude already caught (Claude explanation takes priority)
     const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
