@@ -6,11 +6,13 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { contextStr, prompt, text, pdfBase64, apiKey, model } = JSON.parse(event.body);
+    const { contextStr, prompt, text, pdfBase64, imageBase64, apiKey, model } = JSON.parse(event.body);
     const modelToUse = model || 'claude-sonnet-4-6';
 
     let messageContent;
+
     if (pdfBase64) {
+      // PDF path: native document understanding
       messageContent = [
         {
           type: 'document',
@@ -18,23 +20,40 @@ exports.handler = async (event, context) => {
         },
         { type: 'text', text: (contextStr || '') + (prompt || '') }
       ];
+    } else if (imageBase64) {
+      // Image path: vision-based proofreading
+      // Detect media type from base64 header; default to jpeg
+      let mediaType = 'image/jpeg';
+      if (imageBase64.startsWith('/9j/')) {
+        mediaType = 'image/jpeg';
+      } else if (imageBase64.startsWith('iVBOR')) {
+        mediaType = 'image/png';
+      }
+      messageContent = [
+        {
+          type: 'image',
+          source: { type: 'base64', media_type: mediaType, data: imageBase64 }
+        },
+        { type: 'text', text: (contextStr || '') + (prompt || '') }
+      ];
     } else {
+      // Plain text path
       messageContent = (contextStr || '') + (prompt || '') + (text || '');
     }
 
     const headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
     };
 
     if (pdfBase64) {
-        headers['anthropic-beta'] = 'pdfs-2024-09-25';
+      headers['anthropic-beta'] = 'pdfs-2024-09-25';
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers,
+      method: 'POST',
+      headers,
       body: JSON.stringify({
         model: modelToUse,
         max_tokens: 4000,
@@ -87,17 +106,17 @@ exports.handler = async (event, context) => {
     }
 
     return {
-    statusCode: 200,
-    headers: {
+      statusCode: 200,
+      headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
         'Netlify-CDN-Cache-Control': 'no-store',
         'Netlify-Vary': 'query,body'
-    },
-    body: JSON.stringify({
+      },
+      body: JSON.stringify({
         content: [{ type: 'text', text: fullText }]
-    })
-};
+      })
+    };
 
   } catch (error) {
     return {
