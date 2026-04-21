@@ -62,6 +62,9 @@ function triggerHapticFeedback(type = 'light') {
 
 // Global variables
 let selectedFile = null;
+let selectedImage = null;
+let imageBase64 = null;
+let lastImageBase64 = null;
 let apiKey = null;
 let isProcessing = false;
 let currentResults = null;
@@ -70,6 +73,7 @@ let lastAnalyzedText = null;
 let lastPdfBase64 = null;
 let pdfBase64 = null;
 let isReanalyzing = false;
+let lastInputMode = 'text'; // 'text' | 'pdf' | 'image'
 
 // Calculate estimated time saved by AI proofreading based on project type
 function calculateTimeSaved(textLength, errorCount, projectType) {
@@ -298,6 +302,59 @@ Document context provided above. Re-analyze this text:
 
 `;
 
+const PROOFREADING_PROMPT_IMAGE = `You are a professional proofreader for Hampton Golf documents. You are analyzing a photograph or scan of a printed flyer or document. Follow AP Style guidelines.
+
+Because this is an image, pay extra attention to:
+- Characters that look similar and are easy to misread visually: 1/l/I, 0/O, rn/m, cl/d
+- Accent marks on culinary and French-origin words (e.g., sautéed, rémoulade, purée, entrée, café)
+- Small print, footnotes, and fine print at the bottom of the flyer
+- Text overlaid on colored or patterned backgrounds
+- Decorative or script fonts where letterforms may be ambiguous
+
+WHAT TO CHECK:
+1. Spelling errors
+2. Grammar errors (except in titles)
+3. Punctuation following AP Style
+4. Time formatting — only flag if there is clear inconsistency between multiple time listings. Do NOT flag time ranges where AM/PM appears only at the end (e.g., "5 - 7PM").
+5. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns)
+6. Missing accent marks on certain words
+7. Format inconsistency — compare ALL instances of repeated patterns and flag outliers
+8. Proper nouns — verify correct spelling and punctuation
+
+DO NOT FLAG:
+- Date/day validation (no calendar to cross-reference)
+- Word choice suggestions or subjective style preferences
+- Formatting in titles/headers unless related to consistency
+
+IMPORTANT: Describe error locations by visual region of the flyer (e.g., "Headline," "Top body copy," "Bottom callout," "Footer," "Left column"). When in doubt, flag it.
+
+FORMAT (REQUIRED):
+- [Visual location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
+
+Examples:
+- Headline > "recieve" should be "receive" | EXPLAIN: Correct spelling is "receive"
+- Body copy, line 3 > "Remoulade" should be "Rémoulade" | EXPLAIN: French term requires accent
+- Footer > "it's menu" should be "its menu" | EXPLAIN: Possessive form, no apostrophe
+
+If no errors: "No errors found."
+
+Analyze all visible text in this image:
+
+`;
+
+const PROOFREADING_PROMPT_IMAGE_THOROUGH = `You are conducting a SECOND, more thorough proofread of a Hampton Golf flyer image. Be extra meticulous — scrutinize every word, paying special attention to visually ambiguous characters, small print, and text on decorative backgrounds.
+
+Follow the same guidelines as the first image review. Describe error locations by visual region (Headline, Body copy, Footer, etc.).
+
+FORMAT (REQUIRED):
+- [Visual location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
+
+If no errors: "No errors found."
+
+Re-analyze all visible text in this image:
+
+`;
+
 // Initialize application
 function initializeApp() {
     console.log('🏌️ Hampton Golf AI Proofreader Initializing...');
@@ -326,7 +383,7 @@ function initializeApp() {
 
 // Enhanced Event Listeners
 function setupEventListeners() {
-    // File upload handlers
+    // PDF upload handlers
     const fileInput = document.getElementById('file-input');
     const uploadArea = document.getElementById('upload-area');
     
@@ -340,14 +397,35 @@ function setupEventListeners() {
                 fileInput.click();
             }
         });
-        
-        // Enhanced drag and drop with visual feedback
         uploadArea.addEventListener('dragover', handleDragOver);
         uploadArea.addEventListener('dragleave', handleDragLeave);
         uploadArea.addEventListener('drop', handleDrop);
         uploadArea.addEventListener('dragenter', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
+        });
+    }
+
+    // Image upload handlers
+    const imageInput = document.getElementById('image-input');
+    const imageUploadArea = document.getElementById('image-upload-area');
+
+    if (imageInput) {
+        imageInput.addEventListener('change', handleImageSelect);
+    }
+
+    if (imageUploadArea) {
+        imageUploadArea.addEventListener('click', (e) => {
+            if (e.target.id !== 'image-input') {
+                imageInput.click();
+            }
+        });
+        imageUploadArea.addEventListener('dragover', handleDragOver);
+        imageUploadArea.addEventListener('dragleave', handleDragLeave);
+        imageUploadArea.addEventListener('drop', handleImageDrop);
+        imageUploadArea.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.add('dragover');
         });
     }
     
@@ -358,29 +436,21 @@ function setupEventListeners() {
             triggerHapticFeedback('medium');
             startProofreading();
         });
-        
-        // Add hover effect
         proofreadBtn.addEventListener('mouseenter', () => {
-            if (!isProcessing) {
-                proofreadBtn.classList.add('hover');
-            }
+            if (!isProcessing) proofreadBtn.classList.add('hover');
         });
-        
         proofreadBtn.addEventListener('mouseleave', () => {
             proofreadBtn.classList.remove('hover');
         });
     }
     
-    // Text input with debounced character count for performance
+    // Text input with debounced character count
     const textInput = document.getElementById('text-input');
     if (textInput) {
         const debouncedUpdate = debounce((e) => {
             updateCharacterCount(e.target.value.length);
         }, 200);
-        
         textInput.addEventListener('input', debouncedUpdate);
-        
-        // Load auto-saved content
         const savedContent = localStorage.getItem('draft_content');
         if (savedContent) {
             textInput.value = savedContent;
@@ -392,9 +462,7 @@ function setupEventListeners() {
     const apiKeyInput = document.getElementById('api-key');
     if (apiKeyInput) {
         apiKeyInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                saveApiKey();
-            }
+            if (e.key === 'Enter') saveApiKey();
         });
     }
 }
@@ -652,13 +720,20 @@ function switchTab(tab) {
     const buttons = document.querySelectorAll('.tab-btn');
     const proofreadBtn = document.getElementById('proofread-btn');
     
-    // Clear stale PDF state when switching to text input
-    // Prevents lastPdfBase64 from being sent to Claude during reanalysis after a PDF session
+    // Clear stale state when switching tabs
     if (tab === 'text') {
         pdfBase64 = null;
         lastPdfBase64 = null;
+        imageBase64 = null;
+        lastImageBase64 = null;
+    } else if (tab === 'file') {
+        imageBase64 = null;
+        lastImageBase64 = null;
+    } else if (tab === 'image') {
+        pdfBase64 = null;
+        lastPdfBase64 = null;
     }
-    
+
     // Update button text based on active tab
     if (proofreadBtn) {
         const btnText = proofreadBtn.querySelector('.btn-text');
@@ -667,6 +742,8 @@ function switchTab(tab) {
                 btnText.textContent = 'Analyze Text';
             } else if (tab === 'file') {
                 btnText.textContent = 'Analyze Document';
+            } else if (tab === 'image') {
+                btnText.textContent = 'Analyze Image';
             }
         }
     }
@@ -852,6 +929,180 @@ function removeFile() {
     document.getElementById('file-info').classList.remove('show');
     document.getElementById('file-input').value = '';
     showNotification('File removed', 'info');
+}
+
+// Image file handling
+function handleImageSelect(event) {
+    const file = event.target.files[0];
+    processImageFile(file);
+}
+
+function handleImageDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('dragover');
+    
+    const file = e.dataTransfer.files[0];
+    processImageFile(file);
+    
+    const imageInput = document.getElementById('image-input');
+    if (imageInput && file) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        imageInput.files = dataTransfer.files;
+    }
+}
+
+async function processImageFile(file) {
+    if (!file) return;
+
+    // Reset all image state immediately — prevents stale data from a previous
+    // file or session being used if this selection fails or is replaced
+    selectedImage = null;
+    imageBase64 = null;
+    lastImageBase64 = null;
+    lastInputMode = 'text'; // will be set to 'image' only after successful analysis
+    
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        showNotification('Please select a valid JPG or PNG file', 'error');
+        shakeElement(document.getElementById('image-upload-area'));
+        return;
+    }
+
+    // 3.5MB raw limit — safe margin under the ~3.7MB base64 ceiling
+    const IMAGE_MAX_SIZE = 3.5 * 1024 * 1024;
+
+    // Clear any previous results
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        resultsSection.style.opacity = '0';
+        resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        await new Promise(resolve => setTimeout(resolve, 500));
+        resultsSection.classList.remove('show');
+        resultsSection.setAttribute('aria-hidden', 'true');
+        resultsSection.style.opacity = '';
+        resultsSection.style.transform = '';
+        resultsSection.style.transition = '';
+        if (errorList) errorList.innerHTML = '';
+        currentResults = null;
+    }
+
+    // Reset context fields
+    const projectTypeSelect = document.getElementById('project-type');
+    const yearInput = document.getElementById('year-input');
+    const additionalContext = document.getElementById('additional-context');
+    if (projectTypeSelect) {
+        projectTypeSelect.value = '';
+        const customSelectEl = document.getElementById('project-type-select');
+        if (customSelectEl) {
+            const valueDisplay = customSelectEl.querySelector('.custom-select-value');
+            if (valueDisplay) valueDisplay.textContent = 'Select Type...';
+            customSelectEl.classList.remove('selected');
+            const activeOption = document.querySelector('.custom-select-option.active');
+            if (activeOption) activeOption.classList.remove('active');
+        }
+    }
+    if (yearInput) yearInput.value = '2026';
+    if (additionalContext) {
+        additionalContext.value = '';
+        additionalContext.removeAttribute('required');
+        additionalContext.style.borderColor = '';
+    }
+
+    // Auto-compress if over the limit
+    let processedFile = file;
+    if (file.size > IMAGE_MAX_SIZE) {
+        try {
+            processedFile = await compressImage(file, IMAGE_MAX_SIZE);
+            const compressedMB = (processedFile.size / 1024 / 1024).toFixed(2);
+            showNotification(`Image optimized to ${compressedMB}MB for analysis`, 'success', 2000);
+        } catch (err) {
+            showNotification('Could not optimize image. Please use a smaller file.', 'error');
+            return;
+        }
+    }
+    selectedImage = processedFile;
+
+    const fileSizeInMB = (processedFile.size / 1024 / 1024).toFixed(2);
+    document.getElementById('image-name').textContent = file.name;
+    document.getElementById('image-info').classList.add('show');
+
+    const imageDetails = document.querySelector('#image-info .file-details');
+    if (imageDetails) {
+        imageDetails.innerHTML = `
+            <strong>Selected file:</strong>
+            <span id="image-name" class="file-name">${file.name}</span>
+            <span class="file-size">(${fileSizeInMB} MB)</span>
+        `;
+    }
+
+    showNotification(`Image "${file.name}" ready for analysis`, 'success');
+}
+
+function removeImage() {
+    selectedImage = null;
+    imageBase64 = null;
+    lastImageBase64 = null;
+    lastInputMode = 'text';
+    document.getElementById('image-info').classList.remove('show');
+    document.getElementById('image-input').value = '';
+    showNotification('Image removed', 'info');
+}
+
+// Compress image to fit within maxBytes using canvas
+function compressImage(file, maxBytes) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            
+            const canvas = document.createElement('canvas');
+            let { width, height } = img;
+            
+            // Scale down if either dimension exceeds 2000px
+            const MAX_DIM = 2000;
+            if (width > MAX_DIM || height > MAX_DIM) {
+                const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Try progressively lower quality until we're under the limit
+            let quality = 0.85;
+            const tryCompress = () => {
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        reject(new Error('Canvas compression failed'));
+                        return;
+                    }
+                    if (blob.size <= maxBytes || quality <= 0.3) {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    } else {
+                        quality -= 0.1;
+                        tryCompress();
+                    }
+                }, 'image/jpeg', quality);
+            };
+            tryCompress();
+        };
+        
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Failed to load image'));
+        };
+        
+        img.src = url;
+    });
 }
 
 // Enhanced PDF Processing with Progress
@@ -1454,13 +1705,12 @@ async function startProofreading() {
                 smoothScrollTo(targetPosition, 1500);
             }
             
-            // Extract text for rules engine
             updateLoadingProgress(10, 'Extracting text for style checks...');
             textToProofread = await extractTextFromPDF(selectedFile);
             
-            // Convert PDF to base64 for Claude
             updateLoadingProgress(20, 'Preparing document for AI analysis...');
             pdfBase64 = await fileToBase64(selectedFile);
+            lastInputMode = 'pdf';
             
         } catch (error) {
             pdfBase64 = null;
@@ -1469,6 +1719,43 @@ async function startProofreading() {
             isProcessing = false;
             showNotification(`Error reading PDF: ${error.message}`, 'error');
             console.error('PDF extraction error:', error);
+            return;
+        }
+
+    } else if (activeTab.id === 'image-tab') {
+        if (!selectedImage) {
+            showNotification('Please select an image to proofread', 'error');
+            shakeElement(document.getElementById('image-upload-area'));
+            return;
+        }
+
+        try {
+            isProcessing = true;
+            showLoading(true, 'image');
+            updateLoadingProgress(0, 'Reading image...');
+
+            const loadingSection = document.getElementById('loading');
+            if (loadingSection) {
+                const rect = loadingSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 500 : 350);
+                smoothScrollTo(targetPosition, 1500);
+            }
+
+            updateLoadingProgress(30, 'Preparing image for AI analysis...');
+            imageBase64 = await fileToBase64(selectedImage);
+            lastImageBase64 = imageBase64;
+            lastInputMode = 'image';
+            // No text extraction or rules engine for images
+            textToProofread = '';
+
+        } catch (error) {
+            imageBase64 = null;
+            lastImageBase64 = null;
+            showLoading(false);
+            isProcessing = false;
+            showNotification(`Error reading image: ${error.message}`, 'error');
+            console.error('Image processing error:', error);
             return;
         }
     }
@@ -1486,17 +1773,26 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     lastAnalyzedText = textToProofread;
     lastPdfBase64 = pdfBase64;
 
-    updateLoadingProgress(30, 'Running style checks...');
-    const ruleErrors = runRulesEngine(textToProofread);
+    let allErrors = [];
 
-    updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
-    const claudeErrors = await proofreadWithClaude(contextString, textToProofread, pdfBase64);
+    if (lastInputMode === 'image') {
+        // Image path: skip rules engine entirely, go straight to Claude with image prompt
+        updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing image with extra scrutiny...' : 'Analyzing image with Claude AI...');
+        const claudeErrors = await proofreadWithClaude(contextString, '', null, imageBase64);
+        allErrors = claudeErrors;
+    } else {
+        // Text / PDF path: run rules engine + Claude
+        updateLoadingProgress(30, 'Running style checks...');
+        const ruleErrors = runRulesEngine(textToProofread);
 
-    // Deduplicate: remove rules engine errors that Claude already caught (Claude explanation takes priority)
-    const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-    const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
-    const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
-    const allErrors = [...dedupedRuleErrors, ...claudeErrors];
+        updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
+        const claudeErrors = await proofreadWithClaude(contextString, textToProofread, pdfBase64);
+
+        const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
+        const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
+        allErrors = [...dedupedRuleErrors, ...claudeErrors];
+    }
 
     updateLoadingProgress(100, 'Analysis complete!');
     setTimeout(() => {
@@ -1504,12 +1800,24 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
         showLoading(false);
         isProcessing = false;
         isReanalyzing = false;
+        // Null out the working copies but preserve the 'last' copies for reanalysis
         pdfBase64 = null;
+        imageBase64 = null;
+        // Ensure lastInputMode is committed at completion so reanalyze knows what to use
+        // (it was set during setup but this confirms it survived the async flow)
+        if (lastImageBase64) lastInputMode = 'image';
+        else if (lastPdfBase64) lastInputMode = 'pdf';
+        else lastInputMode = 'text';
     }, 500);
 }
 
-async function proofreadWithClaude(contextString, extractedText, pdfBase64 = null) {
-    const promptToUse = isReanalyzing ? PROOFREADING_PROMPT_THOROUGH : PROOFREADING_PROMPT;
+async function proofreadWithClaude(contextString, extractedText, pdfBase64 = null, imageBase64 = null) {
+    let promptToUse;
+    if (imageBase64) {
+        promptToUse = isReanalyzing ? PROOFREADING_PROMPT_IMAGE_THOROUGH : PROOFREADING_PROMPT_IMAGE;
+    } else {
+        promptToUse = isReanalyzing ? PROOFREADING_PROMPT_THOROUGH : PROOFREADING_PROMPT;
+    }
     
     console.log(isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI...');
     
@@ -1523,8 +1831,9 @@ async function proofreadWithClaude(contextString, extractedText, pdfBase64 = nul
             body: JSON.stringify({
                 contextStr: contextString,
                 prompt: promptToUse,
-                text: pdfBase64 ? null : extractedText,
+                text: (pdfBase64 || imageBase64) ? null : extractedText,
                 pdfBase64: pdfBase64 || null,
+                imageBase64: imageBase64 || null,
                 apiKey: apiKey,
                 model: CONFIG.CLAUDE_MODEL
             })
@@ -1551,15 +1860,11 @@ async function proofreadWithClaude(contextString, extractedText, pdfBase64 = nul
         
         const resultText = data.content[0].text;
         
-        // Check for "no errors found" response
         if (resultText.toLowerCase().includes('no errors found')) {
             return [];
         }
         
-        // Parse Claude's response with multiple format support
-        const errors = parseClaudeErrors(resultText);
-        
-        return errors;
+        return parseClaudeErrors(resultText);
         
     } catch (error) {
         console.error('API error:', error);
@@ -2357,14 +2662,18 @@ function clearResults() {
                     updateCharacterCount(0);
                 }
                 
-                if (fileInput) {
-                    fileInput.value = '';
-                }
-                if (fileInfo) {
-                    fileInfo.classList.remove('show');
-                }
+                if (fileInput) fileInput.value = '';
+                if (fileInfo) fileInfo.classList.remove('show');
                 selectedFile = null;
-                
+
+                const imageInputEl = document.getElementById('image-input');
+                const imageInfoEl = document.getElementById('image-info');
+                if (imageInputEl) imageInputEl.value = '';
+                if (imageInfoEl) imageInfoEl.classList.remove('show');
+                selectedImage = null;
+                imageBase64 = null;
+                lastImageBase64 = null;
+
                 localStorage.removeItem('draft_content');
                 
                 requestAnimationFrame(() => {
@@ -2419,13 +2728,17 @@ function clearResults() {
                     updateCharacterCount(0);
                 }
                 
-                if (fileInput) {
-                    fileInput.value = '';
-                }
-                if (fileInfo) {
-                    fileInfo.classList.remove('show');
-                }
+                if (fileInput) fileInput.value = '';
+                if (fileInfo) fileInfo.classList.remove('show');
                 selectedFile = null;
+
+                const imageInput = document.getElementById('image-input');
+                const imageInfo = document.getElementById('image-info');
+                if (imageInput) imageInput.value = '';
+                if (imageInfo) imageInfo.classList.remove('show');
+                selectedImage = null;
+                imageBase64 = null;
+                lastImageBase64 = null;
                 
                 localStorage.removeItem('draft_content');
                 
@@ -2460,7 +2773,11 @@ function clearResults() {
 
 // Reanalyze the last document/text with more thorough checking
 async function reanalyze() {
-    if (!lastAnalyzedText) {
+    // For image mode, lastAnalyzedText is intentionally empty — check lastImageBase64 instead
+    const hasImageToReanalyze = lastInputMode === 'image' && lastImageBase64;
+    const hasTextToReanalyze = lastInputMode !== 'image' && lastAnalyzedText;
+
+    if (!hasImageToReanalyze && !hasTextToReanalyze) {
         showNotification('No previous analysis found to reanalyze', 'error');
         return;
     }
@@ -2474,12 +2791,10 @@ async function reanalyze() {
         showNotification('Please enter and save your Claude API key first', 'error');
         return;
     }
-    
-    // Determine whether this reanalysis should use PDF or text mode based on
-    // what is currently active — not what was stored from a previous session
-    const activeTab = document.querySelector('.tab-content.active');
-    const isTextTab = activeTab && activeTab.id === 'text-tab';
-    const pdfToUse = isTextTab ? null : lastPdfBase64;
+
+    // Route based on what was last analyzed
+    const imageToUse = lastInputMode === 'image' ? lastImageBase64 : null;
+    const pdfToUse = lastInputMode === 'pdf' ? lastPdfBase64 : null;
     
     // Set the reanalysis flag
     isReanalyzing = true;
@@ -2501,12 +2816,10 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     const errorList = document.getElementById('error-list');
     if (resultsSection && resultsSection.classList.contains('show')) {
 
-        // Blur any focused element inside results before hiding to prevent aria-hidden console errors
         const focusedElement = resultsSection.querySelector(':focus');
         if (focusedElement) {
             focusedElement.blur();
         }
-        // Move focus to a safe anchor outside the results section
         const proofreadBtn = document.getElementById('proofread-btn');
         if (proofreadBtn) {
             proofreadBtn.focus({ preventScroll: true });
@@ -2531,7 +2844,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     }
     
     isProcessing = true;
-    showLoading(true, isTextTab ? 'text' : 'document');
+    showLoading(true, lastInputMode); // 'text', 'pdf', or 'image'
     
     const loadingSection = document.getElementById('loading');
     if (loadingSection) {
@@ -2542,18 +2855,25 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
     }
     
     hideAllNotifications();
-    
-    updateLoadingProgress(10, 'Running enhanced style checks...');
-    const ruleErrors = runRulesEngine(lastAnalyzedText);
-    
-    updateLoadingProgress(30, 'Re-analyzing with extra scrutiny...');
-    const claudeErrors = await proofreadWithClaude(contextString, lastAnalyzedText, pdfToUse);
-    
-    // Deduplicate: remove rules engine errors that Claude already caught (Claude explanation takes priority)
-    const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
-    const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
-    const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
-    const allErrors = [...dedupedRuleErrors, ...claudeErrors];
+
+    let allErrors = [];
+
+    if (lastInputMode === 'image') {
+        updateLoadingProgress(30, 'Re-analyzing image with extra scrutiny...');
+        const claudeErrors = await proofreadWithClaude(contextString, '', null, imageToUse);
+        allErrors = claudeErrors;
+    } else {
+        updateLoadingProgress(10, 'Running enhanced style checks...');
+        const ruleErrors = runRulesEngine(lastAnalyzedText);
+
+        updateLoadingProgress(30, 'Re-analyzing with extra scrutiny...');
+        const claudeErrors = await proofreadWithClaude(contextString, lastAnalyzedText, pdfToUse);
+
+        const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
+        const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
+        allErrors = [...dedupedRuleErrors, ...claudeErrors];
+    }
     
     updateLoadingProgress(100, 'Thorough re-analysis complete!');
     setTimeout(() => {
@@ -2572,9 +2892,14 @@ function showLoading(show, type = 'document') {
     if (!loading) return;
     
     if (show) {
-        // Update text based on type
         if (loadingText) {
-            loadingText.textContent = type === 'text' ? 'Analyzing Your Text' : 'Analyzing Your Document';
+            if (type === 'text') {
+                loadingText.textContent = 'Analyzing Your Text';
+            } else if (type === 'image') {
+                loadingText.textContent = 'Analyzing Your Image';
+            } else {
+                loadingText.textContent = 'Analyzing Your Document';
+            }
         }
         
         loading.classList.add('show');
@@ -2583,7 +2908,6 @@ function showLoading(show, type = 'document') {
             proofreadBtn.disabled = true;
             proofreadBtn.classList.add('loading');
         }
-        // Reset progress
         updateLoadingProgress(0, 'Initializing...');
     } else {
         loading.classList.remove('show');
@@ -2927,10 +3251,10 @@ function generateExplanation(error) {
     }
 }
 
-// Export functions for global access
 window.switchTab = switchTab;
 window.saveApiKey = saveApiKey;
 window.removeFile = removeFile;
+window.removeImage = removeImage;
 window.exportResults = exportResults;
 window.copyResults = copyResults;
 window.copyError = copyError;
