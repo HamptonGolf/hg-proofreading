@@ -302,39 +302,31 @@ Document context provided above. Re-analyze this text:
 
 `;
 
-const PROOFREADING_PROMPT_IMAGE = `You are a professional proofreader for Hampton Golf documents. You are analyzing a photograph or scan of a printed flyer or document. Follow AP Style guidelines.
-
-Because this is an image, pay extra attention to:
-- Characters that look similar and are easy to misread visually: 1/l/I, 0/O, rn/m, cl/d
-- Accent marks on culinary and French-origin words (e.g., sautéed, rémoulade, purée, entrée, café)
-- Small print, footnotes, and fine print at the bottom of the flyer
-- Text overlaid on colored or patterned backgrounds
-- Decorative or script fonts where letterforms may be ambiguous
+const PROOFREADING_PROMPT_IMAGE = `You are a professional proofreader for Hampton Golf documents. You are analyzing an image of a printed flyer or document. Follow AP Style guidelines.
 
 WHAT TO CHECK:
 1. Spelling errors
 2. Grammar errors (except in titles)
-3. Punctuation following AP Style
-4. Time formatting — only flag if there is clear inconsistency between multiple time listings. Do NOT flag time ranges where AM/PM appears only at the end (e.g., "5 - 7PM").
-5. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns)
-6. Missing accent marks on certain words
-7. Format inconsistency — compare ALL instances of repeated patterns and flag outliers
-8. Proper nouns — verify correct spelling and punctuation
+3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.)
+4. Time formatting - ONLY flag if there is clear inconsistency between multiple time listings. Do NOT flag time ranges where AM/PM appears only at the end (e.g., "5 - 7PM"). When in doubt, do not flag it.
+5. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns) — including the Hampton Golf brand terms below
+6. Format inconsistency - compare ALL instances of repeated patterns and flag outliers
+7. Proper nouns - verify correct spelling and punctuation
+8. Date/day validation - for any date pairing a day of the week with a numeric date (e.g., "Wednesday, June 4"), calculate whether the day is correct using the year(s) in the document context above. Flag any mismatch. Skip if no year is provided.
+9. Brand terminology - flag "staff"; it should always be "Team Member(s)"
+
+HAMPTON GOLF CAPITALIZATION RULES — always flag lowercase violations:
+member/members → Member/Members | guest/guests → Guest/Guests | neighbor/neighbors → Neighbor/Neighbors | resident/residents → Resident/Residents | homeowner/homeowners → Homeowner/Homeowners | team member/team members → Team Member/Team Members
 
 DO NOT FLAG:
-- Date/day validation (no calendar to cross-reference)
 - Word choice suggestions or subjective style preferences
 - Formatting in titles/headers unless related to consistency
+- Time punctuation unless inconsistent
 
-IMPORTANT: Describe error locations by visual region of the flyer (e.g., "Headline," "Top body copy," "Bottom callout," "Footer," "Left column"). When in doubt, flag it.
+IMPORTANT: Describe error locations by visual region (e.g., Headline, Body copy, Footer). Pay extra attention to decorative fonts, small print, and text on busy backgrounds. When in doubt, flag it.
 
 FORMAT (REQUIRED):
 - [Visual location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
-
-Examples:
-- Headline > "recieve" should be "receive" | EXPLAIN: Correct spelling is "receive"
-- Body copy, line 3 > "Remoulade" should be "Rémoulade" | EXPLAIN: French term requires accent
-- Footer > "it's menu" should be "its menu" | EXPLAIN: Possessive form, no apostrophe
 
 If no errors: "No errors found."
 
@@ -342,9 +334,12 @@ Analyze all visible text in this image:
 
 `;
 
-const PROOFREADING_PROMPT_IMAGE_THOROUGH = `You are conducting a SECOND, more thorough proofread of a Hampton Golf flyer image. Be extra meticulous — scrutinize every word, paying special attention to visually ambiguous characters, small print, and text on decorative backgrounds.
+const PROOFREADING_PROMPT_IMAGE_THOROUGH = `You are conducting a SECOND, more thorough proofread of a Hampton Golf flyer image. Be extra meticulous — scrutinize every word, paying special attention to decorative fonts, small print, and text on busy backgrounds.
 
-Follow the same guidelines as the first image review. Describe error locations by visual region (Headline, Body copy, Footer, etc.).
+Follow the same guidelines as the first review including all Hampton Golf capitalization rules, brand terminology, and date validation. Describe error locations by visual region (Headline, Body copy, Footer, etc.).
+
+HAMPTON GOLF CAPITALIZATION RULES — always flag lowercase violations:
+member/members → Member/Members | guest/guests → Guest/Guests | neighbor/neighbors → Neighbor/Neighbors | resident/residents → Resident/Residents | homeowner/homeowners → Homeowner/Homeowners | team member/team members → Team Member/Team Members | staff → Team Member(s)
 
 FORMAT (REQUIRED):
 - [Visual location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
