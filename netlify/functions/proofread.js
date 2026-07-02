@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { contextStr, prompt, text, pdfBase64, imageBase64, apiKey, model } = JSON.parse(event.body);
-    const modelToUse = model || 'claude-sonnet-4-6';
+    const modelToUse = model || 'claude-sonnet-5';
 
     let messageContent;
 
