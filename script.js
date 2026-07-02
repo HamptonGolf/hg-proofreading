@@ -3,7 +3,7 @@
 // Configuration
 const CONFIG = {
     CLAUDE_API_URL: 'https://api.anthropic.com/v1/messages',
-    CLAUDE_MODEL: 'claude-sonnet-4-6',
+    CLAUDE_MODEL: 'claude-sonnet-5',
     MAX_TOKENS: 4000,
     API_VERSION: '2023-06-01',
     MAX_FILE_SIZE: 4 * 1024 * 1024, // 4MB - conservative limit to prevent payload failures
