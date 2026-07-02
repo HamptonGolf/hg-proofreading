@@ -57,9 +57,8 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         model: modelToUse,
         max_tokens: 4000,
-        temperature: 0,
         stream: true,
-        system: "You are an experienced proofreader specializing in professional documents. Analyze only the specific text provided in this message following the instructions given. Do not reference any other documents or previous conversations.",
+        system: "You are an experienced proofreader...",
         messages: [{ role: 'user', content: messageContent }]
       })
     });
