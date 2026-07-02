@@ -59,7 +59,7 @@ exports.handler = async (event, context) => {
         max_tokens: 4000,
         stream: true,
         thinking: { type: 'adaptive' },
-        effort: 'low',
+        output_config: { effort: 'low' },
         system: "You are an experienced proofreader...",
         messages: [{ role: 'user', content: messageContent }]
       })
