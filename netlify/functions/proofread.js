@@ -56,10 +56,10 @@ exports.handler = async (event, context) => {
       headers,
       body: JSON.stringify({
         model: modelToUse,
-        max_tokens: 4000,
+        max_tokens: 50000,
         stream: true,
         thinking: { type: 'adaptive' },
-        output_config: { effort: 'low' },
+        output_config: { effort: 'medium' },
         system: "You are an experienced proofreader...",
         messages: [{ role: 'user', content: messageContent }]
       })
