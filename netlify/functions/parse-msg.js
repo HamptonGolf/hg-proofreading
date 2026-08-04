@@ -4,6 +4,48 @@ const { deEncapsulateSync } = require('rtf-stream-parser');
 const iconvLite = require('iconv-lite');
 const cheerio = require('cheerio');
 
+// Figure out where a link "is" in human terms, for display in the results list.
+// Tries, in order: the link's own visible text; an enclosed image's alt text
+// (common for logo/social/CTA-button links); the nearest preceding text in the
+// document. Falls back to null if none of that turns anything up.
+function getLinkContext($, el) {
+  const $el = $(el);
+  const ownText = $el.text().replace(/\s+/g, ' ').trim();
+  if (ownText && ownText.length > 0 && ownText.length <= 80) {
+    return `Link text: "${ownText}"`;
+  }
+
+  const img = $el.find('img').first();
+  if (img.length) {
+    const alt = (img.attr('alt') || '').trim();
+    if (alt) return `Image link: "${alt}"`;
+  }
+
+  let node = el.previousSibling;
+  let current = el;
+  let hops = 0;
+  while (hops < 40) {
+    if (!node) {
+      const parent = current.parent;
+      if (!parent) break;
+      node = parent.previousSibling;
+      current = parent;
+      hops++;
+      continue;
+    }
+    const rawText = node.type === 'text' ? (node.data || '') : $(node).text();
+    const text = rawText.replace(/\s+/g, ' ').trim();
+    if (text && text.length > 1) {
+      const snippet = text.length > 60 ? text.slice(0, 57) + '...' : text;
+      return `Near: "${snippet}"`;
+    }
+    node = node.previousSibling;
+    hops++;
+  }
+
+  return null;
+}
+
 exports.handler = async (event, context) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
@@ -26,9 +68,6 @@ exports.handler = async (event, context) => {
     }
 
     // Get the cleanest available HTML body, in order of preference.
-    // Outlook stores this three different ways depending on how the message was
-    // authored/exported — bodyHtml (rare), raw PidTagHtml bytes, or (most common
-    // for marketing/SharpSpring-style HTML emails) HTML encapsulated inside RTF.
     let html = null;
 
     if (data.bodyHtml) {
@@ -48,7 +87,6 @@ exports.handler = async (event, context) => {
       .filter(Boolean);
 
     if (!html) {
-      // No HTML body available (plain-text-only email) — proofread the text, skip link checks
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -78,10 +116,14 @@ exports.handler = async (event, context) => {
       .join('\n');
 
     const anchors = $('a[href]').toArray();
-    const links = anchors.map(el => ({
-      href: ($(el).attr('href') || '').trim(),
-      text: $(el).text().replace(/\s+/g, ' ').trim()
-    }));
+    const links = anchors.map((el, idx) => {
+      const context = getLinkContext($, el);
+      return {
+        href: ($(el).attr('href') || '').trim(),
+        text: $(el).text().replace(/\s+/g, ' ').trim(),
+        location: context || `Link #${idx + 1} in email`
+      };
+    });
 
     const isSkippable = (href) =>
       !href || href === '#' || href.toLowerCase().startsWith('javascript:');
@@ -89,11 +131,6 @@ exports.handler = async (event, context) => {
     const linkIssues = [];
 
     // --- Split-link check ---
-    // Only fires on TRUE zero-gap adjacency (no nodes at all between the two
-    // anchors — not even an empty text node) with non-empty, single-token text
-    // on both sides. This is deliberately strict: HTML emails are full of
-    // benign adjacent anchors (nav dividers, spacer images, whitespace-only
-    // links) that look similar but aren't split-link mistakes.
     for (let i = 0; i < anchors.length - 1; i++) {
       const a = $(anchors[i]);
       const b = $(anchors[i + 1]);
@@ -111,7 +148,7 @@ exports.handler = async (event, context) => {
 
       const combined = textA + textB;
       linkIssues.push({
-        location: 'Link check',
+        location: links[i].location,
         error: `"${textA}" + "${textB}"`,
         correction: hrefA === hrefB
           ? `single link: "${combined}"`
@@ -124,7 +161,7 @@ exports.handler = async (event, context) => {
     }
 
     // --- Mailto text / URL text checks ---
-    anchors.forEach(el => {
+    anchors.forEach((el, idx) => {
       const $el = $(el);
       const href = ($el.attr('href') || '').trim();
       const text = $el.text().replace(/\s+/g, ' ').trim();
@@ -133,7 +170,7 @@ exports.handler = async (event, context) => {
       if (href.toLowerCase().startsWith('mailto:')) {
         if (/mailto:/i.test(text)) {
           linkIssues.push({
-            location: 'Link check',
+            location: links[idx].location,
             error: text,
             correction: text.replace(/mailto:/gi, '').trim(),
             type: 'mailtomismatch',
@@ -158,7 +195,7 @@ exports.handler = async (event, context) => {
 
         if (normalize(text) !== normalize(href)) {
           linkIssues.push({
-            location: 'Link check',
+            location: links[idx].location,
             error: text,
             correction: `destination: ${href}`,
             type: 'urlmismatch',
@@ -168,11 +205,15 @@ exports.handler = async (event, context) => {
       }
     });
 
-    const checkableLinks = [...new Set(
-      links
-        .map(l => l.href)
-        .filter(href => !isSkippable(href) && !/^(mailto:|tel:)/i.test(href))
-    )];
+    // Dedupe by href for the live checker, keeping the first location seen for each
+    const seen = new Set();
+    const checkableLinks = [];
+    links.forEach(l => {
+      if (isSkippable(l.href) || /^(mailto:|tel:)/i.test(l.href)) return;
+      if (seen.has(l.href)) return;
+      seen.add(l.href);
+      checkableLinks.push({ href: l.href, location: l.location });
+    });
 
     return {
       statusCode: 200,
