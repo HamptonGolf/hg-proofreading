@@ -2662,9 +2662,8 @@ function analyzeForOCRErrors(text) {
             'style': 5,
             'splitlink': 6,
             'mailtomismatch': 7,
-            'urlmismatch': 8,
-            'claude': 9,
-            'consistency': 10
+            'claude': 8,
+            'consistency': 9
         };
         
         errors.sort((a, b) => {
@@ -3551,7 +3550,6 @@ function generateExplanation(error) {
         case 'brokenlink':
         case 'splitlink':
         case 'mailtomismatch':
-        case 'urlmismatch':
             return error.explanation && error.explanation.length > 0
                 ? error.explanation
                 : `This is a link issue identified while checking the email — review the link before sending.`;
