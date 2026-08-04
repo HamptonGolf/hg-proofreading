@@ -198,31 +198,7 @@ exports.handler = async (event, context) => {
         }
         return;
       }
-
-      if (href.toLowerCase().startsWith('tel:')) return;
-
-      const looksLikeUrl = /^(https?:\/\/|www\.)[^\s]+$/i.test(text) ||
-        /^[a-z0-9-]+(\.[a-z0-9-]+)+(\/[^\s]*)?$/i.test(text);
-
-      if (looksLikeUrl) {
-        const normalize = (u) => u
-          .replace(/^https?:\/\//i, '')
-          .replace(/^www\./i, '')
-          .split(/[?#]/)[0]
-          .replace(/\/$/, '')
-          .toLowerCase();
-
-        if (normalize(text) !== normalize(href)) {
-          linkIssues.push({
-            location: links[idx].location,
-            error: text,
-            correction: `destination: ${href}`,
-            type: 'urlmismatch',
-            explanation: `The link text reads as a web address ("${text}") but the link actually goes to "${href}" — the displayed URL and the real destination don't match.`
-          });
-        }
-      }
-    });
+  });
 
     // Dedupe by href for the live checker, keeping the first location seen for each
     const seen = new Set();
