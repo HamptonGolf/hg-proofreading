@@ -168,6 +168,25 @@ exports.handler = async (event, context) => {
       if (isSkippable(href) || !text) return;
 
       if (href.toLowerCase().startsWith('mailto:')) {
+        // Case 1: the href itself has a doubled/malformed "mailto:" prefix
+        // (e.g. "mailto:mailto:name@domain.com"). This is the more damaging
+        // version of the mistake — most mail clients treat the extra
+        // "mailto:" as part of the recipient address, breaking the link
+        // even though the visible text looks completely normal.
+        const afterFirstPrefix = href.slice(7);
+        if (/^mailto:/i.test(afterFirstPrefix)) {
+          const cleanEmail = afterFirstPrefix.replace(/^mailto:/i, '').trim();
+          linkIssues.push({
+            location: links[idx].location,
+            error: href,
+            correction: `mailto:${cleanEmail}`,
+            type: 'mailtomismatch',
+            explanation: `This link's destination has "mailto:" duplicated ("${href}") — most email clients will treat the extra "mailto:" as part of the recipient address, breaking the link. It should be "mailto:${cleanEmail}".`
+          });
+          return;
+        }
+
+        // Case 2: the VISIBLE link text includes the literal "mailto:" prefix
         if (/mailto:/i.test(text)) {
           linkIssues.push({
             location: links[idx].location,
