@@ -73,7 +73,11 @@ let lastAnalyzedText = null;
 let lastPdfBase64 = null;
 let pdfBase64 = null;
 let isReanalyzing = false;
-let lastInputMode = 'text'; // 'text' | 'pdf' | 'image'
+let lastInputMode = 'text'; // 'text' | 'pdf' | 'image' | 'email'
+let selectedMsgFile = null;
+let lastMsgBase64 = null;
+let lastMsgLinkIssues = [];
+let lastMsgCheckableLinks = [];
 
 // Calculate estimated time saved by AI proofreading based on project type
 function calculateTimeSaved(textLength, errorCount, projectType) {
@@ -423,6 +427,29 @@ function setupEventListeners() {
             imageUploadArea.classList.add('dragover');
         });
     }
+
+    // Email (.msg) upload handlers
+    const emailInput = document.getElementById('email-input');
+    const emailUploadArea = document.getElementById('email-upload-area');
+
+    if (emailInput) {
+        emailInput.addEventListener('change', handleEmailSelect);
+    }
+
+    if (emailUploadArea) {
+        emailUploadArea.addEventListener('click', (e) => {
+            if (e.target.id !== 'email-input') {
+                emailInput.click();
+            }
+        });
+        emailUploadArea.addEventListener('dragover', handleDragOver);
+        emailUploadArea.addEventListener('dragleave', handleDragLeave);
+        emailUploadArea.addEventListener('drop', handleEmailDrop);
+        emailUploadArea.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            emailUploadArea.classList.add('dragover');
+        });
+    }
     
     // Proofread button with haptic feedback
     const proofreadBtn = document.getElementById('proofread-btn');
@@ -727,6 +754,11 @@ function switchTab(tab) {
     } else if (tab === 'image') {
         pdfBase64 = null;
         lastPdfBase64 = null;
+    } else if (tab === 'email') {
+        pdfBase64 = null;
+        lastPdfBase64 = null;
+        imageBase64 = null;
+        lastImageBase64 = null;
     }
 
     // Update button text based on active tab
@@ -739,6 +771,8 @@ function switchTab(tab) {
                 btnText.textContent = 'Analyze Document';
             } else if (tab === 'image') {
                 btnText.textContent = 'Analyze Image';
+            } else if (tab === 'email') {
+                btnText.textContent = 'Analyze Email';
             }
         }
     }
@@ -1045,6 +1079,109 @@ function removeImage() {
     document.getElementById('image-info').classList.remove('show');
     document.getElementById('image-input').value = '';
     showNotification('Image removed', 'info');
+}
+
+// Email (.msg) file handling
+function handleEmailSelect(event) {
+    const file = event.target.files[0];
+    processEmailFile(file);
+}
+
+function handleEmailDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.currentTarget.classList.remove('dragover');
+
+    const file = e.dataTransfer.files[0];
+    processEmailFile(file);
+
+    const emailInput = document.getElementById('email-input');
+    if (emailInput && file) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        emailInput.files = dataTransfer.files;
+    }
+}
+
+async function processEmailFile(file) {
+    if (!file) return;
+
+    if (!/\.msg$/i.test(file.name)) {
+        showNotification('Please select a valid .msg file', 'error');
+        shakeElement(document.getElementById('email-upload-area'));
+        return;
+    }
+
+    if (file.size > CONFIG.MAX_FILE_SIZE) {
+        showNotification(`File size must be less than ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB`, 'error');
+        return;
+    }
+
+    // Clear any previous results when a new file is attached
+    const resultsSection = document.getElementById('results');
+    const errorList = document.getElementById('error-list');
+    if (resultsSection && resultsSection.classList.contains('show')) {
+        resultsSection.style.opacity = '0';
+        resultsSection.style.transform = 'translateY(30px)';
+        resultsSection.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        await new Promise(resolve => setTimeout(resolve, 500));
+        resultsSection.classList.remove('show');
+        resultsSection.setAttribute('aria-hidden', 'true');
+        resultsSection.style.opacity = '';
+        resultsSection.style.transform = '';
+        resultsSection.style.transition = '';
+        if (errorList) errorList.innerHTML = '';
+        currentResults = null;
+    }
+
+    // Reset context fields
+    const projectTypeSelect = document.getElementById('project-type');
+    const yearInput = document.getElementById('year-input');
+    const additionalContext = document.getElementById('additional-context');
+    if (projectTypeSelect) {
+        projectTypeSelect.value = '';
+        const customSelectEl = document.getElementById('project-type-select');
+        if (customSelectEl) {
+            const valueDisplay = customSelectEl.querySelector('.custom-select-value');
+            if (valueDisplay) valueDisplay.textContent = 'Select Type...';
+            customSelectEl.classList.remove('selected');
+            const activeOption = document.querySelector('.custom-select-option.active');
+            if (activeOption) activeOption.classList.remove('active');
+        }
+    }
+    if (yearInput) yearInput.value = '2026';
+    if (additionalContext) {
+        additionalContext.value = '';
+        additionalContext.removeAttribute('required');
+        additionalContext.style.borderColor = '';
+    }
+
+    selectedMsgFile = file;
+
+    document.getElementById('email-name').textContent = file.name;
+    document.getElementById('email-info').classList.add('show');
+
+    const fileSizeInMB = (file.size / 1024 / 1024).toFixed(2);
+    const emailDetails = document.querySelector('#email-info .file-details');
+    if (emailDetails) {
+        emailDetails.innerHTML = `
+            <strong>Selected file:</strong>
+            <span id="email-name" class="file-name">${file.name}</span>
+            <span class="file-size">(${fileSizeInMB} MB)</span>
+        `;
+    }
+
+    showNotification(`Email "${file.name}" ready for analysis`, 'success');
+}
+
+function removeEmailFile() {
+    selectedMsgFile = null;
+    lastMsgBase64 = null;
+    lastMsgLinkIssues = [];
+    lastMsgCheckableLinks = [];
+    document.getElementById('email-info').classList.remove('show');
+    document.getElementById('email-input').value = '';
+    showNotification('Email file removed', 'info');
 }
 
 // Compress image to fit within maxBytes using canvas
@@ -1753,6 +1890,48 @@ async function startProofreading() {
             console.error('Image processing error:', error);
             return;
         }
+    } else if (activeTab.id === 'email-tab') {
+        if (!selectedMsgFile) {
+            showNotification('Please select a .msg file to proofread', 'error');
+            shakeElement(document.getElementById('email-upload-area'));
+            return;
+        }
+
+        try {
+            isProcessing = true;
+            showLoading(true, 'email');
+            updateLoadingProgress(0, 'Reading email file...');
+
+            const loadingSection = document.getElementById('loading');
+            if (loadingSection) {
+                const rect = loadingSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const targetPosition = scrollTop + rect.top - (window.innerHeight > 900 ? 500 : 350);
+                smoothScrollTo(targetPosition, 1500);
+            }
+
+            updateLoadingProgress(15, 'Parsing email and extracting links...');
+            const msgBase64 = await fileToBase64(selectedMsgFile);
+            lastMsgBase64 = msgBase64;
+            lastInputMode = 'email';
+
+            const parsed = await parseMsgFile(msgBase64);
+            textToProofread = parsed.plainText || '';
+            lastMsgLinkIssues = parsed.linkIssues || [];
+            lastMsgCheckableLinks = parsed.checkableLinks || [];
+
+            if (!textToProofread.trim()) {
+                throw new Error('No readable text content found in this email.');
+            }
+
+        } catch (error) {
+            lastMsgBase64 = null;
+            showLoading(false);
+            isProcessing = false;
+            showNotification(`Error reading email: ${error.message}`, 'error');
+            console.error('Email processing error:', error);
+            return;
+        }
     }
     
     // Build context string for Claude
@@ -1775,6 +1954,21 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
         updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing image with extra scrutiny...' : 'Analyzing image with Claude AI...');
         const claudeErrors = await proofreadWithClaude(contextString, '', null, imageBase64);
         allErrors = claudeErrors;
+    } else if (lastInputMode === 'email') {
+        // Email path: rules engine + Claude on the extracted text, live link checks run in parallel
+        updateLoadingProgress(30, 'Running style checks...');
+        const ruleErrors = runRulesEngine(textToProofread);
+
+        updateLoadingProgress(50, isReanalyzing ? 'Re-analyzing with extra scrutiny...' : 'Analyzing with Claude AI and checking links...');
+        const [claudeErrors, brokenLinkErrors] = await Promise.all([
+            proofreadWithClaude(contextString, textToProofread, null),
+            checkLinksLive(lastMsgCheckableLinks)
+        ]);
+
+        const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
+        const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
+        allErrors = [...dedupedRuleErrors, ...claudeErrors, ...lastMsgLinkIssues, ...brokenLinkErrors];
     } else {
         // Text / PDF path: run rules engine + Claude
         updateLoadingProgress(30, 'Running style checks...');
@@ -1864,6 +2058,62 @@ async function proofreadWithClaude(contextString, extractedText, pdfBase64 = nul
     } catch (error) {
         console.error('API error:', error);
         showNotification(`Error: ${error.message}`, 'error', 5000);
+        return [];
+    }
+}
+
+// Send a .msg file to the parser function and get back extracted text + link data
+async function parseMsgFile(msgBase64) {
+    const response = await fetch('/.netlify/functions/parse-msg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ msgBase64 })
+    });
+
+    if (!response.ok) {
+        let errorMessage = 'Could not parse the .msg file';
+        try {
+            const errData = await response.json();
+            errorMessage = errData.error || errorMessage;
+        } catch (_) {}
+        throw new Error(errorMessage);
+    }
+
+    return await response.json();
+}
+
+// Send extracted links to the link-checker function; returns error-shaped objects for broken ones
+async function checkLinksLive(urls) {
+    if (!urls || urls.length === 0) return [];
+
+    try {
+        const response = await fetch('/.netlify/functions/check-links', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ links: urls })
+        });
+
+        if (!response.ok) {
+            console.error('Link check request failed:', response.status);
+            return [];
+        }
+
+        const data = await response.json();
+        return (data.results || [])
+            .filter(r => !r.ok)
+            .map(r => ({
+                location: 'Link check',
+                error: r.url,
+                correction: r.error === 'timeout'
+                    ? 'timed out — verify manually'
+                    : `returned ${r.status || 'no response'}`,
+                type: 'brokenlink',
+                explanation: r.error === 'timeout'
+                    ? `This link took too long to respond and may be down or blocked. Verify it manually.`
+                    : `This link returned a ${r.status || 'failed'} response instead of loading normally — it's likely broken or has moved.`
+            }));
+    } catch (err) {
+        console.error('Link check error:', err);
         return [];
     }
 }
@@ -2386,12 +2636,16 @@ function analyzeForOCRErrors(text) {
 
         // Sort errors by priority: date > capitalization > accent > style > claude > consistency
         const typePriority = {
-            'date': 1,
-            'capitalization': 2,
-            'accent': 3,
-            'style': 4,
-            'claude': 5,
-            'consistency': 6
+            'brokenlink': 1,
+            'date': 2,
+            'capitalization': 3,
+            'accent': 4,
+            'style': 5,
+            'splitlink': 6,
+            'mailtomismatch': 7,
+            'urlmismatch': 8,
+            'claude': 9,
+            'consistency': 10
         };
         
         errors.sort((a, b) => {
@@ -2857,6 +3111,20 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
         updateLoadingProgress(30, 'Re-analyzing image with extra scrutiny...');
         const claudeErrors = await proofreadWithClaude(contextString, '', null, imageToUse);
         allErrors = claudeErrors;
+    } else if (lastInputMode === 'email') {
+        updateLoadingProgress(10, 'Running enhanced style checks...');
+        const ruleErrors = runRulesEngine(lastAnalyzedText);
+
+        updateLoadingProgress(30, 'Re-analyzing with extra scrutiny and rechecking links...');
+        const [claudeErrors, brokenLinkErrors] = await Promise.all([
+            proofreadWithClaude(contextString, lastAnalyzedText, null),
+            checkLinksLive(lastMsgCheckableLinks)
+        ]);
+
+        const normalizeStr = str => str.toLowerCase().replace(/[^a-z0-9]/g, '').trim();
+        const claudeErrorKeys = new Set(claudeErrors.map(e => normalizeStr(e.error)));
+        const dedupedRuleErrors = ruleErrors.filter(e => !claudeErrorKeys.has(normalizeStr(e.error)));
+        allErrors = [...dedupedRuleErrors, ...claudeErrors, ...lastMsgLinkIssues, ...brokenLinkErrors];
     } else {
         updateLoadingProgress(10, 'Running enhanced style checks...');
         const ruleErrors = runRulesEngine(lastAnalyzedText);
@@ -2892,6 +3160,8 @@ function showLoading(show, type = 'document') {
                 loadingText.textContent = 'Analyzing Your Text';
             } else if (type === 'image') {
                 loadingText.textContent = 'Analyzing Your Image';
+            } else if (type === 'email') {
+                loadingText.textContent = 'Analyzing Your Email';
             } else {
                 loadingText.textContent = 'Analyzing Your Document';
             }
@@ -3240,6 +3510,14 @@ function generateExplanation(error) {
             } else {
                 return `This issue was identified by AI analysis of your document. The suggested correction will improve the accuracy, clarity, or professionalism of your content according to Hampton Golf standards.`;
             }
+
+        case 'brokenlink':
+        case 'splitlink':
+        case 'mailtomismatch':
+        case 'urlmismatch':
+            return error.explanation && error.explanation.length > 0
+                ? error.explanation
+                : `This is a link issue identified while checking the email — review the link before sending.`;
         
         default:
             return `This issue may affect the clarity, accuracy, or professionalism of your document. The suggested correction aligns with Hampton Golf's quality standards and best practices for communications.`;
@@ -3250,6 +3528,7 @@ window.switchTab = switchTab;
 window.saveApiKey = saveApiKey;
 window.removeFile = removeFile;
 window.removeImage = removeImage;
+window.removeEmailFile = removeEmailFile;
 window.exportResults = exportResults;
 window.copyResults = copyResults;
 window.copyError = copyError;
