@@ -14,36 +14,45 @@ exports.handler = async (event, context) => {
     // Cap how many we check in one request — protects against runaway emails
     const toCheck = links.slice(0, 60);
 
-    const checkOne = async (url) => {
+    const browserHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9'
+    };
+
+    const attempt = async (url, method) => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 7000);
       try {
-        let response = await fetch(url, {
-          method: 'HEAD',
+        const response = await fetch(url, {
+          method,
           redirect: 'follow',
           signal: controller.signal,
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; HamptonGolfLinkChecker/1.0)' }
+          headers: browserHeaders
         });
-
-        // Some servers don't support HEAD properly — retry with GET
-        if (response.status === 405 || response.status === 501) {
-          response = await fetch(url, {
-            method: 'GET',
-            redirect: 'follow',
-            signal: controller.signal,
-            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; HamptonGolfLinkChecker/1.0)' }
-          });
-        }
-
         clearTimeout(timeout);
-        return { url, status: response.status, ok: response.ok, finalUrl: response.url };
+        return { status: response.status, ok: response.ok };
       } catch (err) {
         clearTimeout(timeout);
-        return { url, status: null, ok: false, error: err.name === 'AbortError' ? 'timeout' : err.message };
+        return { status: null, ok: false, error: err.name === 'AbortError' ? 'timeout' : err.message };
       }
     };
 
-    // Simple concurrency pool — 6 requests in flight at a time
+    const checkOne = async (url) => {
+      // HEAD first (cheaper). If it's anything other than a clean 2xx, confirm
+      // with a real GET before trusting the result — a lot of sites mishandle
+      // or block HEAD requests (bot protection, misconfigured servers) in ways
+      // that don't reflect whether the page actually exists. We only ever
+      // report a link as broken when a GET-confirmed request returns 404 —
+      // everything else (403, 406, 500, timeouts, etc.) is left unflagged
+      // rather than risk a false positive.
+      let result = await attempt(url, 'HEAD');
+      if (!result.ok) {
+        result = await attempt(url, 'GET');
+      }
+      return { url, status: result.status };
+    };
+
     const results = [];
     const concurrency = 6;
     let index = 0;
