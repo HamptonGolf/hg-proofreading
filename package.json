@@ -1,0 +1,13 @@
+{
+  "name": "hg-ai-proofreader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hampton Golf AI Proofreader — Netlify Functions backend",
+  "dependencies": {
+    "@kenjiuno/msgreader": "^1.28.0",
+    "@kenjiuno/decompressrtf": "^0.1.4",
+    "rtf-stream-parser": "^3.8.1",
+    "iconv-lite": "^0.7.3",
+    "cheerio": "^1.2.0"
+  }
+}
