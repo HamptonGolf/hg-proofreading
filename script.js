@@ -160,6 +160,24 @@ function calculateTimeSaved(textLength, errorCount, projectType) {
                 timeSaved = 10;
             }
             break;
+
+        case 'email':
+            // Email: 5-10 minutes (body copy is usually shorter than a newsletter,
+            // but link/formatting checks add back real review time)
+            if (textLength <= 1500) {
+                timeSaved = 1;
+            } else if (textLength <= 3000) {
+                timeSaved = 2;
+            } else if (textLength <= 4500) {
+                timeSaved = 3;
+            } else if (textLength <= 6000) {
+                timeSaved = 4;
+            } else if (textLength <= 7500) {
+                timeSaved = 5;
+            } else {
+                timeSaved = 6;
+            }
+            break;
             
         case 'other':
         default:
@@ -190,6 +208,7 @@ function calculateTimeSaved(textLength, errorCount, projectType) {
         'collateral': 18,
         'calendar': 6,
         'newsletter': 12,
+        'email': 12,
         'other': 6
     };
     
@@ -2082,9 +2101,13 @@ async function parseMsgFile(msgBase64) {
     return await response.json();
 }
 
-// Send extracted links to the link-checker function; returns error-shaped objects for broken ones
-async function checkLinksLive(urls) {
-    if (!urls || urls.length === 0) return [];
+// Send extracted links to the link-checker function; returns error-shaped objects
+// for confirmed 404s only. checkableLinks is [{ href, location }, ...] from parse-msg.
+async function checkLinksLive(checkableLinks) {
+    if (!checkableLinks || checkableLinks.length === 0) return [];
+
+    const urls = checkableLinks.map(l => l.href);
+    const locationByUrl = new Map(checkableLinks.map(l => [l.href, l.location]));
 
     try {
         const response = await fetch('/.netlify/functions/check-links', {
@@ -2100,17 +2123,13 @@ async function checkLinksLive(urls) {
 
         const data = await response.json();
         return (data.results || [])
-            .filter(r => !r.ok)
+            .filter(r => r.status === 404)
             .map(r => ({
-                location: 'Link check',
+                location: locationByUrl.get(r.url) || 'Link check',
                 error: r.url,
-                correction: r.error === 'timeout'
-                    ? 'timed out — verify manually'
-                    : `returned ${r.status || 'no response'}`,
+                correction: 'returned 404 (Page Not Found)',
                 type: 'brokenlink',
-                explanation: r.error === 'timeout'
-                    ? `This link took too long to respond and may be down or blocked. Verify it manually.`
-                    : `This link returned a ${r.status || 'failed'} response instead of loading normally — it's likely broken or has moved.`
+                explanation: `This link returned a 404 Page Not Found response — the destination doesn't exist or has moved. Verify the URL and update or remove the link before sending.`
             }));
     } catch (err) {
         console.error('Link check error:', err);
