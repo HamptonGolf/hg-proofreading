@@ -281,7 +281,7 @@ WHAT TO CHECK:
 1. Spelling errors
 2. Grammar errors (except in titles)
 3. Punctuation following AP Style (missing periods, wrong or missing apostrophes, comma splices, etc.)
-4. Time formatting - ONLY flag a time format issue if there is clear inconsistency between multiple time listings in the document. Do NOT flag time formats simply for deviating from AP Style. Do NOT flag time ranges where the AM/PM suffix appears only at the end of the range (e.g., "5 - 7PM", "5:30 - 7PM") as this is intentional. When in doubt, do not flag it.
+4. Time formatting - ONLY flag a time format issue if the SAME kind of time listing is written in genuinely different styles elsewhere in the document (e.g., some listings use "7 p.m." and others use "7pm"). If every time listing already follows one consistent style — including spacing choices like "10 - 11AM" vs "10 - 11 AM" — that is NOT an inconsistency, even if it deviates from AP Style; do not flag it. Do NOT flag time ranges where the AM/PM suffix appears only at the end of the range (e.g., "5 - 7PM", "10 - 11AM") regardless of spacing before AM/PM — this is intentional shorthand. This rule overrides the general "when in doubt, flag it" instruction below: for time formatting specifically, when in doubt, do NOT flag it.
 5. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 6. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
 7. Format inconsistency - compare ALL instances of repeated patterns (date ranges with hyphens, price formats, etc.) and flag any that don't match the majority format. Example: if 5 date ranges have commas and 1 doesn't, flag the outlier.
@@ -293,7 +293,7 @@ DO NOT FLAG:
 - Formatting in titles/headers, unless related to consistency
 - Time punctuation unless it is inconsistent
 
-IMPORTANT: When in doubt, output the error. I'd rather it be incorrectly flagged than not flagged at all.
+IMPORTANT: When in doubt, flag spelling/grammar/punctuation issues. Exception: time formatting — when in doubt, do not flag.
 
 FORMAT (REQUIRED):
 - [Specific location] > "[exact error]" should be "[exact correction]" | EXPLAIN: [Brief reason]
