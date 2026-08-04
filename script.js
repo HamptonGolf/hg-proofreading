@@ -2923,6 +2923,15 @@ function clearResults() {
                 imageBase64 = null;
                 lastImageBase64 = null;
 
+                const emailInputEl = document.getElementById('email-input');
+                const emailInfoEl = document.getElementById('email-info');
+                if (emailInputEl) emailInputEl.value = '';
+                if (emailInfoEl) emailInfoEl.classList.remove('show');
+                selectedMsgFile = null;
+                lastMsgBase64 = null;
+                lastMsgLinkIssues = [];
+                lastMsgCheckableLinks = [];
+
                 localStorage.removeItem('draft_content');
                 
                 requestAnimationFrame(() => {
@@ -2988,6 +2997,15 @@ function clearResults() {
                 selectedImage = null;
                 imageBase64 = null;
                 lastImageBase64 = null;
+
+                const emailInput = document.getElementById('email-input');
+                const emailInfo = document.getElementById('email-info');
+                if (emailInput) emailInput.value = '';
+                if (emailInfo) emailInfo.classList.remove('show');
+                selectedMsgFile = null;
+                lastMsgBase64 = null;
+                lastMsgLinkIssues = [];
+                lastMsgCheckableLinks = [];
                 
                 localStorage.removeItem('draft_content');
                 
