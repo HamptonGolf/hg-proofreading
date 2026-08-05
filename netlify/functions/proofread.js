@@ -76,6 +76,7 @@ exports.handler = async (event, context) => {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
+    let streamError = null;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -91,11 +92,24 @@ exports.handler = async (event, context) => {
           const parsed = JSON.parse(data);
           if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
             fullText += parsed.delta.text;
+          } else if (parsed.type === 'error') {
+            // Anthropic can send an error event mid-stream even after the
+            // initial HTTP response was 200 OK (overloaded_error, api_error,
+            // rate_limit_error, etc.) — capture the real reason instead of
+            // silently dropping it and reporting a generic empty response.
+            streamError = parsed.error?.message || parsed.error?.type || 'Unknown stream error';
           }
         } catch (e) {
           // skip malformed chunks
         }
       }
+    }
+
+    if (streamError) {
+      return {
+        statusCode: 502,
+        body: JSON.stringify({ error: `Claude API stream error: ${streamError}` })
+      };
     }
 
     if (!fullText) {
