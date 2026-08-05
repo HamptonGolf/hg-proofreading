@@ -2015,6 +2015,7 @@ ${additionalContext ? `Additional Context: ${additionalContext}` : ''}
         // (it was set during setup but this confirms it survived the async flow)
         if (lastImageBase64) lastInputMode = 'image';
         else if (lastPdfBase64) lastInputMode = 'pdf';
+        else if (lastMsgBase64) lastInputMode = 'email';
         else lastInputMode = 'text';
     }, 500);
 }
