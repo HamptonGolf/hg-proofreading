@@ -105,6 +105,17 @@ exports.handler = async (event, context) => {
     const $ = cheerio.load(html);
     $('style, script, head').remove();
 
+    // Insert line breaks at block-level element boundaries before flattening
+    // to text. cheerio's .text() concatenates every text node with zero
+    // separator — if the source HTML has adjacent elements with no whitespace
+    // between their tags (common in compact marketing HTML), visually
+    // separate lines get smashed together (e.g. "Players' PubHappy hour..."),
+    // which then reads as a genuine run-on error to anything proofreading it.
+    $('br').replaceWith('\n');
+    $('p, div, h1, h2, h3, h4, h5, h6, li, tr, td, table, blockquote').each((i, el) => {
+      $(el).append('\n');
+    });
+
     const rawText = $('body').length ? $('body').text() : $.root().text();
     const plainText = rawText
       .replace(/\r\n/g, '\n')
