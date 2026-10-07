@@ -58,7 +58,7 @@ exports.handler = async (event, context) => {
         model: modelToUse,
         max_tokens: 25000,
         stream: true,
-        thinking: { type: 'between_tools' },
+        thinking: { type: 'disabled' },
         system: "You are an experienced proofreader...",
         messages: [{ role: 'user', content: messageContent }]
       })
