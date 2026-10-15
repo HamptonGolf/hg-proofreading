@@ -280,7 +280,7 @@ const PROOFREADING_PROMPT = `You are a professional proofreader for Hampton Golf
 WHAT TO CHECK:
 1. Spelling errors
 2. Grammar errors (except in titles)
-3.Clear punctuation errors: missing end punctuation, wrong or missing apostrophes (e.g., "its" vs "it's"), comma splices, run-on sentences, unmatched quotes or parentheses
+3. Clear punctuation errors: missing end punctuation, wrong or missing apostrophes (e.g., "its" vs "it's"), comma splices, run-on sentences, unmatched quotes or parentheses
 4. Time formatting - ONLY flag a time format issue if the SAME kind of time listing is written in genuinely different styles elsewhere in the document (e.g., some listings use "7 p.m." and others use "7pm"). If every time listing already follows one consistent style — including spacing choices like "10 - 11AM" vs "10 - 11 AM" — that is NOT an inconsistency, even if it deviates from AP Style; do not flag it. Do NOT flag time ranges where the AM/PM suffix appears only at the end of the range (e.g., "5 - 7PM", "10 - 11AM") regardless of spacing before AM/PM — this is intentional shorthand. This rule overrides the general "when in doubt, flag it" instruction below: for time formatting specifically, when in doubt, do NOT flag it.
 5. Improper capitalization (common nouns incorrectly capitalized mid-sentence, missing capitals on proper nouns). Do not flag these specific words regarding capitalization: Member, Guest, Neighbor, Resident, Homeowner, Team Member (system handles this)
 6. Missing accent marks certain words (ex: sautéed, rémoulade, purée, entrée, etc.)
