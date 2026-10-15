@@ -325,7 +325,7 @@ Document context provided above. Re-analyze this text:
 
 `;
 
-const PROOFREADING_PROMPT_IMAGE = `You are a professional proofreader for Hampton Golf documents. You are analyzing an image of a printed flyer or document. Follow AP Style guidelines.
+const PROOFREADING_PROMPT_IMAGE = `You are a professional proofreader for Hampton Golf documents. You are analyzing an image of a printed flyer or document. Flag objective errors and genuine inconsistencies only. A choice that merely differs from AP Style (month abbreviations, time formats, commas around dates or times) is NOT an error.
 
 WHAT TO CHECK:
 1. Spelling errors
